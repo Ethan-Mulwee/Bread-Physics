@@ -3,65 +3,90 @@
 
 #include <assert.h>
 #include <iostream>
+#include <string>
+#include <sstream>
 
 namespace bMath {
-    template <int rows, int cols>
-    struct Matrix {
-        float data[rows][cols] = {};
-        const static int r = rows; const static int c = cols;
+template <typename T, int rows, int cols> struct Matrix {
+  T data[rows][cols] = {};
 
-        Matrix() {}
+  Matrix() {}
 
-        Matrix(float data[rows][cols]) : data(data) {}
+  Matrix(T data[rows][cols]) : data(data) {}
 
-        Matrix operator+(const Matrix &m) const {
-            Matrix<rows,cols> newMat;
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    newMat.data[i][j] = data[i][j] + m.data[i][j];
-                }
-            }
-            return newMat;
+  template <typename... Args> Matrix(Args... args) : data{(T)args...} {}
+
+  Matrix<T, rows, cols> operator+(const Matrix<T, rows, cols> &m) const {
+    Matrix<T, rows, cols> newMat;
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        newMat.data[i][j] = data[i][j] + m.data[i][j];
+      }
+    }
+    return newMat;
+  }
+  // TODO:
+
+  T* operator[](const int i) const { return data[i]; }
+
+  T& operator() (const int i, const int j) {return data[i][j];}
+
+  T operator() (const int i, const int j) const {return data[i][j];}
+
+  template<int Mrows, int Mcols>
+  Matrix<T, rows, Mcols> operator*(Matrix<T, Mrows, Mcols> &m) {
+    Matrix<T, rows, Mcols> result;
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < Mcols; j++) {
+        float sum = 0;
+        for (int k = 0; k < cols; k++) {
+          sum += (*this)(i,k)*m(k,j);
         }
+        result(i,j) = sum;
+      }
+    }
+    return result;
+  }
+};
 
-        template <typename T>
-        auto operator*(const T &m) const {
-            assert(cols == m.r);
-            Matrix<rows,m.c> newMat;
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < m.c; j++) {
-                    float total = 0;
-                    for (int k = 0; k < cols; k++) {
-                        total += data[i][k]*m.data[k][i];
-                    }
-                    newMat.data[i][j] = total;
-                }
-            }
-            return newMat;
-        }
+typedef Matrix<float, 3, 3> Matrix3;
+typedef Matrix<float, 4, 4> Matirx4;
 
-
-
-        void log() const {
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    std::cout << data[i][j] << ", ";
-                }
-                std:: cout << "\n";
-            }
-        }
-    };
-
-    template <int rows, int cols>
-    std::ostream& operator<<(std::ostream& os, const Matrix<rows,cols> &m) {
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                os << m.data[i][j] << ", ";
-            }
-            os << "\n";
-        }
-        return os;
-    }    
+// TODO: Find the biggest number in the matrix and add spaces accordingly so all rows are of equal length
+template <typename T, int rows, int cols>
+std::ostream &operator<<(std::ostream &os, const Matrix<T, rows, cols> &m) {
+  // find max length
+  // int maxlength = 0;
+  // for (int k = 0; k < rows; k++) {
+  //   for (int l = 0; l < cols; l++) {
+  //     std::stringstream temp;
+  //     temp << m(k,l);
+  //     if (maxlength < temp.str().length()) {
+  //        maxlength = temp.str().length();
+  //     }
+  //   }
+  // }
+  // std::cout << maxlength << "\n";
+  // print matrix
+  for (int i = 0; i < rows; i++) {
+    os << "|";
+   for (int j = 0; j < cols; j++) {
+     // std::stringstream output;
+     // output << m(i,j);
+     // if (output.str().length() < maxlength) {
+       // int amount = maxlength-output.str().length();
+       // for (int p = 0; p < amount; p++) {
+       //   output.str() = " " + output.str();
+       // }
+     // }
+      os << m(i,j) << ((j < cols-1) ? ", " : "");
+    }
+   os << "|" << "\n";
+  }
+ return os;
 }
+
+
+} // namespace bMath
 
 #endif

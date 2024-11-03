@@ -5,7 +5,7 @@
 Camera camera;
 const int axisLength = 4;
 
-Vector3 btr(bMath::Vector3 vec) {
+Vector3 btr(bMath::float3 vec) {
     return Vector3{vec.x,vec.y,vec.z};
 }
 
@@ -17,13 +17,13 @@ int main() {
     camera.fovy = 45;
     camera.projection = CAMERA_PERSPECTIVE;
 
-    bMath::Triangle triangle(bMath::Vector3(1,0,-1), bMath::Vector3(1,2,2), bMath::Vector3(4,0,0));
-    bMath::Ray ray(bMath::Vector3(-1,2,-2), bMath::Vector3(1,-0.5,1));
+    bMath::Triangle triangle(bMath::float3(1,0,-1), bMath::float3(1,2,2), bMath::float3(4,0,0));
+    bMath::Ray ray(bMath::float3(-1,2,-2), bMath::float3(1,-0.5,1));
 
     bMath::RayIntersection intersection = Raycast(ray, triangle);
     std::cout << intersection.point << std::endl;
 
-    bMath::Matrix<3,3> m;
+    bMath::Matrix<float,3,3> m;
     std::cout << m << std::endl;
 
     //Raylib stuff

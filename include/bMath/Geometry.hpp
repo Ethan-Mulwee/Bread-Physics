@@ -7,20 +7,20 @@
 namespace bMath {
 
     struct Triangle {
-        Vector3 a,b,c;
+        float3 a,b,c;
 
-        Triangle(Vector3 a, Vector3 b, Vector3 c)
+        Triangle(float3 a, float3 b, float3 c)
         : a(a), b(b), c(c) {}
 
-        Vector3 getNormal() const {
+        float3 getNormal() const {
             return cross(b-a,c-a);
         }
     };
 
     struct RayIntersection {
         unsigned int hits;
-        Vector3 point;
-        Vector3 normal;
+        float3 point;
+        float3 normal;
 
         RayIntersection()
         : hits(0) {}
@@ -28,37 +28,37 @@ namespace bMath {
         RayIntersection(int hits)
         : hits(hits) {}
 
-        RayIntersection(Vector3 _point, Vector3 _normal)
+        RayIntersection(float3 _point, float3 _normal)
         : hits(1), point(_point), normal(_normal) {}
 
-        RayIntersection(unsigned int hits, Vector3 point, Vector3 normal)
+        RayIntersection(unsigned int hits, float3 point, float3 normal)
         : hits(hits), point(point), normal(normal) {}
     };
 
     struct Ray {
-        Vector3 p, d;
+        float3 p, d;
 
-        Ray(Vector3 p, Vector3 d)
+        Ray(float3 p, float3 d)
         : p(p), d(d) {}
     };
 
     RayIntersection Raycast(const Ray &ray, const Triangle &tri) {
-        Vector3 point;
+        float3 point;
         float t = dot((tri.a-ray.p), tri.getNormal())/(dot(tri.getNormal(), ray.d));
         if (t < 0) {
             return RayIntersection(0);
         }
         point = ray.p + ray.d*t;
 
-        Vector3 triNormal = tri.getNormal();
+        float3 triNormal = tri.getNormal();
 
-        Vector3 AB = tri.b-tri.a;
-        Vector3 BC = tri.c-tri.b;
-        Vector3 CA = tri.a-tri.c;
+        float3 AB = tri.b-tri.a;
+        float3 BC = tri.c-tri.b;
+        float3 CA = tri.a-tri.c;
 
-        Vector3 AP = point - tri.a;
-        Vector3 BP = point - tri.b;
-        Vector3 CP = point - tri.c;
+        float3 AP = point - tri.a;
+        float3 BP = point - tri.b;
+        float3 CP = point - tri.c;
 
         bool ATest = dot(cross(AB,AP), triNormal) >= 0.0f;
         bool BTest = dot(cross(BC,BP), triNormal) >= 0.0f;
@@ -75,7 +75,7 @@ namespace bMath {
         RayIntersection result(0);
         int hits = 0;
         for (int i = 0; i < tris.size(); i++) {
-            Vector3 point;
+            float3 point;
             Triangle tri = tris[i];
             float t = dot((tri.a-ray.p), tri.getNormal())/(dot(tri.getNormal(), ray.d));
             if (t <= 0) {
@@ -83,15 +83,15 @@ namespace bMath {
             }
             point = ray.p + ray.d*t;
 
-            Vector3 triNormal = tri.getNormal();
+            float3 triNormal = tri.getNormal();
 
-            Vector3 AB = tri.b-tri.a;
-            Vector3 BC = tri.c-tri.b;
-            Vector3 CA = tri.a-tri.c;
+            float3 AB = tri.b-tri.a;
+            float3 BC = tri.c-tri.b;
+            float3 CA = tri.a-tri.c;
 
-            Vector3 AP = point - tri.a;
-            Vector3 BP = point - tri.b;
-            Vector3 CP = point - tri.c;
+            float3 AP = point - tri.a;
+            float3 BP = point - tri.b;
+            float3 CP = point - tri.c;
 
             bool ATest = dot(cross(AB,AP), triNormal) >= 0.0f;
             bool BTest = dot(cross(BC,BP), triNormal) >= 0.0f;
