@@ -16,6 +16,15 @@ template <typename T, int rows, int cols> struct Matrix {
 
   template <typename... Args> Matrix(Args... args) : data{(T)args...} {}
 
+  // TODO:
+
+  T* operator[](const int i) const { return data[i]; }
+
+  T& operator() (const int i, const int j) {return data[i][j];}
+
+  T operator() (const int i, const int j) const {return data[i][j];}
+
+  // Return component wise addition of two matrices
   Matrix<T, rows, cols> operator+(const Matrix<T, rows, cols> &m) const {
     Matrix<T, rows, cols> newMat;
     for (int i = 0; i < rows; i++) {
@@ -25,13 +34,6 @@ template <typename T, int rows, int cols> struct Matrix {
     }
     return newMat;
   }
-  // TODO:
-
-  T* operator[](const int i) const { return data[i]; }
-
-  T& operator() (const int i, const int j) {return data[i][j];}
-
-  T operator() (const int i, const int j) const {return data[i][j];}
 
   template<int Mrows, int Mcols>
   Matrix<T, rows, Mcols> operator*(Matrix<T, Mrows, Mcols> &m) {
@@ -50,7 +52,7 @@ template <typename T, int rows, int cols> struct Matrix {
 };
 
 typedef Matrix<float, 3, 3> Matrix3;
-typedef Matrix<float, 4, 4> Matirx4;
+typedef Matrix<float, 4, 4> Matrix4;
 
 // TODO: Find the biggest number in the matrix and add spaces accordingly so all rows are of equal length
 template <typename T, int rows, int cols>
@@ -84,6 +86,15 @@ std::ostream &operator<<(std::ostream &os, const Matrix<T, rows, cols> &m) {
    os << "|" << "\n";
   }
  return os;
+}
+
+// TODO: temp function for inversion look into how blender does matrix inversion on n size matriices
+Matrix3 invert(Matrix3 &m) {
+
+}
+
+Matrix4 invert(Matrix4 &m) {
+
 }
 
 

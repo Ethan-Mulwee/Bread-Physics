@@ -2,9 +2,15 @@
 #define BMATH_GEOMETRY
 
 #include "Vector.hpp"
+#include "Matrix.hpp"
 #include <vector>
 
 namespace bMath {
+    // Returns vector transformed by matrix (will shrink dimension of vector of transformation does so)
+    template <typename T, int n, int cols>
+    Vector<T, cols> Transform(const Vector<T,n> &v, const Matrix<T,n,cols> &m) {
+
+    }
 
     struct Triangle {
         float3 a,b,c;
@@ -13,7 +19,9 @@ namespace bMath {
         : a(a), b(b), c(c) {}
 
         float3 getNormal() const {
-            return cross(b-a,c-a);
+            float3 crossProduct = cross(b-a,c-a);
+            crossProduct.normalize();
+            return crossProduct;
         }
     };
 

@@ -17,7 +17,7 @@ template <typename T, int n> struct Vector {
   T operator[](int i) const { return data[i]; }
 
   float magnitude() {
-    float total;
+    float total = 0;
     for (int i = 0; i < n; i++) {
       total += data[i] * data[i];
     }
@@ -42,6 +42,8 @@ template <> struct Vector<float, 2> {
     };
   };
 
+  // TODO: Add a marco to automatically create these duplicate defs
+
   template <typename... Args> Vector(Args... args) : data{(float)args...} {}
 
   float &operator[](int i) { return data[i]; }
@@ -49,7 +51,7 @@ template <> struct Vector<float, 2> {
   float operator[](int i) const { return data[i]; }
 
   float magnitude() const {
-    float total;
+    float total = 0;
     for (int i = 0; i < 2; i++) {
       total += data[i] * data[i];
     }
@@ -64,12 +66,15 @@ template <> struct Vector<float, 2> {
     }
   }
 };
+
+// TODO: template specialization includes other types
 template <> struct Vector<float, 3> {
   union {
     float data[3];
     struct {
       float x, y, z;
     };
+    Vector<float, 2> xy;
   };
 
   template <typename... Args> Vector(Args... args) : data{(float)args...} {}
@@ -79,7 +84,7 @@ template <> struct Vector<float, 3> {
   float operator[](int i) const { return data[i]; }
 
   float magnitude() const {
-    float total;
+    float total = 0;
     for (int i = 0; i < 3; i++) {
       total += data[i] * data[i];
     }
@@ -109,7 +114,7 @@ template <> struct Vector<float, 4> {
   float operator[](int i) const { return data[i]; }
 
   float magnitude() const {
-    float total;
+    float total = 0;
     for (int i = 0; i < 4; i++) {
       total += data[i] * data[i];
     }
@@ -137,7 +142,8 @@ template <typename T, int n>
 std::ostream &operator<<(std::ostream &os, const Vector<T, n> &v) {
   os << "(";
   for (int i = 0; i < n; i++) {
-    os << v[i] << ((i != n - 1) ? ", " : "");
+    os << v[i];
+    os << ((i != n - 1) ? ", " : "");
   }
   os << ")";
   return os;
@@ -153,6 +159,13 @@ Vector<T, n> operator+(const Vector<T, n> &a, const Vector<T, n> &b) {
 }
 
 template <typename T, int n>
+void operator+=(Vector<T, n> &a, const Vector<T, n> &b) {
+  for (int i = 0; i < n; i++) {
+    a[i] += b[i];
+  }
+}
+
+template <typename T, int n>
 Vector<T, n> operator-(const Vector<T, n> &a, const Vector<T, n> &b) {
   Vector<T, n> result;
   for (int i = 0; i < n; i++) {
@@ -162,6 +175,14 @@ Vector<T, n> operator-(const Vector<T, n> &a, const Vector<T, n> &b) {
 }
 
 template <typename T, int n>
+void operator-=(Vector<T, n> &a, const Vector<T, n> &b) {
+  for (int i = 0; i < n; i++) {
+    a[i] -= b[i];
+  }
+}
+
+// Returns vector scaled by scalar
+template <typename T, int n>
 Vector<T, n> operator*(const Vector<T, n> &a, const float b) {
   Vector<T, n> result;
   for (int i = 0; i < n; i++) {
@@ -170,9 +191,26 @@ Vector<T, n> operator*(const Vector<T, n> &a, const float b) {
   return result;
 }
 
+// Returns vector multipled component wise
+template <typename T, int n>
+Vector<T, n> operator*(const Vector<T,n> &a, const Vector<T,n> &b) {
+  Vector<T,n> result;
+  for (int i = 0; i < n; i++) {
+    result[i] = a[i]*b[i];
+  }
+}
+
+// Multiples vector component wise by another vector
+template <typename T, int n>
+Vector<T, n> operator*=(Vector<T,n> &a, const Vector<T,n> &b) {
+  for (int i = 0; i < n; i++) {
+    a[i] *= b[i];
+  }
+}
+
 template <typename T, int n>
 float dot(const Vector<T, n> &a, const Vector<T, n> &b) {
-  float result;
+  float result = 0;
   for (int i = 0; i < n; i++) {
     result += a[i] * b[i];
   }
@@ -181,8 +219,7 @@ float dot(const Vector<T, n> &a, const Vector<T, n> &b) {
 
 template <typename T>
 Vector<T, 3> cross(const Vector<T, 3> &a, const Vector<T, 3> &b) {
-  return Vector<T, 3>(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
-                      a.x * b.y - a.y * b.x);
+  return Vector<T, 3>(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 }
 
 template <typename T, int n>
@@ -246,26 +283,30 @@ template <typename T, int n> Vector<T, n> normalize(const Vector<T, n> &a) {
   return result;
 }
 
+// Create a vector from an angle (in radians) and an axis
 float4 QuaternionAxisAngle(const float angle, float3 axis) {
   axis.normalize();
-  return float4(std::cos(angle * 0.5), std::sin(angle * 0.5) * axis.x,
-                std::sin(angle * 0.5) * axis.y, std::sin(angle * 0.5) * axis.z);
+  return float4(std::cos(angle * 0.5), std::sin(angle * 0.5) * axis.x, std::sin(angle * 0.5) * axis.y, std::sin(angle * 0.5) * axis.z);
 }
 
-// TODO
 // Rotate a vector by a quaternion
 float3 rotate(const float3 &v, const float4 &q) {
-  return float3();
+  return float3(
+    v.x*(q.x*q.x-q.y*q.y-q.z*q.z+q.w*q.w)+v.y*(2*q.x*q.y-2*q.w*q.z)+v.z*(2*q.x*q.z+2*q.w*q.y),
+    v.x*(2*q.w*q.z+2*q.x*q.y)+v.y*(q.w*q.w-q.x*q.x+q.y*q.y-q.z*q.z)+v.z*(2*q.y*q.z-2*q.w*q.x),
+    v.x*(2*q.x*q.z-2*q.w*q.y)+v.y*(2*q.w*q.x+2*q.y*q.z)+v.z*(q.w*q.w-q.x*q.x-q.y*q.y+q.z*q.z)
+  );
 }
 
-// TODO
-// Rotate a quaternion by a vector
+// TODO: testing
+// Rotate a quaternion by a vector (result = q + (1/2)*float4(0,v.x,v.y,v.z)*q)
 float4 rotate(const float4 &q, const float3 &v) {
-  float _w = (0.5) * (-v.x * q.x - v.y * q.y - v.z * q.z);
-  float _x = (0.5) * (v.x * q.w + v.y * q.z - v.z * q.y);
-  float _y = (0.5) * (v.y * q.w + v.z * q.x - v.x * q.z);
-  float _z = (0.5) * (v.z * q.w + v.x * q.y - v.y * q.x);
-  float4 result = q + float4(_w, _x, _y, _z);
+  float4 result(
+    (0.5) * (-v.x * q.x - v.y * q.y - v.z * q.z),
+    (0.5) * (v.x * q.w + v.y * q.z - v.z * q.y),
+    (0.5) * (v.y * q.w + v.z * q.x - v.x * q.z),
+    (0.5) * (v.z * q.w + v.x * q.y - v.y * q.x)
+  );
   result.normalize();
   return result;
 }

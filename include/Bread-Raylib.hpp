@@ -3,8 +3,8 @@
 #include <math.h>
 #include <raymath.h>
 
-Vector3 ToRay(bMath::float3 v) {
-    return Vector3{v.x,v.y,v.z};
+Vector3 btr(bMath::float3 vec) {
+    return Vector3{vec.x,vec.y,vec.z};
 }
 
 void DrawMesh(bEngine::Mesh mesh) {
@@ -23,10 +23,7 @@ void DrawMesh(bEngine::Mesh mesh) {
         light.normalize();
         float d = dot(normal,light);
         unsigned char value = Clamp(d*255, 0, 255);
-        DrawTriangle3D(ToRay(p0), ToRay(p1), ToRay(p2), Color{value,value,value,255});
-        // DrawLine3D(ToRay(p0), ToRay(p1), GRAY);
-        // DrawLine3D(ToRay(p1), ToRay(p2), GRAY);
-        // DrawLine3D(ToRay(p2), ToRay(p0), GRAY);
+        DrawTriangle3D(btr(p0), btr(p1), btr(p2), Color{value,value,value,255});
     }
 }
 

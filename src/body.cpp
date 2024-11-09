@@ -3,14 +3,14 @@
 using namespace bEngine; 
 using namespace bMath;
 
-void body::integrate(float time) {
+void rigidbody::integrate(float time) {
     float3 acceleration = forceAcumm*time;
     float3 rotation = torqueAcumm*time;
 
     position += acceleration*time;
 }
 
-void body::clearAccumlators() {
+void rigidbody::clearAccumlators() {
     forceAcumm = float3();
     torqueAcumm = float3();
 }

@@ -36,8 +36,8 @@ namespace bEngine {
                 float x,y,z;
                 v>>x;v>>y;v>>z;
                 newMesh.vertices.push_back(bMath::float3(x,y,z));
-                std::cout << line << std::endl;
-                std::cout << std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) << std::endl;
+                // std::cout << line << std::endl;
+                // std::cout << std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) << std::endl;
             }
 
             if (type == "f ") {
@@ -49,8 +49,8 @@ namespace bEngine {
                 sa = filterString(sa, "/");
                 sb = filterString(sb, "/");
                 sc = filterString(sc, "/");
-                std::cout << line << std::endl;
-                std::cout << sa + ", " + sb +", "+sc << std::endl;
+                // std::cout << line << std::endl;
+                // std::cout << sa + ", " + sb +", "+sc << std::endl;
                 a = std::stoi(sa);
                 b = std::stoi(sb);
                 c = std::stoi(sc);

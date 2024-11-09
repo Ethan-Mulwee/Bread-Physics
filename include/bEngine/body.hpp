@@ -4,7 +4,7 @@
 #include "mesh.hpp"
 
 namespace bEngine {
-    class body {
+    class rigidbody {
         public:
         float inverseMass;
         bMath::float3 position;
@@ -12,6 +12,8 @@ namespace bEngine {
         bMath::float3 forceAcumm;
         bMath::float3 torqueAcumm;
         bMath::Matrix3 inertiaTensor;
+
+        Mesh mesh;
 
         void integrate(float time);
 

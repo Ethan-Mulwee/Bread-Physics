@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Bread-Math)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 add_library(bEngine ${SRC_FILES})
 target_include_directories(bEngine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
