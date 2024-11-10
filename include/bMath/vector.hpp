@@ -1,9 +1,9 @@
 #ifndef BMATH_VECTOR
 #define BMATH_VECTOR
 
-#include "Float.hpp"
+#include "float.hpp"
+#include "fwd.hpp"
 #include <algorithm>
-#include <iostream>
 #include <math.h>
 
 namespace bMath {
@@ -43,6 +43,8 @@ template <> struct Vector<float, 2> {
   };
 
   // TODO: Add a marco to automatically create these duplicate defs
+  
+  // TODO: Constructor to create vectors from smaller vectors like a vec3 from a vec2
 
   template <typename... Args> Vector(Args... args) : data{(float)args...} {}
 
@@ -103,7 +105,7 @@ template <> struct Vector<float, 4> {
   union {
     float data[4];
     struct {
-      float w, x, y, z;
+      float x, y, z, w;
     };
   };
 
@@ -137,17 +139,6 @@ typedef Vector<float, 4> float4;
 typedef Vector<int, 2> int2;
 typedef Vector<int, 3> int3;
 typedef Vector<int, 4> int4;
-
-template <typename T, int n>
-std::ostream &operator<<(std::ostream &os, const Vector<T, n> &v) {
-  os << "(";
-  for (int i = 0; i < n; i++) {
-    os << v[i];
-    os << ((i != n - 1) ? ", " : "");
-  }
-  os << ")";
-  return os;
-}
 
 template <typename T, int n>
 Vector<T, n> operator+(const Vector<T, n> &a, const Vector<T, n> &b) {
@@ -206,6 +197,41 @@ Vector<T, n> operator*=(Vector<T,n> &a, const Vector<T,n> &b) {
   for (int i = 0; i < n; i++) {
     a[i] *= b[i];
   }
+}
+
+// Transforms vector by a matrix (assuming column vector)
+template <typename T, int n, int rows>
+Vector<T, rows> operator*(const Vector<T,n> &v, const Matrix<T,rows,n> &m) {
+  Vector<T, rows> result;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < n; j++) {
+      result[i] += v[j]*m(i,j);
+    }
+  }
+  return result;
+}
+
+// TODO: make this less slow?
+// Transforms vector by a matrix (assuming column vector)
+template <typename T, int n, int cols, int rows>
+Vector<T, n> operator*(const Vector<T,n> &v, const Matrix<T,rows,cols> &m) {
+  Vector<T, n> result;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      if (i >= n) return result;
+      T cord;
+      if (j < n) cord = v[j];
+      else cord = 1;
+      result[i] += cord*m(i,j);
+    }
+  }
+  return result;
+}
+
+// Returns vector transformed by matrix (will shrink dimension of vector of transformation does so)
+template <typename T, int n, int cols>
+Vector<T, cols> Transform(const Vector<T,n> &v, const Matrix<T,n,cols> &m) {
+  Vector<T, cols> result;
 }
 
 template <typename T, int n>
@@ -286,7 +312,7 @@ template <typename T, int n> Vector<T, n> normalize(const Vector<T, n> &a) {
 // Create a vector from an angle (in radians) and an axis
 float4 QuaternionAxisAngle(const float angle, float3 axis) {
   axis.normalize();
-  return float4(std::cos(angle * 0.5), std::sin(angle * 0.5) * axis.x, std::sin(angle * 0.5) * axis.y, std::sin(angle * 0.5) * axis.z);
+  return float4(std::sin(angle * 0.5) * axis.x, std::sin(angle * 0.5) * axis.y, std::sin(angle * 0.5) * axis.z, std::cos(angle * 0.5));
 }
 
 // Rotate a vector by a quaternion
@@ -302,15 +328,35 @@ float3 rotate(const float3 &v, const float4 &q) {
 // Rotate a quaternion by a vector (result = q + (1/2)*float4(0,v.x,v.y,v.z)*q)
 float4 rotate(const float4 &q, const float3 &v) {
   float4 result(
-    (0.5) * (-v.x * q.x - v.y * q.y - v.z * q.z),
     (0.5) * (v.x * q.w + v.y * q.z - v.z * q.y),
     (0.5) * (v.y * q.w + v.z * q.x - v.x * q.z),
-    (0.5) * (v.z * q.w + v.x * q.y - v.y * q.x)
+    (0.5) * (v.z * q.w + v.x * q.y - v.y * q.x),
+    (0.5) * (-v.x * q.x - v.y * q.y - v.z * q.z)
   );
   result.normalize();
   return result;
 }
 
+// Returns vector rotated some degrees along the x axis
+float3 rotateX(const float3 &v, const float angle) {
+  return float3(
+    v.x, v.y*cos(angle)-v.z*sin(angle), v.y*sin(angle)+v.z*cos(angle)
+  );
+}
+
+// Returns vector rotated some degrees along the y axis
+float3 rotateY(const float3 &v, const float angle) {
+  return float3(
+    v.x*cos(angle)+v.z*sin(angle), v.y, v.z*cos(angle)-v.x*sin(angle)
+  );
+}
+
+// Returns vector rotated some degrees along the z axis
+float3 rotateZ(const float3 &v, const float angle) {
+  return float3(
+    v.x*cos(angle)-v.y*sin(angle), v.x*sin(angle)+v.y*cos(angle), v.z
+  );
+}
 } // namespace bMath
 
 #endif

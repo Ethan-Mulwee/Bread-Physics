@@ -1,16 +1,15 @@
 #ifndef BMATH_GEOMETRY
 #define BMATH_GEOMETRY
 
-#include "Vector.hpp"
-#include "Matrix.hpp"
+#include "vector.hpp"
+#include "matrix.hpp"
 #include <vector>
 
 namespace bMath {
-    // Returns vector transformed by matrix (will shrink dimension of vector of transformation does so)
-    template <typename T, int n, int cols>
-    Vector<T, cols> Transform(const Vector<T,n> &v, const Matrix<T,n,cols> &m) {
-
-    }
+    // TODO: Redo basically all of this
+    // Use a more preformant algorthim and reduce the amount of structure;
+    // this is meant as a math library it shouldn't have it's own mesh data types
+    // that is left up to the user to make
 
     struct Triangle {
         float3 a,b,c;
@@ -26,7 +25,7 @@ namespace bMath {
     };
 
     struct RayIntersection {
-        unsigned int hits;
+        unsigned int hits = 0;
         float3 point;
         float3 normal;
 

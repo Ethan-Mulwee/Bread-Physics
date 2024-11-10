@@ -1,4 +1,4 @@
-#include "bEngine/body.hpp"
+#include "bEngine/rigidbody.hpp"
 
 using namespace bEngine; 
 using namespace bMath;
