@@ -53,25 +53,27 @@ typedef Matrix<float, 4, 4> Matrix4;
 typedef Matrix<float, 3, 3> float3x3;
 typedef Matrix<float, 4, 4> float4x4;
 
+// TODO: add invert functions
 Matrix3 invert(Matrix3 &m) {
-
+ return m;
 }
 
 Matrix4 invert(Matrix4 &m) {
-
+  return m;
 }
 
+// TODO: add transpose functions
 Matrix3 transpose(Matrix3 &m) {
-
+  return m;
 }
 
 Matrix4 transpose(Matrix4 &m) {
-
+  return m;
 }
 
 // TODO: Creates a rotation matrix from euler angles in the order of xyz
 Matrix3 rotationMatrix(float x, float y, float z) {
-
+  return Matrix3();
 }
 
 
