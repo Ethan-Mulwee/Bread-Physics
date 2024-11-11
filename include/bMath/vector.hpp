@@ -332,10 +332,10 @@ float3 rotate(const float3 &v, const float4 &q) {
 // Rotate a quaternion by a vector (result = q + (1/2)*float4(0,v.x,v.y,v.z)*q)
 float4 rotate(const float4 &q, const float3 &v) {
   float4 result(
-    (0.5) * (v.x * q.w + v.y * q.z - v.z * q.y),
-    (0.5) * (v.y * q.w + v.z * q.x - v.x * q.z),
-    (0.5) * (v.z * q.w + v.x * q.y - v.y * q.x),
-    (0.5) * (-v.x * q.x - v.y * q.y - v.z * q.z)
+    q.x + (0.5) * (v.x * q.w + v.y * q.z - v.z * q.y),
+    q.y + (0.5) * (v.y * q.w + v.z * q.x - v.x * q.z),
+    q.z + (0.5) * (v.z * q.w + v.x * q.y - v.y * q.x),
+    q.w + (0.5) * (-v.x * q.x - v.y * q.y - v.z * q.z)
   );
   result.normalize();
   return result;
