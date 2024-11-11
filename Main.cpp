@@ -42,6 +42,8 @@ int main() {
     camera.fovy = 45;
     camera.projection = CAMERA_PERSPECTIVE;
 
+    bMath::float3 testvar(4,5,6);
+
 
     while(!WindowShouldClose()) {
         UpdateCamera(&camera, CAMERA_ORBITAL);

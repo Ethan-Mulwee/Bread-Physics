@@ -132,6 +132,10 @@ template <> struct Vector<float, 4> {
   }
 };
 
+typedef Vector<double, 2> double2;
+typedef Vector<double, 3> double3;
+typedef Vector<double, 4> double4;
+
 typedef Vector<float, 2> float2;
 typedef Vector<float, 3> float3;
 typedef Vector<float, 4> float4;
@@ -230,7 +234,7 @@ Vector<T, n> operator*(const Vector<T,n> &v, const Matrix<T,rows,cols> &m) {
 
 // Returns vector transformed by matrix (will shrink dimension of vector of transformation does so)
 template <typename T, int n, int cols>
-Vector<T, cols> Transform(const Vector<T,n> &v, const Matrix<T,n,cols> &m) {
+Vector<T, cols> transform(const Vector<T,n> &v, const Matrix<T,n,cols> &m) {
   Vector<T, cols> result;
 }
 

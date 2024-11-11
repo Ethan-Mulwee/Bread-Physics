@@ -20,8 +20,10 @@ namespace bEngine {
             }
 
             void getPosition() {
-                
+
             }
+
+            
         private:
 
             void integrate(float time);

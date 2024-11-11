@@ -71,6 +71,15 @@ Matrix4 transpose(Matrix4 &m) {
   return m;
 }
 
+// TODO: add determiant functions
+float determinant(Matrix3 &m) {
+
+}
+
+float determinant(Matrix4 &m) {
+  
+}
+
 // TODO: Creates a rotation matrix from euler angles in the order of xyz
 Matrix3 rotationMatrix(float x, float y, float z) {
   return Matrix3();

@@ -2,7 +2,7 @@
 #define BMATH_IOSTREAM
 
 #include <iostream>
-#include "fwd.hpp"
+#include "../fwd.hpp"
 #include <string>
 #include <sstream>
 
