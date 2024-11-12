@@ -34,7 +34,7 @@ int main() {
     Block block; 
     block.model = LoadModelFromMesh(GenMeshCube(1,1,1));
     block.body.inverseMass = (1/2.0f);
-    block.body.inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(1000,2,2,2));
+    block.body.inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
 
     while(!WindowShouldClose()) {
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
@@ -47,7 +47,7 @@ int main() {
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
             block.body.addForceAtPoint(toBread(screenRay.direction), toBread(collision.point));
-
+        std::cout << block.body.torqueAccum << "\n";
         block.body.integrate(1/60.0f);
 
         // std::cout << block.body.linearVelocity << "\n";

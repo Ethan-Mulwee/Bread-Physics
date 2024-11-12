@@ -13,8 +13,8 @@ void rigidbody::integrate(float time) {
     bMath::Matrix3 inverseInertiaTensorWorld = bMath::transpose(rotmat)*inverseInertiaTensor*rotmat;
 
     bMath::float3 angularAcceleration = torqueAccum*inverseInertiaTensorWorld;
-    orientation = rotate(orientation, angularVelocity);
-    angularVelocity += angularAcceleration;
+    orientation = rotate(orientation, angularVelocity*time);
+    angularVelocity += angularAcceleration*time;
 
     clearAccumlators();
 }
