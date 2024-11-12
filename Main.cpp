@@ -2,8 +2,8 @@
 #include "bMath/bMath.hpp"
 #include "bMath/ext/raylib.hpp"
 #include "bMath/ext/iostream.hpp"
-// #include "bEngine/rigidbody.hpp"
-#include "src/rigidbody.cpp"
+#include "bEngine/rigidbody.hpp"
+// #include "src/rigidbody.cpp"
 
 // build command for when cmake dies: g++ Main.cpp -Iinclude/ -lraylib 
 
@@ -34,7 +34,7 @@ int main() {
     Block block; 
     block.model = LoadModelFromMesh(GenMeshCube(1,1,1));
     block.body.inverseMass = (1/2.0f);
-    block.body.inverseInertiaTensor = bMath::inverse(bMath::IntertiaTensorCuboid(1000,2,2,2));
+    block.body.inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(1000,2,2,2));
 
     while(!WindowShouldClose()) {
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);

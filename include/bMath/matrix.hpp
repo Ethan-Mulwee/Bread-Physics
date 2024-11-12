@@ -89,7 +89,7 @@ Matrix<T,rows,cols> operator*(const float s, const Matrix<T,rows,cols> &m) {
   return result;
 }
 
-Matrix3 transpose(const Matrix3 &m) {
+inline Matrix3 transpose(const Matrix3 &m) {
   return Matrix3(
     m(0,0), m(1,0), m(2,0),
     m(0,1), m(1,1), m(2,1),
@@ -97,7 +97,7 @@ Matrix3 transpose(const Matrix3 &m) {
   );
 }
 
-Matrix4 transpose(const Matrix4 &m) {
+inline Matrix4 transpose(const Matrix4 &m) {
   return Matrix4(
     m(0,0), m(1,0), m(2,0), m(3,0),
     m(0,1), m(1,1), m(2,1), m(3,1),
@@ -107,21 +107,21 @@ Matrix4 transpose(const Matrix4 &m) {
 }
 
 // TODO: add determiant functions
-float determinant(const Matrix2 &m) {
+inline float determinant(const Matrix2 &m) {
   return m(0,0)*m(1,1)-m(0,1)*(1,0);
 }
 
-float determinant(const Matrix3 &m) {
+inline float determinant(const Matrix3 &m) {
   // taken from https://www.geeksforgeeks.org/what-is-determinant-of-a-matrix/#determinant-of-a-3x3-matrix will need look into methods and math behind matrix determinants later
   return m(0,0)*(m(1,1)*m(2,2)-m(1,2)*m(2,1))-m(0,1)*(m(1,0)*m(2,2)-m(1,2)*m(2,0))+m(0,2)*(m(1,0)*m(2,1)-m(1,1)*m(2,0));
 }
 
-float determinant(const Matrix4 &m) {
+inline float determinant(const Matrix4 &m) {
   return 0;
 }
 
 // TODO: add invert functions
-Matrix3 inverse(const Matrix3 &m) {
+inline Matrix3 inverse(const Matrix3 &m) {
   // taken from https://www.youtube.com/watch?v=srnaDoIKA-E 
   Matrix3 cofactor(
     determinant(Matrix2(m(1,1),m(1,2),m(2,1),m(2,2))), -determinant(Matrix2(m(1,0),m(1,2),m(2,0),m(2,2))), determinant(Matrix2(m(1,0),m(1,1),m(2,0),m(2,1))),
@@ -132,21 +132,21 @@ Matrix3 inverse(const Matrix3 &m) {
  return (1/determinant(m))*cofactor;
 }
 
-Matrix4 inverse(const Matrix4 &m) {
+inline Matrix4 inverse(const Matrix4 &m) {
   return m;
 }
 
 // TODO:
 // B^-1MB
 // B is the transformation of the object aka the transformation that takes the coords from world space ot local space
-Matrix4 changeBasis(const Matrix4 &m, const Matrix4 &b) {
+inline Matrix4 changeBasis(const Matrix4 &m, const Matrix4 &b) {
   return Matrix4(
     
   );
 }
 
 // TODO: Creates a rotation matrix from euler angles in the order of xyz
-Matrix3 rotationMatrix(float x, float y, float z) {
+inline Matrix3 rotationMatrix(float x, float y, float z) {
   return Matrix3();
 }
 

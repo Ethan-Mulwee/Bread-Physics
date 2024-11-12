@@ -281,7 +281,7 @@ Vector<T, n> lerp(const Vector<T, n> &a, const Vector<T, n> &b, const float t) {
 
 // TODO
 // slerp between two quaternions
-float4 slerp(const float4 &a, const float4 &b, float t) {
+inline float4 slerp(const float4 &a, const float4 &b, float t) {
   return float4();
 }
 
@@ -314,13 +314,13 @@ template <typename T, int n> Vector<T, n> normalize(const Vector<T, n> &a) {
 }
 
 // Create a vector from an angle (in radians) and an axis
-float4 QuaternionAxisAngle(const float angle, float3 axis) {
+inline float4 QuaternionAxisAngle(const float angle, float3 axis) {
   axis.normalize();
   return float4(std::sin(angle * 0.5) * axis.x, std::sin(angle * 0.5) * axis.y, std::sin(angle * 0.5) * axis.z, std::cos(angle * 0.5));
 }
 
 // Rotate a vector by a quaternion
-float3 rotate(const float3 &v, const float4 &q) {
+inline float3 rotate(const float3 &v, const float4 &q) {
   return float3(
     v.x*(q.x*q.x-q.y*q.y-q.z*q.z+q.w*q.w)+v.y*(2*q.x*q.y-2*q.w*q.z)+v.z*(2*q.x*q.z+2*q.w*q.y),
     v.x*(2*q.w*q.z+2*q.x*q.y)+v.y*(q.w*q.w-q.x*q.x+q.y*q.y-q.z*q.z)+v.z*(2*q.y*q.z-2*q.w*q.x),
@@ -330,7 +330,7 @@ float3 rotate(const float3 &v, const float4 &q) {
 
 // TODO: testing
 // Rotate a quaternion by a vector (result = q + (1/2)*float4(0,v.x,v.y,v.z)*q)
-float4 rotate(const float4 &q, const float3 &v) {
+inline float4 rotate(const float4 &q, const float3 &v) {
   float4 result(
     q.x + (0.5) * (v.x * q.w + v.y * q.z - v.z * q.y),
     q.y + (0.5) * (v.y * q.w + v.z * q.x - v.x * q.z),
@@ -342,21 +342,21 @@ float4 rotate(const float4 &q, const float3 &v) {
 }
 
 // Returns vector rotated some degrees along the x axis
-float3 rotateX(const float3 &v, const float angle) {
+inline float3 rotateX(const float3 &v, const float angle) {
   return float3(
     v.x, v.y*cos(angle)-v.z*sin(angle), v.y*sin(angle)+v.z*cos(angle)
   );
 }
 
 // Returns vector rotated some degrees along the y axis
-float3 rotateY(const float3 &v, const float angle) {
+inline float3 rotateY(const float3 &v, const float angle) {
   return float3(
     v.x*cos(angle)+v.z*sin(angle), v.y, v.z*cos(angle)-v.x*sin(angle)
   );
 }
 
 // Returns vector rotated some degrees along the z axis
-float3 rotateZ(const float3 &v, const float angle) {
+inline float3 rotateZ(const float3 &v, const float angle) {
   return float3(
     v.x*cos(angle)-v.y*sin(angle), v.x*sin(angle)+v.y*cos(angle), v.z
   );

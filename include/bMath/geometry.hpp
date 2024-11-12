@@ -49,7 +49,7 @@ namespace bMath {
         : p(p), d(d) {}
     };
 
-    RayIntersection Raycast(const Ray &ray, const Triangle &tri) {
+    inline RayIntersection Raycast(const Ray &ray, const Triangle &tri) {
         float3 point;
         float t = dot((tri.a-ray.p), tri.getNormal())/(dot(tri.getNormal(), ray.d));
         if (t < 0) {
@@ -78,7 +78,7 @@ namespace bMath {
         }
     }
 
-    RayIntersection Raycast(const Ray &ray, const std::vector<Triangle> &tris) {
+    inline RayIntersection Raycast(const Ray &ray, const std::vector<Triangle> &tris) {
         RayIntersection result(0);
         int hits = 0;
         for (int i = 0; i < tris.size(); i++) {

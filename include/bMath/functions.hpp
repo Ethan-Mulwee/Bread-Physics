@@ -8,7 +8,7 @@ namespace bMath {
   // TODO: Generalize vector transformation operations to any type not just floats
 
   // optimized 3x3 vector3 transformation
-  float3 operator*(const float3 &v, const Matrix3 &m) {
+  inline float3 operator*(const float3 &v, const Matrix3 &m) {
     return float3(
       v.x*m(0,0)+v.y*m(0,1)+v.z*m(0,2),
       v.x*m(1,0)+v.y*m(1,1)+v.z*m(1,2),
@@ -17,7 +17,7 @@ namespace bMath {
   }
 
   // optimized 4x4 vector3 transformation
-  float3 operator*(const float3 &v, const Matrix4 &m) {
+  inline float3 operator*(const float3 &v, const Matrix4 &m) {
     return float3(
       v.x*m(0,0)+v.y*m(0,1)+v.z*m(0,2)+m(0,3),
       v.x*m(1,0)+v.y*m(1,1)+v.z*m(1,2)+m(1,3),
@@ -26,7 +26,7 @@ namespace bMath {
   }
 
   // optimized 4x4 vector4 transformation
-  float4 operator*(const float4 &v, const Matrix4 &m) {
+  inline float4 operator*(const float4 &v, const Matrix4 &m) {
     return float4(
       v.x*m(0,0)+v.y*m(0,1)+v.z*m(0,2)+v.w*m(0,3),
       v.x*m(1,0)+v.y*m(1,1)+v.z*m(1,2)+v.w*m(1,3),
@@ -35,7 +35,7 @@ namespace bMath {
     );
   }
 
-  Matrix3 QuaternionToMatrix(const float4 &q) {
+  inline Matrix3 QuaternionToMatrix(const float4 &q) {
       Matrix3 m;
       // i hat
       m.data[0][0] = q.x*q.x-q.y*q.y-q.z*q.z+q.w*q.w;

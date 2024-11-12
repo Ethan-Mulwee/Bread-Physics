@@ -5,11 +5,11 @@
 #include "../vector.hpp"
 #include "../matrix.hpp"
 
-Vector3 toRay(const bMath::Vector<float,3> &v) {
+inline Vector3 toRay(const bMath::Vector<float,3> &v) {
   return Vector3{v.x,v.y,v.z};
 }
 
-Matrix toRay(const bMath::Matrix4 &m) {
+inline Matrix toRay(const bMath::Matrix4 &m) {
   return Matrix{
     m(0,0), m(0,1), m(0,2), m(0,3),
     m(1,0), m(1,1), m(1,2), m(1,3),
@@ -18,11 +18,11 @@ Matrix toRay(const bMath::Matrix4 &m) {
   };
 }
 
-bMath::float3 toBread(const Vector3 &v) {
+inline bMath::float3 toBread(const Vector3 &v) {
   return bMath::float3(v.x,v.y,v.z);
 }
 
-bMath::Matrix4 toBread(const Matrix &m) {
+inline bMath::Matrix4 toBread(const Matrix &m) {
   return bMath::Matrix4(
     m.m0, m.m4, m.m8, m.m12,
     m.m1, m.m5, m.m9, m.m13,
