@@ -1,8 +1,11 @@
 #include <iostream>
 #include "bMath/bMath.hpp"
 #include "bMath/ext/raylib.hpp"
+#include "bMath/ext/iostream.hpp"
 // #include "bEngine/rigidbody.hpp"
 #include "src/rigidbody.cpp"
+
+// build command for when cmake dies: g++ Main.cpp -Iinclude/ -lraylib 
 
 Camera camera;
 const int axisLength = 4;
@@ -30,12 +33,24 @@ int main() {
 
     Block block; 
     block.model = LoadModelFromMesh(GenMeshCube(1,1,1));
-    block.body.inverseMass = (1/10.0f);
-    block.body.inverseInertiaTensor = bMath::inverse(bMath::IntertiaTensorCuboid(10,1,1,1));
+    block.body.inverseMass = (1/2.0f);
+    block.body.inverseInertiaTensor = bMath::inverse(bMath::IntertiaTensorCuboid(1000,2,2,2));
 
     while(!WindowShouldClose()) {
-        block.body.addForce(bMath::float3(0,-9.8,0));
+        Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
+        RayCollision collision = GetRayCollisionMesh(screenRay, block.model.meshes[0], block.model.transform);
+
+        // block.body.addForce(bMath::float3(0,-9.8,0));
+        // block.body.addTorque(bMath::float3(0.2,0.2,0));
+
+        // block.body.addForceAtPoint(bMath::rotate(bMath::float3(0.1,0,0), block.body.orientation), bMath::rotate(bMath::float3(2,2,0), block.body.orientation));
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+            block.body.addForceAtPoint(toBread(screenRay.direction), toBread(collision.point));
+
         block.body.integrate(1/60.0f);
+
+        std::cout << block.body.linearVelocity << "\n";
 
         UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
@@ -47,6 +62,7 @@ int main() {
                 DrawLine3D(Vector3{0,0,-axisLength}, Vector3{0,0,axisLength}, BLUE);
 
                 block.render();
+                DrawSphere(collision.point, 0.1, PURPLE);
             EndMode3D();
         EndDrawing();
     }

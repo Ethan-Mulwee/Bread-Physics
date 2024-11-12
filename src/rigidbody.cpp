@@ -1,29 +1,40 @@
 #include "bEngine/rigidbody.hpp"
 
 using namespace bEngine; 
-using namespace bMath;
+//using namespace bMath;
 
 void rigidbody::integrate(float time) {
 
-    float3 acceleration = forceAcumm*inverseMass;
+    bMath::float3 acceleration = forceAccum*inverseMass;
     position += linearVelocity*time+acceleration*time*time;
     linearVelocity += acceleration*time;
 
     bMath::Matrix3 rotmat =bMath::QuaternionToMatrix(orientation);
     bMath::Matrix3 inverseInertiaTensorWorld = bMath::transpose(rotmat)*inverseInertiaTensor*rotmat;
 
-    float3 angularAcceleration = torqueAcumm*inverseInertiaTensorWorld;
-    orientation = rotate(orientation, angularAcceleration);
+    bMath::float3 angularAcceleration = torqueAccum*inverseInertiaTensorWorld;
+    orientation = rotate(orientation, angularVelocity);
     angularVelocity += angularAcceleration;
 
     clearAccumlators();
 }
 
 void rigidbody::clearAccumlators() {
-    forceAcumm = float3();
-    torqueAcumm = float3();
+    forceAccum = bMath::float3();
+    torqueAccum = bMath::float3();
 }
 
-void rigidbody::addForce(const bMath::float3 &force){
-    forceAcumm += force;
+void rigidbody::addForce(const bMath::float3 &force) {
+    forceAccum += force;
+}
+
+void rigidbody::addTorque(const bMath::float3 &torque) {
+    torqueAccum += torque;
+}
+
+void rigidbody::addForceAtPoint(const bMath::float3 &force, const bMath::float3 &point) {
+    bMath::float3 pt = point;
+    pt -= position;
+    forceAccum += force;
+    torqueAccum += cross(pt, force);
 }

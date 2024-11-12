@@ -15,8 +15,8 @@ namespace bEngine {
             bMath::float3 linearVelocity;
             bMath::float3 angularVelocity;
 
-            bMath::float3 forceAcumm;
-            bMath::float3 torqueAcumm;
+            bMath::float3 forceAccum;
+            bMath::float3 torqueAccum;
             
 
         public:
@@ -34,9 +34,9 @@ namespace bEngine {
 
             void addForce(const bMath::float3 &force);
 
-            void addTorque(bMath::float3 &torque);
+            void addTorque(const bMath::float3 &torque);
 
-            void addForceAtPoint(bMath::float3 &force, bMath::float3 &point);
+            void addForceAtPoint(const bMath::float3 &force, const bMath::float3 &point);
 
             void integrate(float time);
             
