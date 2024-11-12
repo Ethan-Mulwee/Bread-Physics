@@ -1,7 +1,8 @@
 #include <iostream>
 #include "bMath/bMath.hpp"
 #include "bMath/ext/raylib.hpp"
-#include "bEngine/rigidbody.hpp"
+// #include "bEngine/rigidbody.hpp"
+#include "src/rigidbody.cpp"
 
 Camera camera;
 const int axisLength = 4;
@@ -11,7 +12,6 @@ struct Block {
     Model model;
 
     void render() {
-        body.orientation = rotate(body.orientation, bMath::float3(0.01,0.01,0.01));
         model.transform = toRay(body.getTransform());
         DrawModel(model, Vector3{0,0,0}, 1, WHITE);
     }
@@ -30,8 +30,13 @@ int main() {
 
     Block block; 
     block.model = LoadModelFromMesh(GenMeshCube(1,1,1));
+    block.body.inverseMass = (1/10.0f);
+    block.body.inverseInertiaTensor = bMath::inverse(bMath::IntertiaTensorCuboid(10,1,1,1));
 
     while(!WindowShouldClose()) {
+        block.body.addForce(bMath::float3(0,-9.8,0));
+        block.body.integrate(1/60.0f);
+
         UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
             ClearBackground(Color{35,35,35,255});

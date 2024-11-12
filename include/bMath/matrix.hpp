@@ -48,19 +48,12 @@ template <typename T, int rows, int cols> struct Matrix {
   }
 };
 
+typedef Matrix<float, 2, 2> Matrix2;
 typedef Matrix<float, 3, 3> Matrix3;
 typedef Matrix<float, 4, 4> Matrix4;
+typedef Matrix<float, 2, 2> float2x2;
 typedef Matrix<float, 3, 3> float3x3;
 typedef Matrix<float, 4, 4> float4x4;
-
-// TODO: add invert functions
-Matrix3 invert(const Matrix3 &m) {
- return m;
-}
-
-Matrix4 invert(const Matrix4 &m) {
-  return m;
-}
 
 // TODO: figure out how to make this for loop logic happen at compile time
 template<typename T, int rows, int cols>
@@ -69,6 +62,28 @@ Matrix<T, rows, cols> transpose(Matrix<T, rows, cols> &m) {
   for (int j = 0; j < cols; j++) {
     for (int i = 0; i < rows; i++) {
       result(j,i) = m(i,j);
+    }
+  }
+  return result;
+}
+
+template<typename T, int rows, int cols>
+Matrix<T,rows,cols> operator*(const Matrix<T,rows,cols> &m, const float s) {
+  Matrix<T,rows,cols> result;
+  for (int j = 0; j < cols; j++) {
+    for (int i = 0; i < rows; i++) {
+      result(i,j) = m(i,j) * s;
+    }
+  }
+  return result;
+}
+
+template<typename T, int rows, int cols>
+Matrix<T,rows,cols> operator*(const float s, const Matrix<T,rows,cols> &m) {
+  Matrix<T,rows,cols> result;
+  for (int j = 0; j < cols; j++) {
+    for (int i = 0; i < rows; i++) {
+      result(i,j) = m(i,j) * s;
     }
   }
   return result;
@@ -92,18 +107,39 @@ Matrix4 transpose(const Matrix4 &m) {
 }
 
 // TODO: add determiant functions
+float determinant(const Matrix2 &m) {
+  return m(0,0)*m(1,1)-m(0,1)*(1,0);
+}
+
 float determinant(const Matrix3 &m) {
-  return 0;
+  // taken from https://www.geeksforgeeks.org/what-is-determinant-of-a-matrix/#determinant-of-a-3x3-matrix will need look into methods and math behind matrix determinants later
+  return m(0,0)*(m(1,1)*m(2,2)-m(1,2)*m(2,1))-m(0,1)*(m(1,0)*m(2,2)-m(1,2)*m(2,0))+m(0,2)*(m(1,0)*m(2,1)-m(1,1)*m(2,0));
 }
 
 float determinant(const Matrix4 &m) {
   return 0;
 }
 
+// TODO: add invert functions
+Matrix3 inverse(const Matrix3 &m) {
+  // taken from https://www.youtube.com/watch?v=srnaDoIKA-E 
+  Matrix3 cofactor(
+    determinant(Matrix2(m(1,1),m(1,2),m(2,1),m(2,2))), -determinant(Matrix2(m(1,0),m(1,2),m(2,0),m(2,2))), determinant(Matrix2(m(1,0),m(1,1),m(2,0),m(2,1))),
+    -determinant(Matrix2(m(0,1),m(0,2),m(2,1),m(2,2))), determinant(Matrix2(m(0,0),m(0,2),m(2,0),m(2,2))), -determinant(Matrix2(m(0,0),m(0,1),m(2,0),m(2,1))),
+    determinant(Matrix2(m(0,1),m(0,2),m(1,1),m(1,2))), -determinant(Matrix2(m(0,0),m(0,2),m(1,0),m(1,2))), determinant(Matrix2(m(0,0),m(0,1),m(1,0),m(1,1)))
+  );
+  cofactor = transpose(cofactor);
+ return (1/determinant(m))*cofactor;
+}
+
+Matrix4 inverse(const Matrix4 &m) {
+  return m;
+}
+
 // TODO:
 // B^-1MB
 // B is the transformation of the object aka the transformation that takes the coords from world space ot local space
-Matrix4 ChangeBasis(const Matrix4 &m, const Matrix4 &b) {
+Matrix4 changeBasis(const Matrix4 &m, const Matrix4 &b) {
   return Matrix4(
     
   );
