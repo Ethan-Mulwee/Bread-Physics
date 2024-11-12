@@ -50,7 +50,7 @@ int main() {
 
         block.body.integrate(1/60.0f);
 
-        std::cout << block.body.linearVelocity << "\n";
+        // std::cout << block.body.linearVelocity << "\n";
 
         UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
@@ -62,7 +62,8 @@ int main() {
                 DrawLine3D(Vector3{0,0,-axisLength}, Vector3{0,0,axisLength}, BLUE);
 
                 block.render();
-                DrawSphere(collision.point, 0.1, PURPLE);
+                if (collision.hit)
+                    DrawSphere(collision.point, 0.1, PURPLE);
             EndMode3D();
         EndDrawing();
     }

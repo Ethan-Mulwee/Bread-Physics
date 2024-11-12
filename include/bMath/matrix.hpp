@@ -107,29 +107,86 @@ inline Matrix4 transpose(const Matrix4 &m) {
 }
 
 // TODO: add determiant functions
-inline float determinant(const Matrix2 &m) {
-  return m(0,0)*m(1,1)-m(0,1)*(1,0);
+
+inline float det(const Matrix<float, 1,1> &m) {
+  return m(0,0);
 }
 
-inline float determinant(const Matrix3 &m) {
+inline float det(const Matrix2 &m) {
+  return m(0,0)*m(1,1)-m(0,1)*m(1,0);
+}
+
+inline float det(const Matrix3 &m) {
   // taken from https://www.geeksforgeeks.org/what-is-determinant-of-a-matrix/#determinant-of-a-3x3-matrix will need look into methods and math behind matrix determinants later
   return m(0,0)*(m(1,1)*m(2,2)-m(1,2)*m(2,1))-m(0,1)*(m(1,0)*m(2,2)-m(1,2)*m(2,0))+m(0,2)*(m(1,0)*m(2,1)-m(1,1)*m(2,0));
 }
 
-inline float determinant(const Matrix4 &m) {
+inline float det(const Matrix4 &m) {
   return 0;
 }
 
-// TODO: add invert functions
+// NOTE: this implmentation is rather inefficent but it works for the moment
+template<typename T, int rows, int cols>
+Matrix<T, rows-1, cols-1> submatrix(const Matrix<T,rows,cols> &m, const int row, const int col) {
+  Matrix<T, rows-1, cols-1> result;
+  int rowIndex = 0;
+  int colIndex = 0;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      if (j != col && i != row) {
+        result(rowIndex,colIndex) = m(i,j);
+        colIndex++;
+        if (colIndex == cols-1) {
+          colIndex = 0;
+          rowIndex++;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// Returns det of a submatrix of m
+template <typename T, int rows, int cols>
+float minor(const Matrix<T,rows,cols> &m, const int row, const int col) {
+  return det(submatrix(m, row, col));
+}
+
+// cofactor matrix made by taking the deterimants of all minor matrices that compose the matrix 
+// and multiping by a sign factor according to if the rows and or col is odd
+inline Matrix2 cof(const Matrix2 &m) {
+  return Matrix2(
+    minor(m,0,0), -minor(m,0,1),
+    -minor(m,1,0), minor(m,1,1)
+  );
+}
+
+inline Matrix3 cof(const Matrix3 &m) {
+  return Matrix3(
+    minor(m,0,0), -minor(m,0,1), minor(m,0,2),
+    -minor(m,1,0), minor(m,1,1), -minor(m,1,2),
+    minor(m,2,0), -minor(m,2,1), minor(m,2,2)
+  );
+}
+// What if I created a function that takes in a function pointer and performs opts on all the elements like this
+
+// transpose of the cofactor matrix
+inline Matrix3 adjugate(const Matrix3 &m) {
+  return Matrix3();
+}
+
+
+inline Matrix3 adjoint(const Matrix3 &m) {
+  return Matrix3();
+}
+
+// TODO: add inverse functions
+// NOTE: this function does not work probably at the moment, something is off with the cofactor matrix
 inline Matrix3 inverse(const Matrix3 &m) {
   // taken from https://www.youtube.com/watch?v=srnaDoIKA-E 
-  Matrix3 cofactor(
-    determinant(Matrix2(m(1,1),m(1,2),m(2,1),m(2,2))), -determinant(Matrix2(m(1,0),m(1,2),m(2,0),m(2,2))), determinant(Matrix2(m(1,0),m(1,1),m(2,0),m(2,1))),
-    -determinant(Matrix2(m(0,1),m(0,2),m(2,1),m(2,2))), determinant(Matrix2(m(0,0),m(0,2),m(2,0),m(2,2))), -determinant(Matrix2(m(0,0),m(0,1),m(2,0),m(2,1))),
-    determinant(Matrix2(m(0,1),m(0,2),m(1,1),m(1,2))), -determinant(Matrix2(m(0,0),m(0,2),m(1,0),m(1,2))), determinant(Matrix2(m(0,0),m(0,1),m(1,0),m(1,1)))
-  );
+  Matrix3 cofactor = cof(m);
   cofactor = transpose(cofactor);
- return (1/determinant(m))*cofactor;
+  return (1/det(m))*cofactor;
 }
 
 inline Matrix4 inverse(const Matrix4 &m) {
