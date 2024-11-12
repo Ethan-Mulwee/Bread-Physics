@@ -11,7 +11,7 @@ struct Block {
     Model model;
 
     void render() {
-        body.orientation = rotate(body.orientation, bMath::float3(0.01,0.1,0.1));
+        body.orientation = rotate(body.orientation, bMath::float3(0.01,0.01,0.01));
         model.transform = toRay(body.getTransform());
         DrawModel(model, Vector3{0,0,0}, 1, WHITE);
     }
@@ -20,6 +20,7 @@ struct Block {
 int main() {
     //Raylib stuff
     InitWindow(500,500,"test");
+    SetTargetFPS(60);
 
     camera.position = Vector3{5,5,-5};
     camera.target = Vector3{0,0,0};
