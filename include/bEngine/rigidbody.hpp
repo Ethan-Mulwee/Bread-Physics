@@ -4,10 +4,10 @@
 #include "bMath/bMath.hpp"
 
 namespace bEngine {
-    class rigidbody {
+    class RigidBody {
         public:
             float inverseMass;
-            bMath::Matrix3 inverseInertiaTensor;
+            bMath::float3x3 inverseInertiaTensor;
 
             bMath::float3 position;
             bMath::float4 orientation = bMath::float4(1,0,0,0);
@@ -20,10 +20,10 @@ namespace bEngine {
             
 
         public:
-            rigidbody() {};
+            RigidBody() {};
 
             bMath::Matrix4 getTransform() {
-                bMath::Matrix3 o = QuaternionToMatrix(orientation);
+                bMath::float3x3 o = QuaternionToMatrix(orientation);
                 return bMath::Matrix4(
                     o(0,0), o(0,1), o(0,2), position.x,
                     o(1,0), o(1,1), o(1,2), position.y,

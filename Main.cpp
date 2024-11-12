@@ -2,7 +2,7 @@
 #include "bMath/bMath.hpp"
 #include "bMath/ext/raylib.hpp"
 #include "bMath/ext/iostream.hpp"
-#include "bEngine/rigidbody.hpp"
+#include "bEngine/world.hpp"
 // #include "src/rigidbody.cpp"
 
 // build command for when cmake dies: g++ Main.cpp -Iinclude/ -lraylib 
@@ -11,11 +11,11 @@ Camera camera;
 const int axisLength = 4;
 
 struct Block {
-    bEngine::rigidbody body;
+    bEngine::RigidBody* body;
     Model model;
 
     void render() {
-        model.transform = toRay(body.getTransform());
+        model.transform = toRay(body->getTransform());
         DrawModel(model, Vector3{0,0,0}, 1, WHITE);
     }
 };
@@ -31,10 +31,17 @@ int main() {
     camera.fovy = 45;
     camera.projection = CAMERA_PERSPECTIVE;
 
+    bEngine::World world;
+
+    bEngine::RigidBody* body = new bEngine::RigidBody();
+    body->inverseMass = (1/2.0f);
+    body->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
+
+    world.bodies.push_back(body);
+
     Block block; 
     block.model = LoadModelFromMesh(GenMeshCube(1,1,1));
-    block.body.inverseMass = (1/2.0f);
-    block.body.inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
+    block.body = body;
 
     while(!WindowShouldClose()) {
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
@@ -46,11 +53,12 @@ int main() {
         // block.body.addForceAtPoint(bMath::rotate(bMath::float3(0.1,0,0), block.body.orientation), bMath::rotate(bMath::float3(2,2,0), block.body.orientation));
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-            block.body.addForceAtPoint(toBread(screenRay.direction), toBread(collision.point));
-        std::cout << block.body.torqueAccum << "\n";
-        block.body.integrate(1/60.0f);
+            block.body->addForceAtPoint(toBread(screenRay.direction)*2, toBread(collision.point));
+            // block.body.addForceAtPoint(toBread(collision.normal)*-100, toBread(collision.point));
 
-        // std::cout << block.body.linearVelocity << "\n";
+        std::cout << block.body->torqueAccum << "\n";
+
+        world.step(1/60.0f);
 
         UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();

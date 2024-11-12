@@ -3,7 +3,7 @@
 using namespace bEngine; 
 //using namespace bMath;
 
-void rigidbody::integrate(float time) {
+void RigidBody::integrate(float time) {
 
     bMath::float3 acceleration = forceAccum*inverseMass;
     position += linearVelocity*time+acceleration*time*time;
@@ -19,20 +19,20 @@ void rigidbody::integrate(float time) {
     clearAccumlators();
 }
 
-void rigidbody::clearAccumlators() {
+void RigidBody::clearAccumlators() {
     forceAccum = bMath::float3();
     torqueAccum = bMath::float3();
 }
 
-void rigidbody::addForce(const bMath::float3 &force) {
+void RigidBody::addForce(const bMath::float3 &force) {
     forceAccum += force;
 }
 
-void rigidbody::addTorque(const bMath::float3 &torque) {
+void RigidBody::addTorque(const bMath::float3 &torque) {
     torqueAccum += torque;
 }
 
-void rigidbody::addForceAtPoint(const bMath::float3 &force, const bMath::float3 &point) {
+void RigidBody::addForceAtPoint(const bMath::float3 &force, const bMath::float3 &point) {
     bMath::float3 pt = point;
     pt -= position;
     forceAccum += force;
