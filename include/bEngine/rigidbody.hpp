@@ -32,6 +32,13 @@ namespace bEngine {
                 );
             }
 
+            bMath::float3 positionToBodySpace(bMath::float3 wpos) {
+                wpos -= position;
+                bMath::float3x3 o = QuaternionToMatrix(orientation);
+                o = bMath::transpose(o);
+                return wpos*o;
+            }
+
             void addForce(const bMath::float3 &force);
 
             void addTorque(const bMath::float3 &torque);

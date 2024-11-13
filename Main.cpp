@@ -56,7 +56,8 @@ int main() {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (collision.hit) {
                 // Matrix 4x4 hasn't been added yet this just returns the same matrix
-                bodyPoint = toBread(collision.point)*inverse(block.body->getTransform()); 
+                bodyPoint = block.body->positionToBodySpace((toBread(collision.point)));
+                std::cout << "Collision point in body space:" << block.body->positionToBodySpace((toBread(collision.point))) << "\n"; 
                 dragPoint = toBread(collision.point);
                 dragging = true;
             }
@@ -75,7 +76,10 @@ int main() {
         if (dragging) {
             // dragPoint += bMath::rotate(bMath::float3(mouseDeltaPos.x*0.01, mouseDeltaPos.y*0.01), toBread(camera.));
             dragPoint += bMath::float3(mouseDeltaPos.x*0.005, mouseDeltaPos.y*0.005);
-            bMath::float3 worldSpaceBodyPoint = bodyPoint*inverse(body->getTransform());
+            std::cout << normalize(toBread(camera.position) - toBread(camera.target)) << "\n";
+            bMath::float3 axis = normalize(toBread(camera.position) - toBread(camera.target));
+            bMath::float4 rotation = bMath::QuaternionAxisAngle(1,axis);
+            bMath::float3 worldSpaceBodyPoint = bodyPoint*body->getTransform();
             bMath::float3 force = dragPoint - worldSpaceBodyPoint;
             block.body->addForceAtPoint(force, worldSpaceBodyPoint);
         }
@@ -95,9 +99,9 @@ int main() {
                 if (collision.hit)
                     DrawSphere(collision.point, 0.1, PURPLE);
                 if (dragging) {
-                    DrawSphere(toRay(bodyPoint*inverse(body->getTransform())), 0.1,RED);
+                    DrawSphere(toRay(bodyPoint*body->getTransform()), 0.1,RED);
                     DrawSphere(toRay(dragPoint), 0.1, ORANGE);
-                    DrawLine3D(toRay(bodyPoint*inverse(body->getTransform())), toRay(dragPoint), BLACK);
+                    DrawLine3D(toRay(bodyPoint*body->getTransform()), toRay(dragPoint), BLACK);
                 }
             EndMode3D();
         EndDrawing();
