@@ -38,6 +38,8 @@ namespace bEngine {
 
             void addForceAtPoint(const bMath::float3 &force, const bMath::float3 &point);
 
+            void addForceAtBodyPoint(const bMath::float3 &force, const bMath::float3 &point);
+
             void integrate(float time);
             
         private:

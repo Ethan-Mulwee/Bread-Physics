@@ -41,20 +41,37 @@ int main() {
     block.model = LoadModelFromMesh(GenMeshCube(1,1,1));
     block.body = body;
 
+    bMath::float3 bodyPoint;
+    bMath::float3 dragPoint;
+    bool dragging = false;
+
     while(!WindowShouldClose()) {
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
         RayCollision collision = GetRayCollisionMesh(screenRay, block.model.meshes[0], block.model.transform);
 
-        // block.body.addForce(bMath::float3(0,-9.8,0));
-        // block.body.addTorque(bMath::float3(0.2,0.2,0));
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            if (collision.hit) {
+                bodyPoint = toBread(collision.point)*block.body->getTransform();
+                dragPoint = toBread(collision.point);
+                dragging = true;
+            }
+        }
+
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            dragging = false;
+        }
 
         // block.body.addForceAtPoint(bMath::rotate(bMath::float3(0.1,0,0), block.body.orientation), bMath::rotate(bMath::float3(2,2,0), block.body.orientation));
 
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && collision.hit)
             block.body->addForceAtPoint(toBread(screenRay.direction)*2, toBread(collision.point));
             // block.body.addForceAtPoint(toBread(collision.normal)*-100, toBread(collision.point));
 
-        std::cout << block.body->torqueAccum << "\n";
+        if (dragging) {
+            bMath::float3 worldSpaceBodyPoint = bodyPoint*inverse(body->getTransform());
+            bMath::float3 force = dragPoint - worldSpaceBodyPoint;
+            block.body->addForceAtPoint(force, worldSpaceBodyPoint);
+        }
 
         world.step(1/60.0f);
 
@@ -70,6 +87,11 @@ int main() {
                 block.render();
                 if (collision.hit)
                     DrawSphere(collision.point, 0.1, PURPLE);
+                if (dragging) {
+                    DrawSphere(toRay(bodyPoint*inverse(body->getTransform())), 0.1,RED);
+                    DrawSphere(toRay(dragPoint), 0.1, ORANGE);
+                    DrawLine3D(toRay(bodyPoint*inverse(body->getTransform())), toRay(dragPoint), BLACK);
+                }
             EndMode3D();
         EndDrawing();
     }

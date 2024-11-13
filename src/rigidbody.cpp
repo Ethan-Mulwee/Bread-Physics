@@ -38,3 +38,8 @@ void RigidBody::addForceAtPoint(const bMath::float3 &force, const bMath::float3 
     forceAccum += force;
     torqueAccum += cross(pt, force);
 }
+
+void RigidBody::addForceAtBodyPoint(const bMath::float3 &force, const bMath::float3 &point) {
+    forceAccum += force;
+    torqueAccum += cross(point, force);
+}
