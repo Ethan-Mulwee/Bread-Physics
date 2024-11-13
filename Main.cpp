@@ -1,11 +1,9 @@
 #include <iostream>
+#include <imgui/imgui.h>
 #include "bMath/bMath.hpp"
 #include "bMath/ext/raylib.hpp"
 #include "bMath/ext/iostream.hpp"
 #include "bEngine/world.hpp"
-// #include "src/rigidbody.cpp"
-
-// build command for when cmake dies: g++ Main.cpp -Iinclude/ -lraylib 
 
 Camera camera;
 const int axisLength = 4;

@@ -9,7 +9,7 @@ void RigidBody::integrate(float time) {
     position += linearVelocity*time+acceleration*time*time;
     linearVelocity += acceleration*time;
 
-    bMath::Matrix3 rotmat =bMath::QuaternionToMatrix(orientation);
+    bMath::Matrix3 rotmat = bMath::QuaternionToMatrix(orientation);
     bMath::Matrix3 inverseInertiaTensorWorld = bMath::transpose(rotmat)*inverseInertiaTensor*rotmat;
 
     bMath::float3 angularAcceleration = torqueAccum*inverseInertiaTensorWorld;
