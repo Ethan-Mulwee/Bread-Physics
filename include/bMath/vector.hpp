@@ -204,19 +204,19 @@ Vector<T, n> operator*=(Vector<T,n> &a, const Vector<T,n> &b) {
 }
 
 // Transforms vector by a matrix (assuming column vector)
-// template <typename T, int n, int rows>
-// Vector<T, rows> operator*(const Vector<T,n> &v, const Matrix<T,rows,n> &m) {
-//   Vector<T, rows> result;
-//   for (int i = 0; i < rows; i++) {
-//     for (int j = 0; j < n; j++) {
-//       result[i] += v[j]*m(i,j);
-//     }
-//   }
-//   return result;
-// }
+template <typename T, int n, int rows>
+Vector<T, rows> operator*(const Vector<T,n> &v, const Matrix<T,rows,n> &m) {
+  Vector<T, rows> result;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < n; j++) {
+      result[i] += v[j]*m(i,j);
+    }
+  }
+  return result;
+}
 
 // TODO: make this less slow?
-// Transforms vector by a matrix (assuming column vector)
+// Transforms vector by a matrix bigger than it (assuming column vector)
 template <typename T, int n, int cols, int rows>
 Vector<T, n> operator*(const Vector<T,n> &v, const Matrix<T,rows,cols> &m) {
   Vector<T, n> result;

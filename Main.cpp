@@ -45,13 +45,18 @@ int main() {
     bMath::float3 dragPoint;
     bool dragging = false;
 
+    bMath::float2 mouseDeltaPos;
+
     while(!WindowShouldClose()) {
+        mouseDeltaPos = toBread(GetMouseDelta());
+
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
         RayCollision collision = GetRayCollisionMesh(screenRay, block.model.meshes[0], block.model.transform);
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (collision.hit) {
-                bodyPoint = toBread(collision.point)*block.body->getTransform();
+                // Matrix 4x4 hasn't been added yet this just returns the same matrix
+                bodyPoint = toBread(collision.point)*inverse(block.body->getTransform()); 
                 dragPoint = toBread(collision.point);
                 dragging = true;
             }
@@ -63,11 +68,13 @@ int main() {
 
         // block.body.addForceAtPoint(bMath::rotate(bMath::float3(0.1,0,0), block.body.orientation), bMath::rotate(bMath::float3(2,2,0), block.body.orientation));
 
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && collision.hit)
-            block.body->addForceAtPoint(toBread(screenRay.direction)*2, toBread(collision.point));
+        // if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && collision.hit)
+            // block.body->addForceAtPoint(toBread(screenRay.direction)*2, toBread(collision.point));
             // block.body.addForceAtPoint(toBread(collision.normal)*-100, toBread(collision.point));
 
         if (dragging) {
+            // dragPoint += bMath::rotate(bMath::float3(mouseDeltaPos.x*0.01, mouseDeltaPos.y*0.01), toBread(camera.));
+            dragPoint += bMath::float3(mouseDeltaPos.x*0.005, mouseDeltaPos.y*0.005);
             bMath::float3 worldSpaceBodyPoint = bodyPoint*inverse(body->getTransform());
             bMath::float3 force = dragPoint - worldSpaceBodyPoint;
             block.body->addForceAtPoint(force, worldSpaceBodyPoint);

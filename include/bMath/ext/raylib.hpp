@@ -18,6 +18,10 @@ inline Matrix toRay(const bMath::Matrix4 &m) {
   };
 }
 
+inline bMath::float2 toBread(const Vector2 &v) {
+  return bMath::float2(v.x,v.y);
+}
+
 inline bMath::float3 toBread(const Vector3 &v) {
   return bMath::float3(v.x,v.y,v.z);
 }
