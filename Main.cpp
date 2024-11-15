@@ -75,8 +75,8 @@ int main() {
 
         if (dragging) {
             // dragPoint += bMath::rotate(bMath::float3(mouseDeltaPos.x*0.01, mouseDeltaPos.y*0.01), toBread(camera.));
-            dragPoint += bMath::float3(mouseDeltaPos.x*0.005, mouseDeltaPos.y*0.005);
-            std::cout << normalize(toBread(camera.position) - toBread(camera.target)) << "\n";
+            bMath::float4 viewportRotation = bMath::rotationBetween(normalize(toBread(camera.position) - toBread(camera.target)), bMath::float3(0,0,1));
+            dragPoint += bMath::rotate(bMath::float3(mouseDeltaPos.x*0.005, mouseDeltaPos.y*0.005), viewportRotation);
             bMath::float3 axis = normalize(toBread(camera.position) - toBread(camera.target));
             bMath::float4 rotation = bMath::QuaternionAxisAngle(1,axis);
             bMath::float3 worldSpaceBodyPoint = bodyPoint*body->getTransform();
@@ -85,7 +85,7 @@ int main() {
         }
 
         world.step(1/60.0f);
-
+        block.body->orientation = bMath::rotationBetween(normalize(toBread(camera.position) - toBread(camera.target)), bMath::float3(1,0,0));
         UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
             ClearBackground(Color{35,35,35,255});

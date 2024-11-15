@@ -186,7 +186,7 @@ Vector<T, n> operator*(const Vector<T, n> &a, const float b) {
   return result;
 }
 
-// Returns vector multipled component wise
+// Returns vector multipled component wise (hadamard product)
 template <typename T, int n>
 Vector<T, n> operator*(const Vector<T,n> &a, const Vector<T,n> &b) {
   Vector<T,n> result;
@@ -216,7 +216,7 @@ Vector<T, rows> operator*(const Vector<T,n> &v, const Matrix<T,rows,n> &m) {
 }
 
 // TODO: make this less slow?
-// Transforms vector by a matrix bigger than it (assuming column vector)
+// Transforms vector by a matrix bigger than the source vector (just fills 1s) (assuming column vector)
 template <typename T, int n, int cols, int rows>
 Vector<T, n> operator*(const Vector<T,n> &v, const Matrix<T,rows,cols> &m) {
   Vector<T, n> result;
@@ -239,12 +239,49 @@ Vector<T, n> operator*(const Vector<T,n> &v, const Matrix<T,rows,cols> &m) {
 // }
 
 template <typename T, int n>
+float lengthSquared(const Vector<T,n> &v) {
+  float total;
+  for (int i = 0; i < n; i++) {
+    total += v[i]*v[i];
+  }
+  return total;
+} 
+
+template <typename T, int n>
 float dot(const Vector<T, n> &a, const Vector<T, n> &b) {
   float result = 0;
   for (int i = 0; i < n; i++) {
     result += a[i] * b[i];
   }
   return result;
+}
+
+// TODO: general wedge product
+template<typename T>
+Vector<T,3> wedgeProduct(const Vector<T,3> &a, const Vector<T,3> &b) {
+  return Vector<T,3>();
+}
+
+// Just does geometric product for vectors of size 3 for now
+// TODO: figure out how to generalize to any dim
+template <typename T>
+Vector<T,4> geometricProduct(const Vector<T,3> &a, const Vector<T,3> &b) {
+  return Vector<T,4>(
+    a.y*b.z-a.z*b.z,
+    a.z*b.x-a.x*b.z,
+    a.x*b.y-a.y*b.x,
+    a.x*b.x+a.y*b.y+a.z*b.z
+  );
+}
+
+// TODO: test on non unit vectors
+template <typename T>
+Vector<T,4> rotationBetween(const Vector<T,3> &a, const Vector<T,3> &b) {
+  Vector<T,3> axis = cross(a,b);
+  Vector<T,4> Quaternion(
+    axis.x,axis.y,axis.z, dot(a,b)+1
+  );
+  return normalize(Quaternion);
 }
 
 template <typename T>
@@ -339,6 +376,10 @@ inline float4 rotate(const float4 &q, const float3 &v) {
   );
   result.normalize();
   return result;
+}
+
+inline float QuaternionAngle(const float4 &q) {
+  return std::acos(q.w);
 }
 
 // Returns vector rotated some degrees along the x axis
