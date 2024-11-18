@@ -84,8 +84,18 @@ int main() {
             block.body->addForceAtPoint(force, worldSpaceBodyPoint);
         }
 
+        bMath::float3 viewVector = normalize(toBread(camera.target) - toBread(camera.position));
+        bMath::float3 tagentViewVector = bMath::cross(toBread(camera.up), viewVector);
+        tagentViewVector.normalize();
+        bMath::float3 cameraUpVector = bMath::cross(viewVector, tagentViewVector);
+        float angle = std::acos(dot(viewVector, cameraUpVector));
+        bMath::float4 cameraOrientation = bMath::QuaternionAxisAngle(angle, bMath::float3(tagentViewVector.x,tagentViewVector.y,tagentViewVector.z));
+        cameraOrientation.normalize();
+        bMath::float4 cameraOrientation2 = bMath::rotationBetween(cameraUpVector, viewVector);
+
         world.step(1/60.0f);
-        block.body->orientation = bMath::rotationBetween(normalize(toBread(camera.position) - toBread(camera.target)), bMath::float3(1,0,0));
+        // block.body->orientation = bMath::rotationBetween(normalize(toBread(camera.position) - toBread(camera.target)), bMath::float3(1,0,0));
+        block.body->orientation = cameraOrientation;
         UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
             ClearBackground(Color{35,35,35,255});
@@ -94,6 +104,8 @@ int main() {
                 DrawLine3D(Vector3{-axisLength,0,0}, Vector3{axisLength,0,0}, RED);
                 DrawLine3D(Vector3{0,-axisLength,0}, Vector3{0,axisLength+0.5,0}, GREEN);
                 DrawLine3D(Vector3{0,0,-axisLength}, Vector3{0,0,axisLength}, BLUE);
+
+                DrawLine3D(Vector3{0,0,0}, toRay(bMath::rotate(bMath::float3(0,0,-1), cameraOrientation)), PURPLE);
 
                 block.render();
                 if (collision.hit)
