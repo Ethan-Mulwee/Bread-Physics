@@ -67,29 +67,17 @@ int main() {
             dragging = false;
         }
 
-        // block.body.addForceAtPoint(bMath::rotate(bMath::float3(0.1,0,0), block.body.orientation), bMath::rotate(bMath::float3(2,2,0), block.body.orientation));
 
-        // if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && collision.hit)
-            // block.body->addForceAtPoint(toBread(screenRay.direction)*2, toBread(collision.point));
-            // block.body.addForceAtPoint(toBread(collision.normal)*-100, toBread(collision.point));
-
-        bMath::float3 viewVector = normalize(toBread(camera.target) - toBread(camera.position));
-        bMath::float3 tagentViewVector = bMath::cross(toBread(camera.up), viewVector);
-        tagentViewVector.normalize();
-        bMath::float3 cameraUpVector = bMath::cross(viewVector, tagentViewVector);
-        float angle = std::acos(dot(viewVector, cameraUpVector));
-        bMath::float4 cameraOrientation = bMath::QuaternionAxisAngle(angle, bMath::float3(tagentViewVector.x,tagentViewVector.y,tagentViewVector.z));
-        cameraOrientation.normalize();
-        bMath::Matrix3 spaceRotation(
-          tagentViewVector.x, cameraUpVector.x, viewVector.x,
-          tagentViewVector.y, cameraUpVector.y, viewVector.y,
-          tagentViewVector.z, cameraUpVector.z, viewVector.z
-        );
         if (dragging) {
-            // dragPoint += bMath::rotate(bMath::float3(mouseDeltaPos.x*0.01, mouseDeltaPos.y*0.01), toBread(camera.));
+            bMath::float3 viewVector = normalize(toBread(camera.target) - toBread(camera.position));
+            bMath::float3 tagentViewVector = normalize(bMath::cross(toBread(camera.up), viewVector));
+            bMath::float3 cameraUpVector = bMath::cross(viewVector, tagentViewVector);
+            bMath::Matrix3 spaceRotation(
+              tagentViewVector.x, cameraUpVector.x, viewVector.x,
+              tagentViewVector.y, cameraUpVector.y, viewVector.y,
+              tagentViewVector.z, cameraUpVector.z, viewVector.z
+            );
             dragPoint += bMath::float3(-mouseDeltaPos.x*0.005, -mouseDeltaPos.y*0.005, 0)*spaceRotation;
-            bMath::float3 axis = normalize(toBread(camera.position) - toBread(camera.target));
-            bMath::float4 rotation = bMath::QuaternionAxisAngle(1,axis);
             bMath::float3 worldSpaceBodyPoint = bodyPoint*body->getTransform();
             bMath::float3 force = dragPoint - worldSpaceBodyPoint;
             block.body->addForceAtPoint(force, worldSpaceBodyPoint);
@@ -106,8 +94,6 @@ int main() {
                 DrawLine3D(Vector3{-axisLength,0,0}, Vector3{axisLength,0,0}, RED);
                 DrawLine3D(Vector3{0,-axisLength,0}, Vector3{0,axisLength+0.5,0}, GREEN);
                 DrawLine3D(Vector3{0,0,-axisLength}, Vector3{0,0,axisLength}, BLUE);
-
-                DrawLine3D(Vector3{0,0,0}, toRay(bMath::float3(1,0,0)*spaceRotation), PURPLE);
 
                 block.render();
                 if (collision.hit)
