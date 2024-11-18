@@ -55,9 +55,7 @@ int main() {
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (collision.hit) {
-                // Matrix 4x4 hasn't been added yet this just returns the same matrix
                 bodyPoint = block.body->positionToBodySpace((toBread(collision.point)));
-                std::cout << "Collision point in body space:" << block.body->positionToBodySpace((toBread(collision.point))) << "\n"; 
                 dragPoint = toBread(collision.point);
                 dragging = true;
             }
