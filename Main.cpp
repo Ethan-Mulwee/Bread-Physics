@@ -53,11 +53,19 @@ int main() {
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
         RayCollision collision = GetRayCollisionMesh(screenRay, block.model.meshes[0], block.model.transform);
 
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !IsKeyDown(KEY_LEFT_CONTROL)) {
             if (collision.hit) {
                 bodyPoint = block.body->positionToBodySpace((toBread(collision.point)));
                 dragPoint = toBread(collision.point);
                 dragging = true;
+            }
+        }
+
+        if (IsKeyDown(KEY_LEFT_CONTROL) && !dragging) {
+            if (collision.hit) {
+                bodyPoint = block.body->positionToBodySpace((toBread(collision.point)));
+                bMath::float3 worldSpaceBodyPoint = bodyPoint*body->getTransform();
+                block.body->addForceAtPoint(toBread(collision.normal)*-4, worldSpaceBodyPoint);
             }
         }
 
@@ -84,7 +92,7 @@ int main() {
 
         world.step(1/60.0f);
 
-        UpdateCamera(&camera, CAMERA_ORBITAL);
+        // UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
             ClearBackground(Color{35,35,35,255});
             BeginMode3D(camera);
