@@ -1,8 +1,7 @@
 #include <iostream>
-#include <imgui/imgui.h>
-#include "bMath/bMath.hpp"
-#include "bMath/ext/raylib.hpp"
-#include "bMath/ext/iostream.hpp"
+#include <bMath/bMath.hpp>
+#include <bMath/ext/raylib.hpp>
+#include <bMath/ext/iostream.hpp>
 #include "bEngine/world.hpp"
 
 Camera camera;
