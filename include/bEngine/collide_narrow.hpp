@@ -8,11 +8,23 @@ namespace bEngine {
   struct CollisionData {
     Contact* contacts;
     int contactsLeft;
+    unsigned contactCount;
+
+    float friction;
+    float restitution;
+
+    void addContacts(unsigned count) {
+      contactsLeft -= count;
+      contactCount += count;
+
+      contacts += count;
+    }
   };
 
   struct Primitive {
     RigidBody* body;
     bMath::Matrix4 offset;
+    bMath::Matrix4 transform;
   };
 
   struct Sphere : public Primitive {
