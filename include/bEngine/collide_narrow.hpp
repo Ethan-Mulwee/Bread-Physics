@@ -23,8 +23,8 @@ namespace bEngine {
 
   struct Primitive {
     RigidBody* body;
-    bm::matrix4 offset;
-    bm::matrix4 transform;
+    bMath::matrix4 offset;
+    bMath::matrix4 transform;
   };
 
   struct Sphere : public Primitive {

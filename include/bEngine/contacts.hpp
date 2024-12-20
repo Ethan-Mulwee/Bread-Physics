@@ -13,8 +13,8 @@ namespace bEngine {
       RigidBody* body[2];
       float friction;
       float restitution;
-      bm::float3 contactPoint;
-      bm::float3 contactNormal;
+      bMath::float3 contactPoint;
+      bMath::float3 contactNormal;
       float penetration;
 
     public:

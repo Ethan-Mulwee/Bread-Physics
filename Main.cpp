@@ -32,7 +32,7 @@ int main() {
 
     bEngine::RigidBody* body = new bEngine::RigidBody();
     body->inverseMass = (1/2.0f);
-    body->inverseInertiaTensor = bm::inverse(bm::InertiaTensorCuboid(2,1,1,1));
+    body->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
 
     world.bodies.push_back(body);
 
@@ -40,11 +40,11 @@ int main() {
     block.model = LoadModelFromMesh(GenMeshCube(1,1,1));
     block.body = body;
 
-    bm::float3 bodyPoint;
-    bm::float3 dragPoint;
+    bMath::float3 bodyPoint;
+    bMath::float3 dragPoint;
     bool dragging = false;
 
-    bm::float2 mouseDeltaPos;
+    bMath::float2 mouseDeltaPos;
 
     while(!WindowShouldClose()) {
         mouseDeltaPos = toBread(GetMouseDelta());
@@ -63,7 +63,7 @@ int main() {
         if (IsKeyDown(KEY_LEFT_CONTROL) && !dragging) {
             if (collision.hit) {
                 bodyPoint = block.body->positionToBodySpace((toBread(collision.point)));
-                bm::float3 worldSpaceBodyPoint = bodyPoint*body->getTransform();
+                bMath::float3 worldSpaceBodyPoint = bodyPoint*body->getTransform();
                 block.body->addForceAtPoint(toBread(collision.normal)*-4, worldSpaceBodyPoint);
             }
         }
@@ -74,17 +74,17 @@ int main() {
 
 
         if (dragging) {
-            bm::float3 viewVector = bm::normalized(toBread(camera.target) - toBread(camera.position));
-            bm::float3 tagentViewVector = bm::normalized(bm::cross(toBread(camera.up), viewVector));
-            bm::float3 cameraUpVector = bm::cross(viewVector, tagentViewVector);
-            bm::matrix3 spaceRotation(
+            bMath::float3 viewVector = bMath::normalized(toBread(camera.target) - toBread(camera.position));
+            bMath::float3 tagentViewVector = bMath::normalized(bMath::cross(toBread(camera.up), viewVector));
+            bMath::float3 cameraUpVector = bMath::cross(viewVector, tagentViewVector);
+            bMath::matrix3 spaceRotation(
               tagentViewVector.x, cameraUpVector.x, viewVector.x,
               tagentViewVector.y, cameraUpVector.y, viewVector.y,
               tagentViewVector.z, cameraUpVector.z, viewVector.z
             );
-            dragPoint += bm::float3(-mouseDeltaPos.x*0.005, -mouseDeltaPos.y*0.005, 0)*spaceRotation;
-            bm::float3 worldSpaceBodyPoint = bodyPoint*body->getTransform();
-            bm::float3 force = dragPoint - worldSpaceBodyPoint;
+            dragPoint += bMath::float3(-mouseDeltaPos.x*0.005, -mouseDeltaPos.y*0.005, 0)*spaceRotation;
+            bMath::float3 worldSpaceBodyPoint = bodyPoint*body->getTransform();
+            bMath::float3 force = dragPoint - worldSpaceBodyPoint;
             block.body->addForceAtPoint(force, worldSpaceBodyPoint);
         }
 

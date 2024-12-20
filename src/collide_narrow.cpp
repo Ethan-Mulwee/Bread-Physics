@@ -3,7 +3,7 @@
 using namespace bEngine;
 
 unsigned CollisionDetector::sphereAndSphere(const Sphere &one, const Sphere &two, CollisionData *data) {
-  using namespace bm;
+  using namespace bMath;
   if (data->contactsLeft <= 0) return 0;
   
   float3 positionOne = getColumnVector(one.transform, 3).xyz;
