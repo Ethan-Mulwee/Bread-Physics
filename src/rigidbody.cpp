@@ -5,14 +5,14 @@ using namespace bEngine;
 
 void RigidBody::integrate(float time) {
 
-  bMath::float3 acceleration = forceAccum*inverseMass;
+  bm::float3 acceleration = forceAccum*inverseMass;
   position += linearVelocity*time+acceleration*time*time;
   linearVelocity += acceleration*time;
 
-  bMath::Matrix3 rotmat = bMath::QuaternionToMatrix(orientation);
-  bMath::Matrix3 inverseInertiaTensorWorld = bMath::transpose(rotmat)*inverseInertiaTensor*rotmat;
+  bm::matrix3 rotmat = bm::quaternionToMatrix(orientation);
+  bm::matrix3 inverseInertiaTensorWorld = bm::transpose(rotmat)*inverseInertiaTensor*rotmat;
 
-  bMath::float3 angularAcceleration = torqueAccum*inverseInertiaTensorWorld;
+  bm::float3 angularAcceleration = torqueAccum*inverseInertiaTensorWorld;
   orientation = rotate(orientation, angularVelocity*time);
   angularVelocity += angularAcceleration*time;
 
@@ -20,26 +20,26 @@ void RigidBody::integrate(float time) {
 }
 
 void RigidBody::clearAccumlators() {
-  forceAccum = bMath::float3();
-  torqueAccum = bMath::float3();
+  forceAccum = bm::float3();
+  torqueAccum = bm::float3();
 }
 
-void RigidBody::addForce(const bMath::float3 &force) {
+void RigidBody::addForce(const bm::float3 &force) {
   forceAccum += force;
 }
 
-void RigidBody::addTorque(const bMath::float3 &torque) {
+void RigidBody::addTorque(const bm::float3 &torque) {
   torqueAccum += torque;
 }
 
-void RigidBody::addForceAtPoint(const bMath::float3 &force, const bMath::float3 &point) {
-  bMath::float3 pt = point;
+void RigidBody::addForceAtPoint(const bm::float3 &force, const bm::float3 &point) {
+  bm::float3 pt = point;
   pt -= position;
   forceAccum += force;
   torqueAccum += cross(pt, force);
 }
 
-void RigidBody::addForceAtBodyPoint(const bMath::float3 &force, const bMath::float3 &point) {
+void RigidBody::addForceAtBodyPoint(const bm::float3 &force, const bm::float3 &point) {
   forceAccum += force;
   torqueAccum += cross(point, force);
 }

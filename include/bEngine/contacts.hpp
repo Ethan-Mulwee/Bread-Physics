@@ -1,28 +1,29 @@
 #ifndef BENGINE_CONTACTS
 #define BENGINE_CONTACTS
 
-class ContactResolver;
+#include <bMath/bMath.hpp>
 
-class Contact {
-  public:
-    RigidBody* body[2];
-    float friction;
-    float restitution;
-    bMath::float3 contactPoint;
-    bMath::float3 contactNormal;
-    float penetration;
+#include "rigidbody.hpp"
 
-  public:
-    void addContacts(unsigned count) {
-      contactsLeft -= count;
-      contactCount += count;
+namespace bEngine {
+  class ContactResolver;
 
-      contacts += count;
-    }
-};
+  class Contact {
+    public:
+      RigidBody* body[2];
+      float friction;
+      float restitution;
+      bm::float3 contactPoint;
+      bm::float3 contactNormal;
+      float penetration;
 
-class ContactResolver {
+    public:
 
-};
+  };
+
+  class ContactResolver {
+
+  };
+}
 
 #endif

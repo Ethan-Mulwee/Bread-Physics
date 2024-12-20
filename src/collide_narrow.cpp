@@ -1,13 +1,13 @@
-#include "collide_narrow.hpp"
+#include "bEngine/collide_narrow.hpp"
 
 using namespace bEngine;
 
 unsigned CollisionDetector::sphereAndSphere(const Sphere &one, const Sphere &two, CollisionData *data) {
-  using namespace bMath;
+  using namespace bm;
   if (data->contactsLeft <= 0) return 0;
   
-  float3 positionOne = getColumnVector(one.transform, 3);
-  float3 positionTwo = getColumnVector(two.transform, 3);
+  float3 positionOne = getColumnVector(one.transform, 3).xyz;
+  float3 positionTwo = getColumnVector(two.transform, 3).xyz;
 
   float3 midline = positionOne - positionTwo;
   float size = midline.length();
