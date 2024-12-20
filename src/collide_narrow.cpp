@@ -2,7 +2,7 @@
 
 using namespace bEngine;
 
-unsigned CollisionDetector::sphereAndSphere(const Sphere &one, const Sphere &two, CollisionData *data) {
+unsigned CollisionDetector::sphereSphere(const Sphere &one, const Sphere &two, CollisionData *data) {
   using namespace bMath;
   if (data->contactsLeft <= 0) return 0;
   
@@ -30,4 +30,30 @@ unsigned CollisionDetector::sphereAndSphere(const Sphere &one, const Sphere &two
 
   data->addContacts(1);
   return 1;
+}
+
+unsigned bEngine::CollisionDetector::cubeFloor(const Cube &cube, const float floorHeight, CollisionData *data)
+{
+  using namespace bMath;
+  if (data->contactsLeft <= 0) return 0;
+
+  float l = cube.halfSize;
+
+  float3 vertices[8] = {
+    float3( l, l, l),
+    float3( l, l,-l),
+    float3( l,-l, l),
+    float3( l,-l,-l),
+    float3(-l, l, l),
+    float3(-l, l,-l),
+    float3(-l,-l, l),
+    float3(-l,-l,-l)
+  };
+
+  for (int i = 0; i < 8; i++) {
+    float3 position = vertices[i]*cube.transform;
+    if (position.y < floorHeight) {
+      // generate contact
+    }
+  }
 }

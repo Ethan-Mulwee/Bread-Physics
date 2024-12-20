@@ -31,8 +31,14 @@ namespace bEngine {
     float radius;
   };
 
+  struct Cube : public Primitive {
+    float halfSize;
+  };
+
   struct CollisionDetector {
-    unsigned sphereAndSphere(const Sphere &one, const Sphere &two, CollisionData* data);
+    unsigned sphereSphere(const Sphere &one, const Sphere &two, CollisionData* data);
+
+    unsigned cubeFloor(const Cube &cube, const float floorHeight, CollisionData* data);
   };
 
 }
