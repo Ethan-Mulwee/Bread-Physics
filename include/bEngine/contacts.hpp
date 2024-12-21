@@ -22,7 +22,11 @@ namespace bEngine {
   };
 
   class ContactResolver {
-
+    private:
+      unsigned iterations;
+    public:
+      ContactResolver(int iterations);
+      void resolveContacts(Contact *contactArray, unsigned numContacts, float time);
   };
 }
 
