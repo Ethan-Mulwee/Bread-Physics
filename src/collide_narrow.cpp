@@ -53,7 +53,18 @@ unsigned bEngine::CollisionDetector::cubeFloor(const Cube &cube, const float flo
   for (int i = 0; i < 8; i++) {
     float3 position = vertices[i]*cube.transform;
     if (position.y < floorHeight) {
-      // generate contact
+      Contact* contact = data->contacts;
+      contact->contactNormal = float3(0,1,0);
+      contact->contactPoint = position;
+      contact->penetration = -floorHeight+position.y;
+      
+      contact->body[0] = cube.body;
+      contact->friction = data->friction;
+      contact->restitution = data->restitution;
+
+      data->addContacts(1);
     }
   }
+
+  return 1;
 }
