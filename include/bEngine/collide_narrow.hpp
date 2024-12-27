@@ -25,6 +25,8 @@ namespace bEngine {
     RigidBody* body;
     bMath::matrix4 offset;
     bMath::matrix4 transform;
+
+    bMath::matrix4 getTransform() const;
   };
 
   struct Sphere : public Primitive {
@@ -36,9 +38,9 @@ namespace bEngine {
   };
 
   struct CollisionDetector {
-    unsigned sphereSphere(const Sphere &one, const Sphere &two, CollisionData* data);
+    static unsigned sphereSphere(const Sphere &one, const Sphere &two, CollisionData* data);
 
-    unsigned cubeFloor(const Cube &cube, const float floorHeight, CollisionData* data);
+    static unsigned cubeFloor(const Cube &cube, const float floorHeight, CollisionData* data);
   };
 
 }

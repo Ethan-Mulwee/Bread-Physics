@@ -22,7 +22,7 @@ namespace bEngine {
 		public:
 			RigidBody() {};
 
-			bMath::float4x4 getTransform() {
+			bMath::matrix4 getTransform() const {
 				bMath::float3x3 o = quaternionToMatrix(orientation);
 				return bMath::matrix4(
 					o(0,0), o(0,1), o(0,2), position.x,

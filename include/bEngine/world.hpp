@@ -11,8 +11,9 @@ namespace bEngine {
     public:
       World();
       std::vector<RigidBody*> bodies;
+      std::vector<Primitive*> colliders;
 
-    private:
+    public:
       const static unsigned maxContacts = 256;
       Contact contacts[maxContacts];
       CollisionData collisionData;
@@ -20,6 +21,10 @@ namespace bEngine {
 
     
     public:
+      // generates contacts from contact generators and returned the number used 
+      // which is needed for resovling the contacts
+      unsigned generateContacts();
+
       void step(float time);
   };
 }

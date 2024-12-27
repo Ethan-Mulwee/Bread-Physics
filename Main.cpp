@@ -17,6 +17,31 @@ struct Block {
     }
 };
 
+void testcollision(bEngine::RigidBody* body, float floorHeight) {
+  using namespace bMath;
+  float l = 1.0f;
+
+  float3 vertices[8] = {
+    float3( l, l, l),
+    float3( l, l,-l),
+    float3( l,-l, l),
+    float3( l,-l,-l),
+    float3(-l, l, l),
+    float3(-l, l,-l),
+    float3(-l,-l, l),
+    float3(-l,-l,-l)
+  };
+
+  for (int i = 0; i < 8; i++) {
+    float3 position = vertices[i]*body->getTransform();
+    if (position.y < floorHeight) {
+      body->linearVelocity = float3(0,0,0);
+      // body->torqueAccum
+      body->position += float3(0,floorHeight - position.y,0);
+    }
+  }
+}
+
 int main() {
     //Raylib stuff
     InitWindow(500,500,"test");
@@ -33,8 +58,16 @@ int main() {
     bEngine::RigidBody* body = new bEngine::RigidBody();
     body->inverseMass = (1/2.0f);
     body->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
+    bEngine::Cube* boxCollider = new bEngine::Cube();
+    boxCollider->halfSize = 0.5f;
+    boxCollider->offset = bMath::matrix4(1,0,0,0,
+                                         0,1,0,0,
+                                         0,0,1,0,
+                                         0,0,0,1);
+    boxCollider->body = body;
 
     world.bodies.push_back(body);
+    world.colliders.push_back(boxCollider);
 
     Block block; 
     block.model = LoadModelFromMesh(GenMeshCube(1,1,1));
@@ -88,6 +121,9 @@ int main() {
             block.body->addForceAtPoint(force, worldSpaceBodyPoint);
         }
 
+        block.body->addForce(1.0f/block.body->inverseMass*bMath::float3(0,-9.8,0));
+        // testcollision(block.body, -1.0f);
+        bEngine::CollisionDetector::cubeFloor(*boxCollider, -2.0f, &world.collisionData);
 
         world.step(1/60.0f);
 

@@ -2,6 +2,10 @@
 
 using namespace bEngine;
 
+bMath::matrix4 Primitive::getTransform() const {
+  return body->getTransform()*offset;
+}
+
 unsigned CollisionDetector::sphereSphere(const Sphere &one, const Sphere &two, CollisionData *data) {
   using namespace bMath;
   if (data->contactsLeft <= 0) return 0;
@@ -31,9 +35,7 @@ unsigned CollisionDetector::sphereSphere(const Sphere &one, const Sphere &two, C
   data->addContacts(1);
   return 1;
 }
-
-unsigned bEngine::CollisionDetector::cubeFloor(const Cube &cube, const float floorHeight, CollisionData *data)
-{
+unsigned bEngine::CollisionDetector::cubeFloor(const Cube &cube, const float floorHeight, CollisionData *data) {
   using namespace bMath;
   if (data->contactsLeft <= 0) return 0;
 
@@ -51,7 +53,7 @@ unsigned bEngine::CollisionDetector::cubeFloor(const Cube &cube, const float flo
   };
 
   for (int i = 0; i < 8; i++) {
-    float3 position = vertices[i]*cube.transform;
+    float3 position = vertices[i]*cube.getTransform();
     if (position.y < floorHeight) {
       Contact* contact = data->contacts;
       contact->contactNormal = float3(0,1,0);
