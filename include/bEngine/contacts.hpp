@@ -10,7 +10,8 @@ namespace bEngine {
 
   class Contact {
     public:
-      RigidBody* body[2];
+      size_t b1;
+      size_t b2;
       float friction;
       float restitution;
       bMath::float3 contactPoint;

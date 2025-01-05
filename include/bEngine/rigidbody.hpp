@@ -2,6 +2,7 @@
 #define BENGINE_BODY
 
 #include <bMath/bMath.hpp>
+#include "collide_narrow.hpp"
 
 namespace bEngine {
 	class RigidBody {
@@ -18,11 +19,11 @@ namespace bEngine {
 			bMath::float3 forceAccum;
 			bMath::float3 torqueAccum;
             
-
+      Primitive collider;
 		public:
 			RigidBody() {};
 
-			bMath::float4x4 getTransform() {
+			bMath::float4x4 getTransform() const {
 				bMath::float3x3 o = quaternionToMatrix(orientation);
 				return bMath::matrix4(
 					o(0,0), o(0,1), o(0,2), position.x,

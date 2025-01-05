@@ -1,12 +1,12 @@
 #ifndef BENGINE_COLLIDE_NARROW
 #define BENGINE_COLLIDE_NARROW
 
-#include "contacts.hpp"
-#include "rigidbody.hpp"
+// #include "contacts.hpp"
+#include <bMath/bMath.hpp>
 
 namespace bEngine {
   struct CollisionData {
-    Contact* contacts;
+    // Contact* contacts;
     int contactsLeft;
     unsigned contactCount;
 
@@ -17,28 +17,26 @@ namespace bEngine {
       contactsLeft -= count;
       contactCount += count;
 
-      contacts += count;
+      // contacts += count;
     }
   };
 
+  enum PrimitiveType {
+    Sphere,
+    Cube
+  };
+
   struct Primitive {
-    RigidBody* body;
+    PrimitiveType type;
     bMath::matrix4 offset;
-    bMath::matrix4 transform;
-  };
-
-  struct Sphere : public Primitive {
-    float radius;
-  };
-
-  struct Cube : public Primitive {
-    float halfSize;
+    float height;
+    float width;
   };
 
   struct CollisionDetector {
-    unsigned sphereSphere(const Sphere &one, const Sphere &two, CollisionData* data);
+    unsigned sphereSphere(const Primitive &one, const Primitive &two, CollisionData* data);
 
-    unsigned cubeFloor(const Cube &cube, const float floorHeight, CollisionData* data);
+    unsigned cubeFloor(const Primitive &cube, const float floorHeight, CollisionData* data);
   };
 
 }
