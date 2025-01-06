@@ -12,3 +12,6 @@ void World::step(float time){
     bodies[i].integrate(time);
   }
 }
+void bEngine::World::generateContacts() {
+
+}

@@ -6,28 +6,15 @@
 #include "rigidbody.hpp"
 
 namespace bEngine {
-  class ContactResolver;
-
   class Contact {
     public:
-      size_t b1;
-      size_t b2;
+      size_t body1;
+      size_t body2;
       float friction;
       float restitution;
       bMath::float3 contactPoint;
       bMath::float3 contactNormal;
       float penetration;
-
-    public:
-
-  };
-
-  class ContactResolver {
-    private:
-      unsigned iterations;
-    public:
-      ContactResolver(int iterations);
-      void resolveContacts(Contact *contactArray, unsigned numContacts, float time);
   };
 }
 

@@ -22,6 +22,7 @@ int main() {
     bEngine::World world;
     Renderer renderer;
 
+    // Cube ///////////////////////////////////////////////////////////////////////////////
     bEngine::RigidBody body;
     body.inverseMass = (1/2.0f);
     body.inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
@@ -33,8 +34,8 @@ int main() {
     collider.offset = bMath::matrix4::identity();
 
     body.collider = collider;
-
     world.bodies.push_back(body);
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     bMath::float3 bodyPoint;
     bMath::float3 dragPoint;
