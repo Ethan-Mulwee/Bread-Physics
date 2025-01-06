@@ -64,9 +64,11 @@ void bEngine::World::prepareContacts(float time) {
       contact->body2 = -1;
     }
 
-    bMath::float3 contactTagent[2];
+    // bMath::float3 contactTagent[2];
 
-    // if ()
+    // if (abs(contact->contactNormal.x) > abs(contact->contactNormal.y)) {
+    //   const float s = 1.0f/contact->
+    // }
   }
 }
 
@@ -79,7 +81,10 @@ void bEngine::World::adjustVelocities(float time) {
 }
 
 void bEngine::World::resolveContacts(float time) {
-
+  for (int i = 0; i < contactCount; i++) {
+    bodies[contacts[i].body1].position = bodies[contacts[i].body1].position - (contacts[i].contactNormal*contacts[i].penetration);
+    bodies[contacts[i].body1].addForce(contacts[i].contactNormal*restitution);
+  }
   resetContacts();
 }
 

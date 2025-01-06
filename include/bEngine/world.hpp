@@ -17,10 +17,10 @@ namespace bEngine {
       Contact* contactPtr = contacts;
       unsigned iterations = 500;
       int contactsLeft = maxContacts;
-      unsigned contactCount;
+      unsigned contactCount = 0;
 
-      float friction;
-      float restitution;
+      float friction = 0.2f;
+      float restitution = 0.2f;
 
       void addContact(Contact contact) {
         contactsLeft--;
