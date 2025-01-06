@@ -22,7 +22,7 @@ int main() {
     bEngine::World world;
     Renderer renderer;
 
-    // Cube ///////////////////////////////////////////////////////////////////////////////
+    // Cube1 ///////////////////////////////////////////////////////////////////////////////
     bEngine::RigidBody body;
     body.inverseMass = (1/2.0f);
     body.inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
@@ -35,6 +35,22 @@ int main() {
 
     body.collider = collider;
     world.bodies.push_back(body);
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    // Cube2 ///////////////////////////////////////////////////////////////////////////////
+    bEngine::RigidBody body2;
+    body2.inverseMass = (1/2.0f);
+    body2.inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
+    body2.position = bMath::float3(2,2,2);
+
+    bEngine::Primitive collider2;
+    collider2.type = bEngine::PrimitiveType::Cube;
+    collider2.height = 0.5f;
+    collider2.width = 0.5f;
+    collider2.offset = bMath::matrix4::identity();
+
+    body2.collider = collider2;
+    world.bodies.push_back(body2);
     ///////////////////////////////////////////////////////////////////////////////////////
 
     bMath::float3 bodyPoint;
@@ -85,6 +101,7 @@ int main() {
         // }
 
         world.bodies[0].addForceAtBodyPoint(bMath::float3(0,-1,0), bMath::float3(1,1,1));
+        world.bodies[1].addForceAtBodyPoint(bMath::float3(0,-.2,0), bMath::float3(0,1,0));
         world.step(1/60.0f);
 
         // UpdateCamera(&camera, CAMERA_ORBITAL);

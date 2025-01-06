@@ -18,11 +18,11 @@ namespace bEngine {
     float width;
   };
 
-  struct CollisionDetector {
-    unsigned sphereSphere(const Primitive &one, const Primitive &two, CollisionData* data);
+  // struct CollisionDetector {
+  //   unsigned sphereSphere(const Primitive &one, const Primitive &two, world* data);
 
-    unsigned cubeFloor(const Primitive &cube, const float floorHeight, CollisionData* data);
-  };
+  //   unsigned cubeFloor(const Primitive &cube, const float floorHeight, world* data);
+  // };
 
 }
 

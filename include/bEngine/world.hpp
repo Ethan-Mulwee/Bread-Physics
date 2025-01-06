@@ -11,12 +11,12 @@ namespace bEngine {
     public:
       std::vector<RigidBody> bodies;
 
-    private:
+    public:
       const static unsigned maxContacts = 256;
       Contact contacts[maxContacts];
       Contact* contactPtr = contacts;
       unsigned iterations = 500;
-      int contactsLeft;
+      int contactsLeft = maxContacts;
       unsigned contactCount;
 
       float friction;
@@ -30,6 +30,14 @@ namespace bEngine {
   
         contactPtr++;
       }
+
+      void resetContacts();
+
+      void prepareContacts(float time);
+
+      void adjustPositions(float time);
+
+      void adjustVelocities(float time);
 
       void resolveContacts(/* unsigned numContacts, use contactCount*/ float time);
 
