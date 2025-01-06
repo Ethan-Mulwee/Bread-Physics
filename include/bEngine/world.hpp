@@ -12,12 +12,12 @@ namespace bEngine {
       std::vector<RigidBody> bodies;
       std::vector<Primitive> colliders;
 
-    public:
+    private:
       unsigned iterations = 500;
 
       ContactPool contacts;
 
-      void resetContacts();
+      void generateContacts();
 
       void prepareContacts(float time);
 
@@ -31,9 +31,6 @@ namespace bEngine {
       World();
 
       void step(float time);
-
-    private:
-      void generateContacts();
   };
 }
 

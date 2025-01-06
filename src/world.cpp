@@ -15,44 +15,11 @@ void World::step(float time){
 }
 
 
-void cubeFloor(size_t cube, const float floorHeight, ContactPool &contacts, std::vector<RigidBody> &bodies)
-{
-  using namespace bMath;
-  if (contacts.room() <= 0) return;
 
-  float l = bodies[cube].collider.width;
-
-  float3 vertices[8] = {
-    float3( l, l, l),
-    float3( l, l,-l),
-    float3( l,-l, l),
-    float3( l,-l,-l),
-    float3(-l, l, l),
-    float3(-l, l,-l),
-    float3(-l,-l, l),
-    float3(-l,-l,-l)
-  };
-
-  for (int i = 0; i < 8; i++) {
-    float3 position = vertices[i]*bodies[cube].getTransform();
-    if (position.y < floorHeight) {
-      Contact contact;
-      contact.contactNormal = float3(0,1,0);
-      contact.contactPoint = position;
-      contact.penetration = -floorHeight+position.y;
-      
-      contact.body1 = cube;
-      contact.friction = 0.2f;
-      contact.restitution = 0.2f;
-
-      contacts.push(contact);
-    }
-  }
-}
 
 void bEngine::World::generateContacts() {
   for (int i = 0; i < bodies.size(); i++) {
-    cubeFloor(i, -2.0f, contacts, bodies);
+    CollisionDetector::cubeFloor(i, -2.0f, contacts, bodies);
   }
 }
 
@@ -85,9 +52,5 @@ void bEngine::World::resolveContacts(float time) {
     bodies[contacts[i].body1].position = bodies[contacts[i].body1].position - (contacts[i].contactNormal*contacts[i].penetration);
     bodies[contacts[i].body1].addForce(contacts[i].contactNormal*0.2f);
   }
-  resetContacts();
-}
-
-void bEngine::World::resetContacts() {
   contacts.reset();
 }

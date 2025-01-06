@@ -2,9 +2,21 @@
 #define BENGINE_BODY
 
 #include <bMath/bMath.hpp>
-#include "collide_narrow.hpp"
 
 namespace bEngine {
+  enum PrimitiveType {
+    Sphere,
+    Cube,
+    Plane
+  };
+
+  struct Primitive {
+    PrimitiveType type;
+    bMath::matrix4 offset;
+    float height;
+    float width;
+  };
+
 	class RigidBody {
 		public:
 			float inverseMass;

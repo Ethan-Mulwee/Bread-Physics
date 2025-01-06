@@ -1,21 +1,14 @@
 #ifndef BENGINE_COLLIDE_NARROW
 #define BENGINE_COLLIDE_NARROW
 
-// #include "contacts.hpp"
+#include "contacts.hpp"
+#include "rigidbody.hpp"
 #include <bMath/bMath.hpp>
+#include <vector>
 
 namespace bEngine {
-  enum PrimitiveType {
-    Sphere,
-    Cube,
-    Plane
-  };
-
-  struct Primitive {
-    PrimitiveType type;
-    bMath::matrix4 offset;
-    float height;
-    float width;
+  struct CollisionDetector {
+    static void cubeFloor(size_t cube, const float floorHeight, ContactPool &contacts, std::vector<RigidBody> &bodies);
   };
 }
 
