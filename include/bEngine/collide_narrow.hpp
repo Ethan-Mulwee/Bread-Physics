@@ -17,13 +17,6 @@ namespace bEngine {
     float height;
     float width;
   };
-
-  // struct CollisionDetector {
-  //   unsigned sphereSphere(const Primitive &one, const Primitive &two, world* data);
-
-  //   unsigned cubeFloor(const Primitive &cube, const float floorHeight, world* data);
-  // };
-
 }
 
 #endif

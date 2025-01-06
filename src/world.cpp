@@ -15,12 +15,12 @@ void World::step(float time){
 }
 
 
-void cubeFloor(size_t cube, const float floorHeight, World* data)
+void cubeFloor(size_t cube, const float floorHeight, ContactPool &contacts, std::vector<RigidBody> &bodies)
 {
   using namespace bMath;
-  if (data->contactsLeft <= 0) return;
+  if (contacts.room() <= 0) return;
 
-  float l = data->bodies[cube].collider.width;
+  float l = bodies[cube].collider.width;
 
   float3 vertices[8] = {
     float3( l, l, l),
@@ -34,7 +34,7 @@ void cubeFloor(size_t cube, const float floorHeight, World* data)
   };
 
   for (int i = 0; i < 8; i++) {
-    float3 position = vertices[i]*data->bodies[cube].getTransform();
+    float3 position = vertices[i]*bodies[cube].getTransform();
     if (position.y < floorHeight) {
       Contact contact;
       contact.contactNormal = float3(0,1,0);
@@ -42,35 +42,35 @@ void cubeFloor(size_t cube, const float floorHeight, World* data)
       contact.penetration = -floorHeight+position.y;
       
       contact.body1 = cube;
-      contact.friction = data->friction;
-      contact.restitution = data->restitution;
+      contact.friction = 0.2f;
+      contact.restitution = 0.2f;
 
-      data->addContact(contact);
+      contacts.push(contact);
     }
   }
 }
 
 void bEngine::World::generateContacts() {
   for (int i = 0; i < bodies.size(); i++) {
-    cubeFloor(i, -2.0f, this);
+    cubeFloor(i, -2.0f, contacts, bodies);
   }
 }
 
-void bEngine::World::prepareContacts(float time) {
-  for (Contact* contact=contacts; contact < (contacts+contactCount); contact++) {
-    // Swap so null body is always body2
-    if (contact->body1 == -1) {
-      contact->body1 = contact->body2;
-      contact->body2 = -1;
-    }
+// void bEngine::World::prepareContacts(float time) {
+//   for (Contact* contact=contacts; contact < (contacts+contactCount); contact++) {
+//     // Swap so null body is always body2
+//     if (contact->body1 == -1) {
+//       contact->body1 = contact->body2;
+//       contact->body2 = -1;
+//     }
 
-    // bMath::float3 contactTagent[2];
+//     // bMath::float3 contactTagent[2];
 
-    // if (abs(contact->contactNormal.x) > abs(contact->contactNormal.y)) {
-    //   const float s = 1.0f/contact->
-    // }
-  }
-}
+//     // if (abs(contact->contactNormal.x) > abs(contact->contactNormal.y)) {
+//     //   const float s = 1.0f/contact->
+//     // }
+//   }
+// }
 
 void bEngine::World::adjustPositions(float time) {
 
@@ -81,15 +81,13 @@ void bEngine::World::adjustVelocities(float time) {
 }
 
 void bEngine::World::resolveContacts(float time) {
-  for (int i = 0; i < contactCount; i++) {
+  for (int i = 0; i < contacts.count(); i++) {
     bodies[contacts[i].body1].position = bodies[contacts[i].body1].position - (contacts[i].contactNormal*contacts[i].penetration);
-    bodies[contacts[i].body1].addForce(contacts[i].contactNormal*restitution);
+    bodies[contacts[i].body1].addForce(contacts[i].contactNormal*0.2f);
   }
   resetContacts();
 }
 
 void bEngine::World::resetContacts() {
-  contactPtr = contacts;
-  contactsLeft = maxContacts;
-  contactCount = 0;
+  contacts.reset();
 }

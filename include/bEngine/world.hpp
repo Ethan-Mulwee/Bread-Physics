@@ -10,26 +10,12 @@ namespace bEngine {
   class World {
     public:
       std::vector<RigidBody> bodies;
+      std::vector<Primitive> colliders;
 
     public:
-      const static unsigned maxContacts = 256;
-      Contact contacts[maxContacts];
-      Contact* contactPtr = contacts;
       unsigned iterations = 500;
-      int contactsLeft = maxContacts;
-      unsigned contactCount = 0;
 
-      float friction = 0.2f;
-      float restitution = 0.2f;
-
-      void addContact(Contact contact) {
-        contactsLeft--;
-        contactCount++;
-
-        *contactPtr = contact;
-  
-        contactPtr++;
-      }
+      ContactPool contacts;
 
       void resetContacts();
 
