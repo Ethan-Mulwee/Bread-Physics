@@ -7,13 +7,15 @@
 
 namespace bEngine {
   struct Contact {
-      size_t body1 = -1;
-      size_t body2 = -1;
-      float friction;
-      float restitution;
-      bMath::float3 contactPoint;
-      bMath::float3 contactNormal;
-      float penetration;
+    size_t body1 = -1;
+    size_t body2 = -1;
+    float friction;
+    float restitution;
+    bMath::float3 contactPoint;
+    bMath::float3 contactNormal;
+    float penetration;
+
+    bMath::matrix3 getContactBasis();
   };
 
   class ContactPool {

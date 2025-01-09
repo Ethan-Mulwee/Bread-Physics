@@ -10,7 +10,6 @@ namespace bEngine {
   class World {
     public:
       std::vector<RigidBody> bodies;
-      std::vector<Primitive> colliders;
 
     private:
       unsigned iterations = 500;

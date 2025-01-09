@@ -59,6 +59,9 @@ int main() {
 
     bMath::float2 mouseDeltaPos;
 
+    bEngine::Contact testContact;
+    testContact.contactNormal = bMath::normalized(bMath::float3(0.0,0.0,1.0));
+
     while(!WindowShouldClose()) {
         mouseDeltaPos = toBread(GetMouseDelta());
 
@@ -104,14 +107,16 @@ int main() {
         world.bodies[1].addForceAtBodyPoint(bMath::float3(0,-.2,0), bMath::float3(0,1,0));
         world.step(1/60.0f);
 
-        // UpdateCamera(&camera, CAMERA_ORBITAL);
+        // testContact.contactNormal = bMath::rotateZ(testContact.contactNormal, 0.1f);
+
+        UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
             ClearBackground(Color{35,35,35,255});
             BeginMode3D(camera);
                 DrawGrid(5,1);
-                DrawLine3D(Vector3{-axisLength,0,0}, Vector3{axisLength,0,0}, RED);
-                DrawLine3D(Vector3{0,-axisLength,0}, Vector3{0,axisLength+0.5,0}, GREEN);
-                DrawLine3D(Vector3{0,0,-axisLength}, Vector3{0,0,axisLength}, BLUE);
+                // DrawLine3D(Vector3{-axisLength,0,0}, Vector3{axisLength,0,0}, RED);
+                // DrawLine3D(Vector3{0,-axisLength,0}, Vector3{0,axisLength+0.5,0}, GREEN);
+                // DrawLine3D(Vector3{0,0,-axisLength}, Vector3{0,0,axisLength}, BLUE);
 
                 // block.render();
                 // if (collision.hit)
@@ -121,7 +126,8 @@ int main() {
                 //     DrawSphere(toRay(dragPoint), 0.1, ORANGE);
                 //     DrawLine3D(toRay(bodyPoint*body->getTransform()), toRay(dragPoint), BLACK);
                 // }
-                renderer.render(world);
+                drawBasis(testContact.getContactBasis());
+                // renderer.render(world);
             EndMode3D();
         EndDrawing();
     }
