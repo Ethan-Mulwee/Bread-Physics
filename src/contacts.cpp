@@ -26,3 +26,21 @@ bMath::matrix3 Contact::getContactBasis() {
     contactNormal.z, tagentY.z, tagentZ.z
   );
 }
+
+float Contact::getClosingVelocity(const std::vector<RigidBody> &bodies) {
+  using namespace bMath;
+  float3 body1RelativeContactPoint = contactPoint - bodies[body1].position;
+  float3 velocity = cross(body1RelativeContactPoint, bodies[body1].angularVelocity);
+  velocity += bodies[body1].position;
+
+  if (body2 != -1) {
+    float3 body2RelativeContactPoint = contactPoint - bodies[body2].position;
+    velocity -= cross(body2RelativeContactPoint, bodies[body2].angularVelocity);
+    velocity -= bodies[body2].position;
+  }
+
+  velocity = velocity * transpose(getContactBasis());
+  
+  return velocity.x;
+}
+
