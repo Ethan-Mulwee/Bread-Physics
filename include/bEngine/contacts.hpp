@@ -16,6 +16,8 @@ namespace bEngine {
     float penetration;
 
     bMath::matrix3 getContactBasis();
+
+    float getClosingVelocity(const std::vector<RigidBody> &bodies); 
   };
 
   class ContactPool {

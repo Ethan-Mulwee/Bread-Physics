@@ -52,17 +52,26 @@ int main() {
     body2.collider = collider2;
     world.bodies.push_back(body2);
     ///////////////////////////////////////////////////////////////////////////////////////
-    std::cout << "before: " << world.bodies[0].orientation.angle() << "\n";
-    world.bodies[0].orientation = rotate2(bMath::quaternion(1,0,0,0), bMath::float3(100,0,0));
-    std::cout << world.bodies[0].orientation << "\n";
-    std::cout << "after: " << world.bodies[0].orientation.angle() << "\n";
+
+    bMath::float3 bodyPoint;
+    bMath::float3 dragPoint;
+    bool dragging = false;
+
+    bMath::float2 mouseDeltaPos;
+
+    world.bodies[0].addForceAtBodyPoint(bMath::float3(0,-1,0), bMath::float3(1,1,1)*50);
+    world.bodies[0].addForce(bMath::float3(0,-1,0)*30);
+    world.bodies[1].addForce(bMath::float3(0,-1,0)*100);
 
     while(!WindowShouldClose()) {
+        mouseDeltaPos = toBread(GetMouseDelta());
 
-        // world.bodies[0].addForceAtBodyPoint(bMath::float3(0,-1,0), bMath::float3(1,1,1));
-        // world.bodies[1].addForceAtBodyPoint(bMath::float3(0,-.2,0), bMath::float3(0,1,0));
+        for (int i = 0; i < world.bodies.size(); i++) {
+          // world.bodies[i].addForce(bMath::float3(0,-9.8,0)*(1.0f/world.bodies[i].inverseMass));
+        }
+
+        world.bodies[1].angularVelocity = bMath::float3(1,0,0);
         world.step(1/60.0f);
-
 
         UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
@@ -73,6 +82,14 @@ int main() {
                 DrawLine3D(Vector3{0,-axisLength,0}, Vector3{0,axisLength+0.5,0}, GREEN);
                 DrawLine3D(Vector3{0,0,-axisLength}, Vector3{0,0,axisLength}, BLUE);
 
+                // block.render();
+                // if (collision.hit)
+                //     DrawSphere(collision.point, 0.1, PURPLE);
+                // if (dragging) {
+                //     DrawSphere(toRay(bodyPoint*body->getTransform()), 0.1,RED);
+                //     DrawSphere(toRay(dragPoint), 0.1, ORANGE);
+                //     DrawLine3D(toRay(bodyPoint*body->getTransform()), toRay(dragPoint), BLACK);
+                // }
                 renderer.render(world);
             EndMode3D();
         EndDrawing();
