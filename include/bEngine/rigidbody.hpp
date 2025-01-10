@@ -45,11 +45,10 @@ namespace bEngine {
 				);
 			}
 
-			bMath::float3 positionToBodySpace(bMath::float3 wpos) {
-				wpos -= position;
-				bMath::float3x3 o = quaternionToMatrix(orientation);
-				o = bMath::transpose(o);
-				return wpos*o;
+			bMath::float3 positionToBodySpace(bMath::float3 worldPosition) {
+				worldPosition -= position;
+				bMath::float3x3 inverseOrientation = transpose(quaternionToMatrix(orientation));
+				return worldPosition*inverseOrientation;
 			}
 
 			void addForce(const bMath::float3 &force);
