@@ -11,7 +11,7 @@ const int axisLength = 4;
 int main() {
     //Raylib stuff
     InitWindow(500,500,"test");
-    SetTargetFPS(60);
+    SetTargetFPS(200);
 
     camera.position = Vector3{5,5,-5};
     camera.target = Vector3{0,0,0};
@@ -24,10 +24,11 @@ int main() {
 
     // Cube1 ///////////////////////////////////////////////////////////////////////////////
     bEngine::RigidBody body;
-    body.inverseMass = (1/2.0f);
+    body.inverseMass = 0.5f;
     body.inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
-    body.position = bMath::float3(0,0,0);
-    body.orientation = bMath::quaternion(1,0,0,0);
+    body.position = bMath::float3(0,2,0);
+    body.orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
+    body.orientation.normalize();
 
     bEngine::Primitive collider;
     collider.type = bEngine::PrimitiveType::Cube;
@@ -41,9 +42,9 @@ int main() {
 
     // Cube2 ///////////////////////////////////////////////////////////////////////////////
     bEngine::RigidBody body2;
-    body2.inverseMass = (1/2.0f);
+    body2.inverseMass = 0.5f;
     body2.inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
-    body2.position = bMath::float3(2,2,2);
+    body2.position = bMath::float3(2,2,0);
     body2.orientation = bMath::quaternion(1,0,0,0);
     body2.angularVelocity = bMath::float3(0,0,0);
 
@@ -60,11 +61,9 @@ int main() {
     while(!WindowShouldClose()) {
 
         for (int i = 0; i < world.bodies.size(); i++) {
-          // world.bodies[i].addForce(bMath::float3(0,-9.8,0)*(1.0f/world.bodies[i].inverseMass));
+          world.bodies[i].addForce(bMath::float3(0,-9.8,0)*(1.0f/world.bodies[i].inverseMass));
         }
 
-        world.bodies[1].angularVelocity = bMath::float3(1,1,1);
-        world.step(1/60.0f);
 
         UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
@@ -75,6 +74,7 @@ int main() {
                 DrawLine3D(Vector3{0,-axisLength,0}, Vector3{0,axisLength+0.5,0}, GREEN);
                 DrawLine3D(Vector3{0,0,-axisLength}, Vector3{0,0,axisLength}, BLUE);
 
+                world.step(1/200.0f);
                 renderer.render(world);
             EndMode3D();
         EndDrawing();
