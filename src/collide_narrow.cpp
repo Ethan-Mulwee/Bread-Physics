@@ -56,7 +56,7 @@ void CollisionDetector::cubeFloor(const Primitive* cube, const float floorHeight
             Contact contact;
             contact.contactNormal = float3(0,1,0);
             contact.contactPoint = position;
-            contact.penetration = -floorHeight+position.y;
+            contact.penetration = -(position.y-floorHeight);
             
             contact.body[0] = cube->body;
             contact.friction = 0.2f;

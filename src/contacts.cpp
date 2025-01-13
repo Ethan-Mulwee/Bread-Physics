@@ -41,17 +41,20 @@ float Contact::getClosingVelocity() const {
     return velocity.x;
 }
 
+// NOTE: debugging only
+#include <iostream>
+
 void bEngine::Contact::resolvePenetration() {
     using namespace bMath;
+
+    std::cout << "penetration:" << penetration << "\n";
 
     body[0]->position += contactNormal*penetration;
 }
 
-// NOTE: debugging only
-#include <iostream>
-
 void bEngine::Contact::resolveVelocity() {
     using namespace bMath;
+
 
     std::cout << "Before: " << getClosingVelocity() << "\n";
     
@@ -65,8 +68,11 @@ void bEngine::Contact::resolveVelocity() {
 
     float3 implusiveTorque = cross(bodyPoint, impluse);
 
-    body[0]->linearVelocity += impluse*body[0]->inverseMass;
-    body[0]->angularVelocity += implusiveTorque*body[0]->getInverseInteriaTensorWorld();
+    float linearFactor = dot(normalized(bodyPoint*-1), normalized(impluse));
+    float angularFactor = 1 - linearFactor;
+
+    body[0]->linearVelocity += impluse*body[0]->inverseMass*linearFactor;
+    body[0]->angularVelocity += implusiveTorque*body[0]->getInverseInteriaTensorWorld()*angularFactor;
 
     std::cout << "After: " << getClosingVelocity() << "\n";
 }

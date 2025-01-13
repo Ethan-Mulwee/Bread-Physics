@@ -24,7 +24,25 @@ void World::generateContacts() {
 }
 
 void World::adjustPositions(float time, unsigned iterations) {
-    // bodies[contacts[maxIndex].body1].position += bMath::float3(0,-contacts[maxIndex].penetration,0);
+    using namespace bMath;
+
+    for (int i = 0; i < iterations; i++) {
+
+        float maxPenetration = 0;
+        unsigned maxIndex = contacts.count();
+
+        for (int j = 0; j < contacts.count(); j++) {
+            float penetration = contacts[j].penetration;
+            if (penetration > maxPenetration) {
+                maxPenetration = penetration;
+                maxIndex = j;
+            }
+        }
+
+        if (maxIndex == contacts.count()) break;
+
+        contacts[maxIndex].resolvePenetration();
+    }
 }
 
 #include <bMath/ext/iostream.hpp>
