@@ -6,18 +6,40 @@
 #include "rigidbody.hpp"
 
 namespace bEngine {
+  enum PrimitiveType {
+    Sphere,
+    Cube,
+    Plane
+  };
+
+  struct Primitive {
+    RigidBody* body;
+    PrimitiveType type;
+    bMath::matrix4 offset;
+    float height;
+    float width;
+
+    bMath::float4x4 getTransform() const {
+      return body->getTransform();
+    }
+  };
+
+
   struct Contact {
-    size_t body1 = -1;
-    size_t body2 = -1;
+    RigidBody* body[2] = { nullptr, nullptr };
     float friction;
     float restitution;
     bMath::float3 contactPoint;
     bMath::float3 contactNormal;
     float penetration;
 
-    bMath::matrix3 getContactBasis();
+    bMath::matrix3 getContactBasis() const;
 
-    float getClosingVelocity(const std::vector<RigidBody> &bodies); 
+    float getClosingVelocity() const; 
+
+    void resolveVelocity();
+
+    void resolvePenetration();
   };
 
   class ContactPool {

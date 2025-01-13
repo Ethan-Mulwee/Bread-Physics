@@ -9,7 +9,8 @@
 namespace bEngine {
   class World {
     public:
-      std::vector<RigidBody> bodies;
+      std::vector<RigidBody*> bodies;
+      std::vector<Primitive*> colliders;
 
     private:
       unsigned iterations = 500;
@@ -18,13 +19,11 @@ namespace bEngine {
 
       void generateContacts();
 
-      void prepareContacts(float time);
+      void adjustPositions(float time, unsigned iterations);
 
-      void adjustPositions(float time);
+      void adjustVelocities(float time, unsigned iterations);
 
-      void adjustVelocities(float time);
-
-      void resolveContacts(/* unsigned numContacts, use contactCount*/ float time);
+      void resolveContacts(float time);
 
     public:
       World();

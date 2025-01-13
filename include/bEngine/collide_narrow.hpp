@@ -8,7 +8,7 @@
 
 namespace bEngine {
   struct CollisionDetector {
-    static void cubeFloor(size_t cube, const float floorHeight, ContactPool &contacts, std::vector<RigidBody> &bodies);
+    static void cubeFloor(const Primitive* cube, const float floorHeight, ContactPool &contacts);
   };
 }
 

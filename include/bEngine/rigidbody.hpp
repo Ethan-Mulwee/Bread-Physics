@@ -4,19 +4,6 @@
 #include <bMath/bMath.hpp>
 
 namespace bEngine {
-  enum PrimitiveType {
-    Sphere,
-    Cube,
-    Plane
-  };
-
-  struct Primitive {
-    PrimitiveType type;
-    bMath::matrix4 offset;
-    float height;
-    float width;
-  };
-
 	class RigidBody {
 		public:
 			float inverseMass;
@@ -30,8 +17,6 @@ namespace bEngine {
 
 			bMath::float3 forceAccum;
 			bMath::float3 torqueAccum;
-            
-      Primitive collider;
 		public:
 			RigidBody() {};
 
@@ -43,6 +28,17 @@ namespace bEngine {
 					o(2,0), o(2,1), o(2,2), position.z,
 					0,      0,      0,      1
 				);
+			}
+
+            bMath::matrix3 getInverseInteriaTensorWorld() const {
+                using namespace bMath;
+
+                matrix3 orientationMatrix = quaternionToMatrix(orientation);
+                return transpose(orientationMatrix)*inverseInertiaTensor*orientationMatrix;
+            }
+
+			float getMass() const {
+				return 1.0f/inverseMass;
 			}
 
 			bMath::float3 positionToBodySpace(bMath::float3 worldPosition) {
