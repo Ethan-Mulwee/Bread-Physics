@@ -52,10 +52,10 @@ void bEngine::World::resolveContacts(float time) {
     float separatingVelocity = -closingVelocity*(1.0f);
     bMath::float3 impluse(separatingVelocity*(1.0f/bodies[contacts[maxIndex].body1].inverseMass),0,0);
     impluse = impluse * bMath::transpose(contacts[maxIndex].getContactBasis());
-    drawVector(impluse, ORANGE);
+    // drawVector(impluse, ORANGE);
     bMath::float3 bodyPoint = (contacts[maxIndex].contactPoint - bodies[contacts[maxIndex].body1].position);
     bMath::float3 implusiveTorque = bMath::cross(impluse, bodyPoint);
-    drawVector(implusiveTorque, PURPLE);
+    // drawVector(implusiveTorque, PURPLE);
     bMath::float3 bodyVector = bodies[contacts[maxIndex].body1].position - contacts[maxIndex].contactPoint;
     bMath::matrix3 orientationMatrix = bMath::quaternionToMatrix(bodies[contacts[maxIndex].body1].orientation);
     bMath::matrix3 inverseInertiaTensorWorld = bMath::transpose(orientationMatrix)*bodies[contacts[maxIndex].body1].inverseInertiaTensor*orientationMatrix;

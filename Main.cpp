@@ -58,7 +58,56 @@ int main() {
     world.bodies.push_back(body2);
     ///////////////////////////////////////////////////////////////////////////////////////
 
+
+    bMath::float3 bodyPoint;
+    bMath::float3 dragPoint;
+    bool dragging = false;
+
+    bMath::float2 mouseDeltaPos;
+
+    bool firstFrame = true;
+
     while(!WindowShouldClose()) {
+        mouseDeltaPos = toBread(GetMouseDelta());
+
+        Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
+        RayCollision collision = GetRayCollisionMesh(screenRay, renderer.cubeModel.meshes[0], toRay(world.bodies[0].getTransform()));
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !IsKeyDown(KEY_LEFT_CONTROL)) {
+            if (collision.hit) {
+                bodyPoint = world.bodies[0].positionToBodySpace((toBread(collision.point)));
+                dragPoint = toBread(collision.point);
+                dragging = true;
+            }
+        }
+
+        if (IsKeyDown(KEY_LEFT_CONTROL) && !dragging) {
+            if (collision.hit) {
+                bodyPoint = world.bodies[0].positionToBodySpace((toBread(collision.point)));
+                bMath::float3 worldSpaceBodyPoint = bodyPoint*world.bodies[0].getTransform();
+                world.bodies[0].addForceAtPoint(toBread(collision.normal)*-4, worldSpaceBodyPoint);
+            }
+        }
+
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            dragging = false;
+        }
+
+
+        if (dragging) {
+            bMath::float3 viewVector = bMath::normalized(toBread(camera.target) - toBread(camera.position));
+            bMath::float3 tagentViewVector = bMath::normalized(bMath::cross(toBread(camera.up), viewVector));
+            bMath::float3 cameraUpVector = bMath::cross(viewVector, tagentViewVector);
+            bMath::matrix3 spaceRotation(
+              tagentViewVector.x, cameraUpVector.x, viewVector.x,
+              tagentViewVector.y, cameraUpVector.y, viewVector.y,
+              tagentViewVector.z, cameraUpVector.z, viewVector.z
+            );
+            dragPoint += bMath::float3(-mouseDeltaPos.x*0.005, -mouseDeltaPos.y*0.005, 0)*spaceRotation;
+            bMath::float3 worldSpaceBodyPoint = bodyPoint*world.bodies[0].getTransform();
+            bMath::float3 force = dragPoint - worldSpaceBodyPoint;
+            world.bodies[0].addForceAtPoint(force, worldSpaceBodyPoint);
+        }
 
         for (int i = 0; i < world.bodies.size(); i++) {
           world.bodies[i].addForce(bMath::float3(0,-9.8,0)*(1.0f/world.bodies[i].inverseMass));
@@ -76,7 +125,15 @@ int main() {
 
                 world.step(1/200.0f);
                 renderer.render(world);
+                if (dragging) {
+                    DrawSphere(toRay(bodyPoint*world.bodies[0].getTransform()), 0.1,RED);
+                    DrawSphere(toRay(dragPoint), 0.1, ORANGE);
+                    DrawLine3D(toRay(bodyPoint*world.bodies[0].getTransform()), toRay(dragPoint), BLACK);
+                }
             EndMode3D();
         EndDrawing();
+        if (firstFrame) {
+            firstFrame = false;
+        }
     }
 }
