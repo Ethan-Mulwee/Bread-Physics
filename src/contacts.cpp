@@ -43,6 +43,7 @@ float Contact::getClosingVelocity() const {
 
 // NOTE: debugging only
 #include <iostream>
+#include <bMath/ext/iostream.hpp>
 
 void bEngine::Contact::resolvePenetration() {
     using namespace bMath;
@@ -55,6 +56,18 @@ void bEngine::Contact::resolvePenetration() {
 void bEngine::Contact::resolveVelocity() {
     using namespace bMath;
 
+    // TODO: make this code make sense /////////////////////////////////////////////////////////
+    float3 relativeContactPosition = contactPoint - body[0]->position;
+    float3 deltaVelWorld = cross(relativeContactPosition, contactNormal);
+    deltaVelWorld = deltaVelWorld*body[0]->getInverseInteriaTensorWorld();
+    deltaVelWorld = cross(deltaVelWorld, relativeContactPosition);
+
+    float deltaVelocity = dot(deltaVelWorld,contactNormal);
+
+    deltaVelocity += body[0]->inverseMass;
+
+    std::cout << "Delta Velocity: " << deltaVelocity << std::endl;
+    /////////////////////////////////////////////////////////////////////////////////////////
 
     std::cout << "Before: " << getClosingVelocity() << "\n";
     
@@ -63,16 +76,13 @@ void bEngine::Contact::resolveVelocity() {
     float closingVelocity = getClosingVelocity();
     const float restitution = 0.0f;
 
-    float3 impluse(-closingVelocity*(1+restitution)*body[0]->getMass());
+    float3 impluse(-closingVelocity*(1+restitution) / deltaVelocity);
     impluse = impluse*contactToWorld;
 
     float3 implusiveTorque = cross(bodyPoint, impluse);
 
-    float linearFactor = dot(normalized(bodyPoint*-1), normalized(impluse));
-    float angularFactor = 1 - linearFactor;
-
-    body[0]->linearVelocity += impluse*body[0]->inverseMass*linearFactor;
-    body[0]->angularVelocity += implusiveTorque*body[0]->getInverseInteriaTensorWorld()*angularFactor;
+    body[0]->linearVelocity += impluse*body[0]->inverseMass;
+    body[0]->angularVelocity += implusiveTorque*body[0]->getInverseInteriaTensorWorld();
 
     std::cout << "After: " << getClosingVelocity() << "\n";
 }
