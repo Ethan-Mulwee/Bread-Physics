@@ -11,7 +11,7 @@ void Renderer::render(const bEngine::World &world)
   for (int i = 0; i < world.colliders.size(); i++) {
     switch (world.colliders[i]->type) {
       case bEngine::PrimitiveType::Cube:
-        cubeModel.transform = toRay(world.colliders[i]->getTransform()*world.colliders[i]->offset);
+        cubeModel.transform = ConvertRay(world.colliders[i]->getTransform()*world.colliders[i]->offset);
         DrawModel(cubeModel, Vector3{0,0,0}, 1, WHITE);
         break;
     }

@@ -44,11 +44,12 @@ float Contact::getClosingVelocity() const {
 // NOTE: debugging only
 #include <iostream>
 #include <bMath/ext/iostream.hpp>
+#include <bMath/ext/raylib.hpp>
 
 void bEngine::Contact::resolvePenetration() {
     using namespace bMath;
 
-    std::cout << "penetration:" << penetration << "\n";
+    // std::cout << "penetration:" << penetration << "\n";
 
     body[0]->position += contactNormal*penetration;
 }
@@ -66,10 +67,9 @@ void bEngine::Contact::resolveVelocity() {
 
     deltaVelocity += body[0]->inverseMass;
 
-    std::cout << "Delta Velocity: " << deltaVelocity << std::endl;
+    // std::cout << "Delta Velocity: " << deltaVelocity << std::endl;
     /////////////////////////////////////////////////////////////////////////////////////////
 
-    std::cout << "Before: " << getClosingVelocity() << "\n";
     
     matrix3 contactToWorld = transpose(getContactBasis());
     float3 bodyPoint = contactPoint - body[0]->position;
@@ -83,6 +83,4 @@ void bEngine::Contact::resolveVelocity() {
 
     body[0]->linearVelocity += impluse*body[0]->inverseMass;
     body[0]->angularVelocity += implusiveTorque*body[0]->getInverseInteriaTensorWorld();
-
-    std::cout << "After: " << getClosingVelocity() << "\n";
 }

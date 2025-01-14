@@ -10,7 +10,7 @@ class Renderer {
 
     void render(const bEngine::World &world);
 
-  private:
+  public:
     Model cubeModel;
 };
 
