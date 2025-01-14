@@ -76,7 +76,7 @@ int main() {
     while(!WindowShouldClose()) {
 
         mouseDeltaPos = ConvertBread(GetMouseDelta());
-        zoom += GetMouseWheelMove()*-1.0f;
+        zoom += GetMouseWheelMove()*-1.0f*zoom*0.1f;
         camera.position = ConvertRay(((bMath::float3(std::cos(cameraAngle),0,std::sin(cameraAngle))*std::cos(cameraVerticalAngle))+bMath::float3(0,std::sin(cameraVerticalAngle),0))*zoom);
 
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
@@ -117,7 +117,7 @@ int main() {
               tagentViewVector.y, cameraUpVector.y, viewVector.y,
               tagentViewVector.z, cameraUpVector.z, viewVector.z
             );
-            dragPoint += bMath::float3(-mouseDeltaPos.x*0.005, -mouseDeltaPos.y*0.005, 0)*spaceRotation;
+            dragPoint += bMath::float3(-mouseDeltaPos.x*0.005*zoom*0.1f, -mouseDeltaPos.y*0.005*zoom*0.1f, 0)*spaceRotation;
             bMath::float3 worldSpaceBodyPoint = bodyPoint*world.bodies[0]->getTransform();
             bMath::float3 force = dragPoint - worldSpaceBodyPoint;
             world.bodies[0]->addForceAtPoint(force*15, worldSpaceBodyPoint);

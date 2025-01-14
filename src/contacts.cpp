@@ -106,7 +106,7 @@ void bEngine::Contact::resolveVelocity() {
     if (body[1]) bodyPoint[1] = contactPoint - body[1]->position;
     matrix3 contactToWorld = transpose(getContactBasis());
     float closingVelocity = getClosingVelocity();
-    const float restitution = 0.0f;
+    const float restitution = 0.5f;
 
     float3 angularInverseInertiaWorld = cross(bodyPoint[0], contactNormal);
     angularInverseInertiaWorld = angularInverseInertiaWorld*body[0]->getInverseInteriaTensorWorld();
