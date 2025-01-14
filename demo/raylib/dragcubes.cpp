@@ -69,9 +69,14 @@ int main() {
 
     bMath::float2 mouseDeltaPos;
 
+    float cameraAngle = M_PI/4;
+    float zoom = 10.0f;
+
     while(!WindowShouldClose()) {
 
         mouseDeltaPos = ConvertBread(GetMouseDelta());
+        zoom += GetMouseWheelMove()*-0.5f;
+        camera.position = ConvertRay((bMath::float3(std::cos(cameraAngle),0,std::sin(cameraAngle))*zoom)+bMath::float3(0,camera.position.y,0));
 
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
         RayCollision collision = GetRayCollisionMesh(screenRay, renderer.cubeModel.meshes[0], ConvertRay(world.bodies[0]->getTransform()));
@@ -84,11 +89,16 @@ int main() {
             }
         }
 
-        if (IsKeyDown(KEY_LEFT_CONTROL) && !dragging) {
+        if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
+            camera.position = ConvertRay(ConvertBread(camera.position)+(bMath::float3(0, mouseDeltaPos.y, 0)*0.01f));
+            cameraAngle += mouseDeltaPos.x*0.001f;
+        }
+
+        if (IsKeyDown(KEY_LEFT_CONTROL) && !dragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (collision.hit) {
                 bodyPoint = world.bodies[0]->positionToBodySpace((ConvertBread(collision.point)));
                 bMath::float3 worldSpaceBodyPoint = bodyPoint*world.bodies[0]->getTransform();
-                world.bodies[0]->addForceAtPoint(ConvertBread(collision.normal)*-4, worldSpaceBodyPoint);
+                world.bodies[0]->addForceAtPoint(ConvertBread(screenRay.direction)*3000, worldSpaceBodyPoint);
             }
         }
 
@@ -109,7 +119,7 @@ int main() {
             dragPoint += bMath::float3(-mouseDeltaPos.x*0.005, -mouseDeltaPos.y*0.005, 0)*spaceRotation;
             bMath::float3 worldSpaceBodyPoint = bodyPoint*world.bodies[0]->getTransform();
             bMath::float3 force = dragPoint - worldSpaceBodyPoint;
-            world.bodies[0]->addForceAtPoint(force*10, worldSpaceBodyPoint);
+            world.bodies[0]->addForceAtPoint(force*15, worldSpaceBodyPoint);
         }
 
         for (int i = 0; i < world.bodies.size(); i++) {
@@ -117,7 +127,7 @@ int main() {
         }
 
 
-        UpdateCamera(&camera, CAMERA_ORBITAL);
+        // UpdateCamera(&camera, CAMERA_ORBITAL);
         BeginDrawing();
             ClearBackground(Color{35,35,35,255});
             std::string angularVelocityStr = "Angular Velocity: ";
