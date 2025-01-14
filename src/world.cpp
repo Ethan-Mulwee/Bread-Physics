@@ -70,7 +70,7 @@ void World::adjustVelocities(float time, unsigned iterations) {
 }
 
 void World::resolveContacts(float time) {
-    adjustPositions(time, 1);
-    adjustVelocities(time, 1);
+    adjustPositions(time, 10);
+    adjustVelocities(time, 10);
     contacts.reset();
 }

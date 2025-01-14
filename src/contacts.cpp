@@ -52,29 +52,47 @@ void bEngine::Contact::resolvePenetration() {
     // std::cout << "penetration:" << penetration << "\n";
 
     body[0]->position += contactNormal*penetration;
+    penetration = 0.0f;
 }
 
 void bEngine::Contact::resolveVelocity() {
     using namespace bMath;
 
-    float3 bodyPoint = contactPoint - body[0]->position;
+    float3 bodyPoint[2]; 
+    bodyPoint[0] = contactPoint - body[0]->position;
+    if (body[1]) bodyPoint[1] = contactPoint - body[1]->position;
     matrix3 contactToWorld = transpose(getContactBasis());
     float closingVelocity = getClosingVelocity();
     const float restitution = 0.0f;
 
-    // Get angularInverseInteria
-    float3 inverseInertiaWorld = cross(bodyPoint, contactNormal);
-    inverseInertiaWorld = inverseInertiaWorld*body[0]->getInverseInteriaTensorWorld();
-    inverseInertiaWorld = cross(inverseInertiaWorld, bodyPoint);
+    float3 angularInverseInertiaWorld = cross(bodyPoint[0], contactNormal);
+    angularInverseInertiaWorld = angularInverseInertiaWorld*body[0]->getInverseInteriaTensorWorld();
+    angularInverseInertiaWorld = cross(angularInverseInertiaWorld, bodyPoint[0]);
 
-    float inverseInertia = dot(inverseInertiaWorld,contactNormal);
+    float inverseInertia = dot(angularInverseInertiaWorld,contactNormal);
     inverseInertia += body[0]->inverseMass;
+
+    if (body[1]) {
+        float3 angularInverseInertiaWorld = cross(bodyPoint[1], contactNormal);
+        angularInverseInertiaWorld = angularInverseInertiaWorld*body[1]->getInverseInteriaTensorWorld();
+        angularInverseInertiaWorld = cross(angularInverseInertiaWorld, bodyPoint[1]);
+
+        inverseInertia += dot(angularInverseInertiaWorld,contactNormal);
+        inverseInertia += body[1]->inverseMass;
+    }
 
     float3 impluse(-closingVelocity*(1+restitution) / inverseInertia);
     impluse = impluse*contactToWorld;
 
-    float3 implusiveTorque = cross(bodyPoint, impluse);
+    float3 implusiveTorque[2]; 
+    implusiveTorque[0] = cross(bodyPoint[0], impluse);
+    if (body[1]) implusiveTorque[1] = cross(bodyPoint[1], impluse);
 
     body[0]->linearVelocity += impluse*body[0]->inverseMass;
-    body[0]->angularVelocity += implusiveTorque*body[0]->getInverseInteriaTensorWorld();
+    body[0]->angularVelocity += implusiveTorque[0]*body[0]->getInverseInteriaTensorWorld();
+
+    if (body[1]) {
+        body[1]->linearVelocity += impluse*body[1]->inverseMass;
+        body[1]->angularVelocity += implusiveTorque[1]*body[1]->getInverseInteriaTensorWorld();
+    }
 }
