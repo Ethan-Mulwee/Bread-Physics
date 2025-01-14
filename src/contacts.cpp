@@ -49,9 +49,41 @@ float Contact::getClosingVelocity() const {
 void bEngine::Contact::resolvePenetration() {
     using namespace bMath;
 
-    // std::cout << "penetration:" << penetration << "\n";
+    float3 bodyPoint[2]; 
+    bodyPoint[0] = contactPoint - body[0]->position;
+    if (body[1]) bodyPoint[1] = contactPoint - body[1]->position;
 
-    body[0]->position += contactNormal*penetration;
+    float angularMove[2];
+    float linearMove[2];
+
+    float angularInverseInertia[2];
+    float linearInverseInertia[2];
+    float totalInverseInertia = 0;
+
+    for (unsigned i = 0; i < 2; i++) if (body[i]) {
+        float3 angularInverseInertiaWorld = cross(bodyPoint[i], contactNormal);
+        angularInverseInertiaWorld = angularInverseInertiaWorld*body[i]->getInverseInteriaTensorWorld();
+        angularInverseInertiaWorld = cross(angularInverseInertiaWorld, bodyPoint[i]);
+
+        angularInverseInertia[i] = dot(angularInverseInertiaWorld,contactNormal);
+
+        linearInverseInertia[i] = body[i]->inverseMass;
+
+        totalInverseInertia += linearInverseInertia[i] + angularInverseInertia[i];
+    }
+
+    for (unsigned i = 0; i < 2; i++) if (body[i]) {
+        float sign = (i == 0) ? 1 : -1;
+
+        angularMove[i] = sign * penetration * (angularInverseInertia[i] / totalInverseInertia);
+        linearMove[i] = sign * penetration * (linearInverseInertia[i] / totalInverseInertia);
+
+        body[i]->orientation += cross(bodyPoint[i],contactNormal)*body[i]->getInverseInteriaTensorWorld()*(angularMove[i]/angularInverseInertia[i]);
+
+        body[i]->position += contactNormal * linearMove[i];
+    }
+
+    // body[0]->position += contactNormal*penetration;
     penetration = 0.0f;
 }
 
