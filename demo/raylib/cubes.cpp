@@ -3,7 +3,7 @@
 #include <bMath/ext/raylib.hpp>
 #include <bMath/ext/iostream.hpp>
 #include "bEngine/world.hpp"
-#include "bEngine/render.hpp"
+#include "render.hpp"
 
 Camera camera;
 const int axisLength = 4;
