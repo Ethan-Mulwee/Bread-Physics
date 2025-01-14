@@ -78,6 +78,17 @@ void bEngine::Contact::resolvePenetration() {
         angularMove[i] = sign * penetration * (angularInverseInertia[i] / totalInverseInertia);
         linearMove[i] = sign * penetration * (linearInverseInertia[i] / totalInverseInertia);
 
+        // Angular move limit proportional to body size to prevent over-rotation
+        float limit = 0.2f * bodyPoint[i].length();
+        if (std::abs(angularMove[i]) > limit) {
+            float totalMove = linearMove[i] + angularMove[i];
+
+            if (angularMove[i] >= 0 ) angularMove[i] = limit;
+            else angularMove[i] = -limit;
+
+            linearMove[i] = totalMove - angularMove[i];
+        } 
+
         body[i]->orientation += cross(bodyPoint[i],contactNormal)*body[i]->getInverseInteriaTensorWorld()*(angularMove[i]/angularInverseInertia[i]);
 
         body[i]->position += contactNormal * linearMove[i];
