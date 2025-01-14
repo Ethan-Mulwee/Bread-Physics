@@ -8,7 +8,7 @@
 #include "render.hpp"
 
 Camera camera;
-const int axisLength = 4;
+const int axisLength = 100;
 
 int main() {
     //Raylib stuff
@@ -70,13 +70,14 @@ int main() {
     bMath::float2 mouseDeltaPos;
 
     float cameraAngle = M_PI/4;
+    float cameraVerticalAngle = M_PI/4;
     float zoom = 10.0f;
 
     while(!WindowShouldClose()) {
 
         mouseDeltaPos = ConvertBread(GetMouseDelta());
         zoom += GetMouseWheelMove()*-1.0f;
-        camera.position = ConvertRay((bMath::float3(std::cos(cameraAngle),0,std::sin(cameraAngle))*zoom)+bMath::float3(0,camera.position.y,0));
+        camera.position = ConvertRay(((bMath::float3(std::cos(cameraAngle),0,std::sin(cameraAngle))*std::cos(cameraVerticalAngle))+bMath::float3(0,std::sin(cameraVerticalAngle),0))*zoom);
 
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
         RayCollision collision = GetRayCollisionMesh(screenRay, renderer.cubeModel.meshes[0], ConvertRay(world.bodies[0]->getTransform()));
@@ -90,8 +91,8 @@ int main() {
         }
 
         if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
-            camera.position = ConvertRay(ConvertBread(camera.position)+(bMath::float3(0, mouseDeltaPos.y, 0)*0.02f));
             cameraAngle += mouseDeltaPos.x*0.003f;
+            cameraVerticalAngle += mouseDeltaPos.y*0.003f;
         }
 
         if (IsKeyDown(KEY_LEFT_CONTROL) && !dragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -135,7 +136,7 @@ int main() {
             DrawText(angularVelocityStr.c_str(), 10, 10, 20, WHITE);
 
             BeginMode3D(camera);
-                DrawGrid(5,1);
+                DrawGrid(10,1);
                 DrawLine3D(Vector3{-axisLength,0,0}, Vector3{axisLength,0,0}, RED);
                 DrawLine3D(Vector3{0,-axisLength,0}, Vector3{0,axisLength+0.5,0}, GREEN);
                 DrawLine3D(Vector3{0,0,-axisLength}, Vector3{0,0,axisLength}, BLUE);
