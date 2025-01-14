@@ -57,26 +57,20 @@ void bEngine::Contact::resolvePenetration() {
 void bEngine::Contact::resolveVelocity() {
     using namespace bMath;
 
-    // TODO: make this code make sense /////////////////////////////////////////////////////////
-    float3 relativeContactPosition = contactPoint - body[0]->position;
-    float3 deltaVelWorld = cross(relativeContactPosition, contactNormal);
-    deltaVelWorld = deltaVelWorld*body[0]->getInverseInteriaTensorWorld();
-    deltaVelWorld = cross(deltaVelWorld, relativeContactPosition);
-
-    float deltaVelocity = dot(deltaVelWorld,contactNormal);
-
-    deltaVelocity += body[0]->inverseMass;
-
-    // std::cout << "Delta Velocity: " << deltaVelocity << std::endl;
-    /////////////////////////////////////////////////////////////////////////////////////////
-
-    
-    matrix3 contactToWorld = transpose(getContactBasis());
     float3 bodyPoint = contactPoint - body[0]->position;
+    matrix3 contactToWorld = transpose(getContactBasis());
     float closingVelocity = getClosingVelocity();
     const float restitution = 0.0f;
 
-    float3 impluse(-closingVelocity*(1+restitution) / deltaVelocity);
+    // Get angularInverseInteria
+    float3 inverseInertiaWorld = cross(bodyPoint, contactNormal);
+    inverseInertiaWorld = inverseInertiaWorld*body[0]->getInverseInteriaTensorWorld();
+    inverseInertiaWorld = cross(inverseInertiaWorld, bodyPoint);
+
+    float inverseInertia = dot(inverseInertiaWorld,contactNormal);
+    inverseInertia += body[0]->inverseMass;
+
+    float3 impluse(-closingVelocity*(1+restitution) / inverseInertia);
     impluse = impluse*contactToWorld;
 
     float3 implusiveTorque = cross(bodyPoint, impluse);

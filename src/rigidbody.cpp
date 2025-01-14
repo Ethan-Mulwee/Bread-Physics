@@ -3,7 +3,7 @@
 using namespace bEngine; 
 //using namespace bMath;
 
-inline bMath::quaternion rotate(const bMath::quaternion &q, const bMath::float3 &v) {
+inline bMath::quaternion add(const bMath::quaternion &q, const bMath::float3 &v) {
     bMath::quaternion result(
       q.w + (0.5) * (-v.x * q.x - v.y * q.y - v.z * q.z),
       q.x + (0.5) * (v.x * q.w + v.y * q.z - v.z * q.y),
@@ -24,7 +24,7 @@ void RigidBody::integrate(float time) {
   bMath::matrix3 inverseInertiaTensorWorld = bMath::transpose(orientationMatrix)*inverseInertiaTensor*orientationMatrix;
 
   bMath::float3 angularAcceleration = torqueAccum*inverseInertiaTensorWorld;
-  orientation = rotate(orientation, angularVelocity*time)/* *bMath::vectorToQuaternion(angularVelocity*time) */;
+  orientation = add(orientation, angularVelocity*time)/* *bMath::vectorToQuaternion(angularVelocity*time) */;
   angularVelocity += angularAcceleration*time;
 
   clearAccumlators();

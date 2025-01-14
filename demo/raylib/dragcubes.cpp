@@ -75,7 +75,7 @@ int main() {
     while(!WindowShouldClose()) {
 
         mouseDeltaPos = ConvertBread(GetMouseDelta());
-        zoom += GetMouseWheelMove()*-0.5f;
+        zoom += GetMouseWheelMove()*-1.0f;
         camera.position = ConvertRay((bMath::float3(std::cos(cameraAngle),0,std::sin(cameraAngle))*zoom)+bMath::float3(0,camera.position.y,0));
 
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
@@ -90,8 +90,8 @@ int main() {
         }
 
         if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
-            camera.position = ConvertRay(ConvertBread(camera.position)+(bMath::float3(0, mouseDeltaPos.y, 0)*0.01f));
-            cameraAngle += mouseDeltaPos.x*0.001f;
+            camera.position = ConvertRay(ConvertBread(camera.position)+(bMath::float3(0, mouseDeltaPos.y, 0)*0.02f));
+            cameraAngle += mouseDeltaPos.x*0.003f;
         }
 
         if (IsKeyDown(KEY_LEFT_CONTROL) && !dragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
