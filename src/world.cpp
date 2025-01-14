@@ -41,7 +41,21 @@ void World::adjustPositions(float time, unsigned iterations) {
 
         if (maxIndex == contacts.count()) break;
 
-        contacts[maxIndex].resolvePenetration();
+        PenetrationResolutionResult result = contacts[maxIndex].resolvePenetration();
+
+        float3 deltaPosition;
+
+        // Update penetrations contacts related to the moved bodies
+        for (unsigned j = 0; j < contacts.count(); j++) {
+            for (unsigned b = 0; b < 2; b++) if (contacts[j].body[b]) {
+                for (unsigned d = 0; d < 2; d++) {
+                    if (contacts[j].body[b] == contacts[maxIndex].body[d]) {
+                        deltaPosition = result.linearChange[d] + cross(result.angularChange[d], contacts[j].getContactPointRelativeToBody(b));
+                        contacts[j].penetration = dot(deltaPosition, contacts[j].contactNormal)* (b ? 1 : -1);
+                    }
+                }
+            }
+        }
     }
 }
 

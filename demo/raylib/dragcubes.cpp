@@ -71,6 +71,7 @@ int main() {
 
     float cameraAngle = M_PI/4;
     float cameraVerticalAngle = M_PI/4;
+    bMath::float3 cameraPosition;
     float zoom = 10.0f;
 
     while(!WindowShouldClose()) {

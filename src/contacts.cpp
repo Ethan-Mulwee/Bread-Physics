@@ -46,7 +46,9 @@ float Contact::getClosingVelocity() const {
 #include <bMath/ext/iostream.hpp>
 #include <bMath/ext/raylib.hpp>
 
-void bEngine::Contact::resolvePenetration() {
+
+
+PenetrationResolutionResult Contact::resolvePenetration() {
     using namespace bMath;
 
     float3 bodyPoint[2]; 
@@ -59,6 +61,8 @@ void bEngine::Contact::resolvePenetration() {
     float angularInverseInertia[2];
     float linearInverseInertia[2];
     float totalInverseInertia = 0;
+
+    PenetrationResolutionResult result;
 
     for (unsigned i = 0; i < 2; i++) if (body[i]) {
         float3 angularInverseInertiaWorld = cross(bodyPoint[i], contactNormal);
@@ -89,13 +93,14 @@ void bEngine::Contact::resolvePenetration() {
             linearMove[i] = totalMove - angularMove[i];
         } 
 
-        body[i]->orientation += cross(bodyPoint[i],contactNormal)*body[i]->getInverseInteriaTensorWorld()*(angularMove[i]/angularInverseInertia[i]);
+        result.angularChange[i] = cross(bodyPoint[i],contactNormal)*body[i]->getInverseInteriaTensorWorld()*(angularMove[i]/angularInverseInertia[i]);
+        body[i]->orientation += result.angularChange[i];
 
-        body[i]->position += contactNormal * linearMove[i];
+        result.linearChange[i] = contactNormal * linearMove[i];
+        body[i]->position += result.linearChange[i];
     }
 
-    // body[0]->position += contactNormal*penetration;
-    penetration = 0.0f;
+    return result;
 }
 
 void bEngine::Contact::resolveVelocity() {
