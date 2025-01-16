@@ -35,8 +35,7 @@ int main() {
 
     bEngine::Primitive* collider = new bEngine::Primitive();
     collider->type = bEngine::PrimitiveType::Cube;
-    collider->height = 0.5f;
-    collider->width = 0.5f;
+    collider->dimensions = bMath::float3(0.5,0.5,0.5);
     collider->offset = bMath::matrix4::identity();
     collider->body = body;
 
@@ -44,24 +43,23 @@ int main() {
     world.colliders.push_back(collider);
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    // // Cube2 ///////////////////////////////////////////////////////////////////////////////
-    // bEngine::RigidBody* body2 = new bEngine::RigidBody();
-    // body2->inverseMass = 0.5f;
-    // body2->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
-    // body2->position = bMath::float3(3,2,-1);
-    // body2->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
-    // body2->angularVelocity = bMath::float3(1,.2,0);
+    // Cube2 ///////////////////////////////////////////////////////////////////////////////
+    bEngine::RigidBody* body2 = new bEngine::RigidBody();
+    body2->inverseMass = 0.5f;
+    body2->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
+    body2->position = bMath::float3(3,2,-1);
+    body2->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
+    body2->angularVelocity = bMath::float3(1,.2,0);
 
-    // bEngine::Primitive* collider2 = new bEngine::Primitive();
-    // collider2->type = bEngine::PrimitiveType::Cube;
-    // collider2->height = 0.5f;
-    // collider2->width = 0.5f;
-    // collider2->offset = bMath::matrix4::identity();
-    // collider2->body = body2;
+    bEngine::Primitive* collider2 = new bEngine::Primitive();
+    collider2->type = bEngine::PrimitiveType::Cube;
+    collider2->dimensions = bMath::float3(0.5,0.5,0.5);
+    collider2->offset = bMath::matrix4::identity();
+    collider2->body = body2;
 
-    // world.bodies.push_back(body2);
-    // world.colliders.push_back(collider2);
-    // ///////////////////////////////////////////////////////////////////////////////////////
+    world.bodies.push_back(body2);
+    world.colliders.push_back(collider2);
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     bMath::float3 bodyPoint;
     bMath::float3 dragPoint;
@@ -102,8 +100,8 @@ int main() {
             bMath::float3 tagentViewVector = bMath::normalized(bMath::cross(ConvertBread(camera.up), viewVector));
             viewVector = bMath::normalized(bMath::float3(viewVector.x,0,viewVector.z));
             tagentViewVector = bMath::normalized(bMath::float3(tagentViewVector.x,0,tagentViewVector.z));
-            cameraPosition += viewVector*mouseDeltaPos.y*0.001f*zoom;
-            cameraPosition += tagentViewVector*mouseDeltaPos.x*0.001f*zoom;
+            cameraPosition += viewVector*mouseDeltaPos.y*0.0005f*zoom;
+            cameraPosition += tagentViewVector*mouseDeltaPos.x*0.0005f*zoom;
         }
 
         if (IsKeyDown(KEY_LEFT_CONTROL) && !dragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {

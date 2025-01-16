@@ -32,8 +32,8 @@ int main() {
 
     bEngine::Primitive* collider = new bEngine::Primitive();
     collider->type = bEngine::PrimitiveType::Cube;
-    collider->height = 0.5f;
-    collider->width = 0.5f;
+    collider->dimensions = bMath::float3(0.5,0.5,0.5);
+
     collider->offset = bMath::matrix4::identity();
     collider->body = body;
 
@@ -51,8 +51,7 @@ int main() {
 
     bEngine::Primitive* collider2 = new bEngine::Primitive();
     collider2->type = bEngine::PrimitiveType::Cube;
-    collider2->height = 0.5f;
-    collider2->width = 0.5f;
+    collider2->dimensions = bMath::float3(0.5,0.5,0.5);
     collider2->offset = bMath::matrix4::identity();
     collider2->body = body2;
 

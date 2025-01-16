@@ -32,12 +32,16 @@ using namespace bEngine;
 //   // return 1;
 // }
 
+void CollisionDetector::cubeCube(const Primitive* one, const Primitive* two, ContactPool &contacts) {
+
+}
+
 void CollisionDetector::cubeFloor(const Primitive* cube, const float floorHeight, ContactPool &contacts)
 {
     using namespace bMath;
     if (contacts.room() <= 0) return;
 
-    float l = cube->width;
+    float l = cube->dimensions.x;
 
     float3 vertices[8] = {
         float3( l, l, l),

@@ -16,11 +16,15 @@ namespace bEngine {
         RigidBody* body;
         PrimitiveType type;
         bMath::matrix4 offset;
-        float height;
-        float width;
+        bMath::float3 dimensions;
 
-        bMath::float4x4 getTransform() const {
+        inline bMath::float4x4 getTransform() const {
             return body->getTransform();
+        }
+
+        inline bMath::float3 getAxis(const unsigned i) const {
+            bMath::float4x4 transform = getTransform();
+            return bMath::float3(transform(0,i), transform(1,i), transform(2,i));
         }
     };
 
