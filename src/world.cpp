@@ -59,8 +59,6 @@ void World::adjustPositions(float time, unsigned iterations) {
     }
 }
 
-#include <bMath/ext/iostream.hpp>
-
 void World::adjustVelocities(float time, unsigned iterations) {
     using namespace bMath;
 
@@ -84,7 +82,7 @@ void World::adjustVelocities(float time, unsigned iterations) {
 }
 
 void World::resolveContacts(float time) {
-    adjustPositions(time, 10);
-    adjustVelocities(time, 10);
+    adjustPositions(time, 100);
+    adjustVelocities(time, 100);
     contacts.reset();
 }

@@ -13,7 +13,7 @@ const int axisLength = 100;
 int main() {
     //Raylib stuff
     InitWindow(1000,1000,"test");
-    SetTargetFPS(200);
+    SetTargetFPS(60);
 
     camera.position = Vector3{5,5,-5};
     camera.target = Vector3{0,0,0};
@@ -44,24 +44,24 @@ int main() {
     world.colliders.push_back(collider);
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    // Cube2 ///////////////////////////////////////////////////////////////////////////////
-    bEngine::RigidBody* body2 = new bEngine::RigidBody();
-    body2->inverseMass = 0.5f;
-    body2->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
-    body2->position = bMath::float3(3,2,-1);
-    body2->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
-    body2->angularVelocity = bMath::float3(1,.2,0);
+    // // Cube2 ///////////////////////////////////////////////////////////////////////////////
+    // bEngine::RigidBody* body2 = new bEngine::RigidBody();
+    // body2->inverseMass = 0.5f;
+    // body2->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
+    // body2->position = bMath::float3(3,2,-1);
+    // body2->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
+    // body2->angularVelocity = bMath::float3(1,.2,0);
 
-    bEngine::Primitive* collider2 = new bEngine::Primitive();
-    collider2->type = bEngine::PrimitiveType::Cube;
-    collider2->height = 0.5f;
-    collider2->width = 0.5f;
-    collider2->offset = bMath::matrix4::identity();
-    collider2->body = body2;
+    // bEngine::Primitive* collider2 = new bEngine::Primitive();
+    // collider2->type = bEngine::PrimitiveType::Cube;
+    // collider2->height = 0.5f;
+    // collider2->width = 0.5f;
+    // collider2->offset = bMath::matrix4::identity();
+    // collider2->body = body2;
 
-    world.bodies.push_back(body2);
-    world.colliders.push_back(collider2);
-    ///////////////////////////////////////////////////////////////////////////////////////
+    // world.bodies.push_back(body2);
+    // world.colliders.push_back(collider2);
+    // ///////////////////////////////////////////////////////////////////////////////////////
 
     bMath::float3 bodyPoint;
     bMath::float3 dragPoint;
@@ -150,7 +150,7 @@ int main() {
 
 
 
-                world.step(1/200.0f);
+                world.step(1/60.0f);
                 renderer.render(world);
             EndMode3D();
         EndDrawing();

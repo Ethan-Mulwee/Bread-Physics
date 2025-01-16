@@ -111,7 +111,7 @@ void bEngine::Contact::resolveVelocity() {
     if (body[1]) bodyPoint[1] = contactPoint - body[1]->position;
     matrix3 contactToWorld = transpose(getContactBasis());
     float closingVelocity = getClosingVelocity();
-    const float restitution = 0.5f;
+    float restitution = 0.5f;
 
     float3 angularInverseInertiaWorld = cross(bodyPoint[0], contactNormal);
     angularInverseInertiaWorld = angularInverseInertiaWorld*body[0]->getInverseInteriaTensorWorld();
@@ -129,7 +129,11 @@ void bEngine::Contact::resolveVelocity() {
         inverseInertia += body[1]->inverseMass;
     }
 
-    float3 impluse(-closingVelocity*(1+restitution) / inverseInertia);
+    if (closingVelocity < 0.5f) {
+        restitution = 0.0f;
+    }
+
+    float3 impluse(-(closingVelocity)*(1+restitution) / inverseInertia);
     impluse = impluse*contactToWorld;
 
     float3 implusiveTorque[2]; 
@@ -138,7 +142,7 @@ void bEngine::Contact::resolveVelocity() {
 
     body[0]->linearVelocity += impluse*body[0]->inverseMass;
     body[0]->angularVelocity += implusiveTorque[0]*body[0]->getInverseInteriaTensorWorld();
-
+    
     if (body[1]) {
         body[1]->linearVelocity += impluse*body[1]->inverseMass;
         body[1]->angularVelocity += implusiveTorque[1]*body[1]->getInverseInteriaTensorWorld();

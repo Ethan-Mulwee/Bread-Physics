@@ -4,9 +4,9 @@ using namespace bEngine;
 
 void RigidBody::integrate(float time) {
 
-  bMath::float3 acceleration = forceAccum*inverseMass;
-  position += linearVelocity*time+acceleration*time*time;
-  linearVelocity += acceleration*time;
+  bMath::float3 linearAcceleration = forceAccum*inverseMass;
+  position += linearVelocity*time+linearAcceleration*time*time;
+  linearVelocity += linearAcceleration*time;
 
   bMath::matrix3 orientationMatrix = bMath::quaternionToMatrix(orientation);
   bMath::matrix3 inverseInertiaTensorWorld = bMath::transpose(orientationMatrix)*inverseInertiaTensor*orientationMatrix;
