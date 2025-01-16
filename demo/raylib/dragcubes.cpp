@@ -78,7 +78,8 @@ int main() {
 
         mouseDeltaPos = ConvertBread(GetMouseDelta());
         zoom += GetMouseWheelMove()*-1.0f*zoom*0.1f;
-        camera.position = ConvertRay(((bMath::float3(std::cos(cameraAngle),0,std::sin(cameraAngle))*std::cos(cameraVerticalAngle))+bMath::float3(0,std::sin(cameraVerticalAngle),0))*zoom);
+        camera.target = ConvertRay(cameraPosition);
+        camera.position = ConvertRay((((bMath::float3(std::cos(cameraAngle),0,std::sin(cameraAngle))*std::cos(cameraVerticalAngle))+bMath::float3(0,std::sin(cameraVerticalAngle),0))*zoom)+cameraPosition);
 
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
         RayCollision collision = GetRayCollisionMesh(screenRay, renderer.cubeModel.meshes[0], ConvertRay(world.bodies[0]->getTransform()));
@@ -91,9 +92,18 @@ int main() {
             }
         }
 
-        if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
+        if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) && !IsKeyDown(KEY_LEFT_SHIFT)) {
             cameraAngle += mouseDeltaPos.x*0.003f;
             cameraVerticalAngle += mouseDeltaPos.y*0.003f;
+        }
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) && IsKeyDown(KEY_LEFT_SHIFT)) {
+            bMath::float3 viewVector = bMath::normalized(ConvertBread(camera.target) - ConvertBread(camera.position));
+            bMath::float3 tagentViewVector = bMath::normalized(bMath::cross(ConvertBread(camera.up), viewVector));
+            viewVector = bMath::normalized(bMath::float3(viewVector.x,0,viewVector.z));
+            tagentViewVector = bMath::normalized(bMath::float3(tagentViewVector.x,0,tagentViewVector.z));
+            cameraPosition += viewVector*mouseDeltaPos.y*0.001f*zoom;
+            cameraPosition += tagentViewVector*mouseDeltaPos.x*0.001f*zoom;
         }
 
         if (IsKeyDown(KEY_LEFT_CONTROL) && !dragging && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {

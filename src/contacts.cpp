@@ -41,12 +41,6 @@ float Contact::getClosingVelocity() const {
     return velocity.x;
 }
 
-// NOTE: debugging only
-#include <iostream>
-#include <bMath/ext/iostream.hpp>
-#include <bMath/ext/raylib.hpp>
-
-
 
 PenetrationResolutionResult Contact::resolvePenetration() {
     using namespace bMath;
