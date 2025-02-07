@@ -131,7 +131,7 @@ void bEngine::Contact::resolveVelocity() {
     // TODO: temporarily hard-coded
     float restitution = 0.5f;
     float static_friction = 0.5f;
-    float kinetic_friction = 0.2f;
+    float kinetic_friction = 0.4f;
 
     // NOTE: debug code
     float3 relativeVelocity = getRelativeVelocity();
@@ -168,10 +168,13 @@ void bEngine::Contact::resolveVelocity() {
     }
 
     float impluseNormal = -(closingVelocity)*(1+restitution) / inverseInertia[0];
-    float impluseFriction = impluseNormal * kinetic_friction;
+    float impluseFriction = -impluseNormal * kinetic_friction;
     // Create planar friction force and clamp magnitude to impluseFriction
     // get inverse intertia along these planar axes
     float3 planarImpluse(0,-relativeVelocity.y/inverseInertia[1], -relativeVelocity.z/inverseInertia[2]);
+    if (planarImpluse.length() > impluseFriction) {
+        planarImpluse = normalized(planarImpluse)*impluseFriction;
+    }
     float3 impluse(impluseNormal, 0.0f, 0.0f);
     impluse += planarImpluse;
     ////
