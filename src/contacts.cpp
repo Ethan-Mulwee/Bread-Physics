@@ -128,7 +128,6 @@ void bEngine::Contact::resolveVelocity() {
     bodyPoint[0] = contactPoint - body[0]->position;
     if (body[1]) bodyPoint[1] = contactPoint - body[1]->position;
     matrix3 contactToWorld = transpose(getContactBasis());
-    float closingVelocity = getClosingVelocity();
     // TODO: temporarily hard-coded
     float restitution = 0.5f;
     float static_friction = 0.5f;
@@ -136,35 +135,45 @@ void bEngine::Contact::resolveVelocity() {
 
     // NOTE: debug code
     float3 relativeVelocity = getRelativeVelocity();
+    float closingVelocity = relativeVelocity.x;
     // std::cout << getRelativeVelocity() << "\n";
     ///////////////////
 
-    float3 angularInverseInertiaWorld = cross(bodyPoint[0], contactNormal);
-    angularInverseInertiaWorld = angularInverseInertiaWorld*body[0]->getInverseInteriaTensorWorld();
-    angularInverseInertiaWorld = cross(angularInverseInertiaWorld, bodyPoint[0]);
+    const float3 contactBasis[3] = {contactNormal, contactToWorld.col(1), contactToWorld.col(2)};
+    float3 angularInverseInertiaWorld[3];
 
-    float inverseInertia = dot(angularInverseInertiaWorld,contactNormal);
-    inverseInertia += body[0]->inverseMass;
+    for (int i = 0; i < 3; i++) {
+        angularInverseInertiaWorld[i] = cross(bodyPoint[0], contactBasis[i]);
+        angularInverseInertiaWorld[i] = angularInverseInertiaWorld[i]*body[0]->getInverseInteriaTensorWorld();
+        angularInverseInertiaWorld[i] = cross(angularInverseInertiaWorld[i], bodyPoint[0]);
+    }
+
+    float inverseInertia[3];
+    for (int i = 0; i < 3; i++) {
+        inverseInertia[i] = dot(angularInverseInertiaWorld[i],contactBasis[i]);
+        inverseInertia[i] += body[0]->inverseMass;
+    }
 
     if (body[1]) {
         float3 angularInverseInertiaWorld = cross(bodyPoint[1], contactNormal);
         angularInverseInertiaWorld = angularInverseInertiaWorld*body[1]->getInverseInteriaTensorWorld();
         angularInverseInertiaWorld = cross(angularInverseInertiaWorld, bodyPoint[1]);
 
-        inverseInertia += dot(angularInverseInertiaWorld,contactNormal);
-        inverseInertia += body[1]->inverseMass;
+        inverseInertia[0] += dot(angularInverseInertiaWorld,contactNormal);
+        inverseInertia[0] += body[1]->inverseMass;
     }
 
     if (closingVelocity < 0.5f) {
         restitution = 0.0f;
     }
 
-    float impluseNormal = -(closingVelocity)*(1+restitution) / inverseInertia;
+    float impluseNormal = -(closingVelocity)*(1+restitution) / inverseInertia[0];
     float impluseFriction = impluseNormal * kinetic_friction;
     // Create planar friction force and clamp magnitude to impluseFriction
     // get inverse intertia along these planar axes
-    float3 planarImpluse(0,-relativeVelocity.y, -relativeVelocity.z);
+    float3 planarImpluse(0,-relativeVelocity.y/inverseInertia[1], -relativeVelocity.z/inverseInertia[2]);
     float3 impluse(impluseNormal, 0.0f, 0.0f);
+    impluse += planarImpluse;
     ////
     // std::cout << impluse << "\n";
     ////
@@ -175,7 +184,7 @@ void bEngine::Contact::resolveVelocity() {
     if (body[1]) implusiveTorque[1] = cross(bodyPoint[1], impluse);
 
     ///
-    std::cout << "beofre: " << getRelativeVelocity() << "\n";
+    std::cout << "before: " << getRelativeVelocity() << "\n";
     ////
 
     body[0]->linearVelocity += impluse*body[0]->inverseMass;
@@ -183,6 +192,10 @@ void bEngine::Contact::resolveVelocity() {
     
     ///
     std::cout << "after: " << getRelativeVelocity() << "\n";
+
+    for (int i = 0; i < 3; i++) {
+        std::cout << "[" << std::to_string(i) << "] " << inverseInertia[i] << "\n"; 
+    }
     ///
 
     if (body[1]) {
