@@ -45,6 +45,8 @@ namespace bEngine {
 
         float getClosingVelocity() const; 
 
+        bMath::float3 getRelativeVelocity() const;
+
         inline bMath::float3 getContactPointRelativeToBody(unsigned bodyIndex) const {
             return contactPoint - body[bodyIndex]->position;
         }
