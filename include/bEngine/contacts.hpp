@@ -5,6 +5,9 @@
 
 #include "rigidbody.hpp"
 
+// #include <iostream>
+// #include <cmath>
+
 namespace bEngine {
     enum PrimitiveType {
         Sphere,
@@ -24,6 +27,9 @@ namespace bEngine {
 
         inline bMath::float3 getAxis(const unsigned i) const {
             bMath::float4x4 transform = getTransform();
+            // if (std::isnan(transform(0,i)) || std::isnan(transform(1,i)) || std::isnan(transform(2,i))) {
+            //     std::cout << "Nan detected \n";
+            // }
             return bMath::float3(transform(0,i), transform(1,i), transform(2,i));
         }
     };

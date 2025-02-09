@@ -20,6 +20,10 @@ void World::step(float time){
 void World::generateContacts() {
     for (int i = 0; i < colliders.size(); i++) {
         CollisionDetector::cubeFloor(colliders[i], 0.0f, contacts);
+        for (int j = 0; j < colliders.size(); j++) {
+            if (j == i) continue;
+            CollisionDetector::cubeCube(colliders[i], colliders[j], contacts);
+        }
     }
 }
 

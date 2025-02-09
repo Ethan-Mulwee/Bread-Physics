@@ -30,12 +30,12 @@ int main() {
     body->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
     body->orientation.normalize();
 
-    bEngine::Primitive* collider = new bEngine::Primitive();
-    collider->type = bEngine::PrimitiveType::Cube;
-    collider->dimensions = bMath::float3(0.5,0.5,0.5);
+    bEngine::Primitive collider;
+    collider.type = bEngine::PrimitiveType::Cube;
+    collider.dimensions = bMath::float3(0.5,0.5,0.5);
 
-    collider->offset = bMath::matrix4::identity();
-    collider->body = body;
+    collider.offset = bMath::matrix4::identity();
+    collider.body = body;
 
     world.bodies.push_back(body);
     world.colliders.push_back(collider);
@@ -49,11 +49,11 @@ int main() {
     body2->orientation = bMath::quaternion(1,0,0,0);
     body2->angularVelocity = bMath::float3(0,0,0);
 
-    bEngine::Primitive* collider2 = new bEngine::Primitive();
-    collider2->type = bEngine::PrimitiveType::Cube;
-    collider2->dimensions = bMath::float3(0.5,0.5,0.5);
-    collider2->offset = bMath::matrix4::identity();
-    collider2->body = body2;
+    bEngine::Primitive collider2;
+    collider2.type = bEngine::PrimitiveType::Cube;
+    collider2.dimensions = bMath::float3(0.5,0.5,0.5);
+    collider2.offset = bMath::matrix4::identity();
+    collider2.body = body2;
 
     world.bodies.push_back(body2);
     world.colliders.push_back(collider2);

@@ -9,10 +9,10 @@ Renderer::Renderer() {
 void Renderer::render(const bEngine::World &world)
 {
   for (int i = 0; i < world.colliders.size(); i++) {
-    switch (world.colliders[i]->type) {
+    switch (world.colliders[i].type) {
       case bEngine::PrimitiveType::Cube:
-        cubeModel.transform = ConvertRay(world.colliders[i]->getTransform()*world.colliders[i]->offset);
-        DrawModel(cubeModel, Vector3{0,0,0}, 1, WHITE);
+        cubeModel.transform = ConvertRay(world.colliders[i].getTransform()*world.colliders[i].offset);
+        DrawModel(cubeModel, Vector3{0,0,0}, 1, ColorFromHSV(i*200.0f, 0.8f, 0.7f));
         break;
     }
   }
