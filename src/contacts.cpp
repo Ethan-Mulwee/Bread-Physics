@@ -117,10 +117,6 @@ PenetrationResolutionResult Contact::resolvePenetration() {
     return result;
 }
 
-// NOTE: debug code
-#include <bMath/ext/iostream.hpp>
-///////////////////
-
 void bEngine::Contact::resolveVelocity() {
     using namespace bMath;
 
@@ -162,8 +158,8 @@ void bEngine::Contact::resolveVelocity() {
         }
 
         for (int i = 0; i < 3; i++) {
-            inverseInertia[i] = dot(angularInverseInertiaWorld[i],contactBasis[i]);
-            inverseInertia[i] += body[i]->inverseMass;
+            inverseInertia[i] += dot(angularInverseInertiaWorld[i],contactBasis[i]);
+            inverseInertia[i] += body[1]->inverseMass;
         }
     }
 
@@ -190,9 +186,8 @@ void bEngine::Contact::resolveVelocity() {
     body[0]->linearVelocity += impluse*body[0]->inverseMass;
     body[0]->angularVelocity += implusiveTorque[0]*body[0]->getInverseInteriaTensorWorld();
     
-
     if (body[1]) {
-        body[1]->linearVelocity += impluse*body[1]->inverseMass;
-        body[1]->angularVelocity += implusiveTorque[1]*body[1]->getInverseInteriaTensorWorld();
+        body[1]->linearVelocity += impluse*-body[1]->inverseMass;
+        body[1]->angularVelocity += implusiveTorque[1]*body[1]->getInverseInteriaTensorWorld()*-1.0f;
     }
 }

@@ -98,14 +98,14 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
 
             std::cout << "Box one, Normal: " << normal << ", " << "Penetration: " << smallestPeneration << ", " << "Vertex: " << vertex*two.getTransform() << "\n";
 
-            // Contact contact;
-            // contact.contactNormal = normal;
-            // contact.penetration = smallestPeneration;
-            // contact.contactPoint = vertex * two.getTransform();
-            // contact.body[0] = one.body;
-            // contact.body[1] = two.body;
+            Contact contact;
+            contact.contactNormal = normal;
+            contact.penetration = smallestPeneration;
+            contact.contactPoint = vertex * two.getTransform();
+            contact.body[0] = one.body;
+            contact.body[1] = two.body;
 
-            // contacts.push(contact);
+            contacts.push(contact);
         }
         else if (smallestIndex < 6) {
             // Vertex from box one on face of box two
@@ -122,14 +122,14 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             std::cout << "Box two, Normal: " << normal << ", " << "Penetration: " << smallestPeneration << ", " << "Vertex: " << vertex*one.getTransform() << "\n";
 
 
-            // Contact contact;
-            // contact.contactNormal = normal;
-            // contact.penetration = smallestPeneration;
-            // contact.contactPoint = vertex * one.getTransform();
-            // contact.body[0] = two.body;
-            // contact.body[1] = one.body;
+            Contact contact;
+            contact.contactNormal = normal;
+            contact.penetration = smallestPeneration;
+            contact.contactPoint = vertex * one.getTransform();
+            contact.body[0] = two.body;
+            contact.body[1] = one.body;
 
-            // contacts.push(contact);
+            contacts.push(contact);
         }
         else {
             // edge-edge contact

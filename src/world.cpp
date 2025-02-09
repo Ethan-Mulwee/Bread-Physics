@@ -27,6 +27,8 @@ void World::generateContacts() {
     }
 }
 
+// TODO: check for NaNs in this phase
+
 void World::adjustPositions(float time, unsigned iterations) {
     using namespace bMath;
 
