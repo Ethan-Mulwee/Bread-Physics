@@ -13,7 +13,7 @@ const int axisLength = 100;
 int main() {
     //Raylib stuff
     InitWindow(1800,1200,"test");
-    SetTargetFPS(60);
+    SetTargetFPS(200);
 
     camera.position = Vector3{5,5,-5};
     camera.target = Vector3{0,0,0};
@@ -81,6 +81,7 @@ int main() {
 
         Ray screenRay = GetScreenToWorldRay(GetMousePosition(), camera);
         RayCollision collision = GetRayCollisionMesh(screenRay, renderer.cubeModel.meshes[0], ConvertRay(world.bodies[0]->getTransform()));
+        // if (!collision.hit) GetRayCollisionMesh(screenRay, renderer.cubeModel.meshes[1], ConvertRay(world.bodies[1]->getTransform()));
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !IsKeyDown(KEY_LEFT_CONTROL)) {
             if (collision.hit) {
@@ -158,7 +159,7 @@ int main() {
 
 
 
-                world.step(1/60.0f);
+                world.step(1/200.0f);
                 renderer.render(world);
             EndMode3D();
         EndDrawing();

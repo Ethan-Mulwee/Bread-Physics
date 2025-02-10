@@ -32,9 +32,7 @@ using namespace bEngine;
 //   // return 1;
 // }
 
-#include <iostream>
 #include <bMath/ext/iostream.hpp>
-#include <cmath>
 
 void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, ContactPool &contacts) {
     
@@ -53,15 +51,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
         cross(one.getAxis(2), two.getAxis(0)), cross(one.getAxis(2), two.getAxis(1)), cross(one.getAxis(2), two.getAxis(2)),
     };
 
-    for (int i = 0; i < 15; i++) {
-        for (int j = 0; j < 3; j++) {
-            if (std::isnan(axis[i][j])) {
-                // std::cout << "NaN axis detected" << "\n";
-            }
-        }
-    }
-
-
+    unsigned bestSingleAxis;
 
     for (int i = 0; i < 15; i++) {
         if (axis[i].squareLength() < 0.0001f) continue;
@@ -72,18 +62,16 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             smallestPeneration = peneration;
             smallestIndex = i;
         }
+
+        if (i == 5) {
+            bestSingleAxis = smallestIndex;
+        }
     }
 
-    // assert(smallestIndex != -1);
-
-    if (smallestIndex == -1) {
-        // std::cout << "No result \n";
-    }
+    assert(smallestIndex != -1);
 
     // penetration logic
     if (smallestPeneration > 0) {
-        // std::cout << "contact happening \n";
-        // std::cout << smallestPeneration << "\n";
         if (smallestIndex < 3) {
             // Vertex from box two on face of box one
             float3 normal = one.getAxis(smallestIndex);
@@ -133,31 +121,93 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
         }
         else {
             // edge-edge contact
-            // smallestIndex -= 6;
-            // unsigned oneAxisIndex = smallestIndex / 3;
-            // unsigned twoAxisIndex = smallestIndex % 3;
-            // float3 oneAxis = one.getAxis(oneAxisIndex);
-            // float3 twoAxis = two.getAxis(twoAxisIndex);
-            // float3 axis = cross(oneAxis, twoAxis);
-            // axis.normalize();
+            smallestIndex -= 6;
+            unsigned oneAxisIndex = smallestIndex / 3;
+            unsigned twoAxisIndex = smallestIndex % 3;
+            float3 oneAxis = one.getAxis(oneAxisIndex);
+            float3 twoAxis = two.getAxis(twoAxisIndex);
+            float3 axis = cross(oneAxis, twoAxis);
+            axis.normalize();
 
-            // if (dot(axis,toCenter) < 0) axis = axis * -1;
+            if (dot(axis,toCenter) < 0) axis = axis * -1;
 
-            // float3 pointOne = one.dimensions;
-            // float3 pointTwo = two.dimensions;
+            float3 pointOne = one.dimensions;
+            float3 pointTwo = two.dimensions;
 
-            // for (int i = 0; i < 3; i++) {
-            //     if (i == oneAxisIndex) pointOne[i] = 0;
-            //     else if (dot(one.getAxis(i), axis) > 0) pointOne[i] = -pointOne[i];
+            for (int i = 0; i < 3; i++) {
+                if (i == oneAxisIndex) pointOne[i] = 0;
+                else if (dot(one.getAxis(i), axis) > 0) pointOne[i] = -pointOne[i];
 
-            //     if (i == twoAxisIndex) pointTwo[i] = 0;
-            //     else if (dot(two.getAxis(i), axis) > 0) pointTwo[i] = -pointTwo[i];
-            // }
+                if (i == twoAxisIndex) pointTwo[i] = 0;
+                else if (dot(two.getAxis(i), axis) > 0) pointTwo[i] = -pointTwo[i];
+            }
 
-            // pointOne = pointOne * one.getTransform();
-            // pointTwo = pointTwo * two.getTransform();
+            pointOne = pointOne * one.getTransform();
+            pointTwo = pointTwo * two.getTransform();
 
-            // float3 vertex = 
+            float3 vertex;
+
+            // Edge edge contact vertex bullshit
+            const float3 pOne = pointOne;
+            const float3 dOne = oneAxis;
+            float oneSize = one.dimensions[oneAxisIndex];
+
+            const float3 pTwo = pointTwo;
+            const float3 dTwo = twoAxis;
+            float twoSize = two.dimensions[twoAxisIndex];
+
+            bool useOne = (bestSingleAxis > 2);
+
+            float3 toSt, cOne, cTwo;
+            float dpStaOne, dpStaTwo, dpOneTwo, smOne, smTwo;
+            float denom, mua, mub;
+
+            smOne = dOne.squareLength();
+            smTwo = dTwo.squareLength();
+            dpOneTwo = dot(dTwo, dOne);
+
+            toSt = pOne - pTwo;
+            dpStaOne = dot(dOne, toSt);
+            dpStaTwo = dot(dTwo, toSt);
+
+            denom = smOne * smTwo - dpOneTwo * dpOneTwo;
+
+            // Zero denominator indicates parrallel lines
+            if (abs(denom) < 0.0001f) {
+                vertex = useOne?pOne:pTwo;
+            }
+
+            mua = (dpOneTwo * dpStaTwo - smTwo * dpStaOne) / denom;
+            mub = (smOne * dpStaTwo - dpOneTwo * dpStaOne) / denom;
+
+            // If either of the edges has the nearest point out
+            // of bounds, then the edges aren't crossed, we have
+            // an edge-face contact. Our point is on the edge, which
+            // we know from the useOne parameter.
+            if (mua > oneSize ||
+                mua < -oneSize ||
+                mub > twoSize ||
+                mub < -twoSize)
+            {
+                vertex = useOne?pOne:pTwo;
+            }
+            else
+            {
+                cOne = pOne + dOne * mua;
+                cTwo = pTwo + dTwo * mub;
+
+                vertex = cOne * 0.5 + cTwo * 0.5;
+            }
+            //
+
+            Contact contact;
+            contact.contactNormal = axis;
+            contact.penetration = smallestPeneration;
+            contact.contactPoint = vertex;
+            contact.body[0] = two.body;
+            contact.body[1] = one.body;
+
+            contacts.push(contact);
         }
     }
 }

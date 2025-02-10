@@ -87,7 +87,17 @@ void World::adjustVelocities(float time, unsigned iterations) {
     }
 }
 
+/////// DEBUG CODE
+#include <bMath/ext/raylib.hpp>
+/////// DEBUG CODE
+
 void World::resolveContacts(float time) {
+/////// DEBUG CODE
+    for (int i = 0; i < contacts.count(); i++) {
+        DrawVector(contacts[i].contactPoint, contacts[i].contactNormal, PURPLE);
+    }
+/////// DEBUG CODE
+
     adjustPositions(time, 100);
     adjustVelocities(time, 100);
     contacts.reset();
