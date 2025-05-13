@@ -13,7 +13,7 @@ const int axisLength = 100;
 int main() {
     //Raylib stuff
     InitWindow(1800,1200,"test");
-    SetTargetFPS(200);
+    SetTargetFPS(20);
 
     camera.position = Vector3{5,5,-5};
     camera.target = Vector3{0,0,0};
@@ -47,8 +47,8 @@ int main() {
     bEngine::RigidBody* body2 = new bEngine::RigidBody();
     body2->inverseMass = 0.5f;
     body2->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
-    body2->position = bMath::float3(3,2,-1);
-    body2->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
+    body2->position = bMath::float3(0,0.7f,0);
+    body2->orientation = bMath::quaternion(1.5f, bMath::normalized(bMath::float3(1.0f,0.3f,-0.6f)));
     body2->angularVelocity = bMath::float3(1,.2,0);
 
     bEngine::Primitive collider2;

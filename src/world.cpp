@@ -94,7 +94,7 @@ void World::adjustVelocities(float time, unsigned iterations) {
 void World::resolveContacts(float time) {
 /////// DEBUG CODE
     for (int i = 0; i < contacts.count(); i++) {
-        DrawVector(contacts[i].contactPoint, contacts[i].contactNormal, PURPLE);
+        DrawVector(contacts[i].contactPoint, contacts[i].contactNormal*1.5f, PURPLE, 2.0f);
     }
 /////// DEBUG CODE
 

@@ -33,6 +33,7 @@ using namespace bEngine;
 // }
 
 #include <bMath/ext/iostream.hpp>
+#include <bMath/ext/raylib.hpp>
 
 void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, ContactPool &contacts) {
     
@@ -43,7 +44,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
 
     bMath::float3 toCenter = two.getAxis(3) - one.getAxis(3);
 
-    float3 axis[15] = {
+    float3 axes[15] = {
         one.getAxis(0), one.getAxis(1), one.getAxis(2),
         two.getAxis(0), two.getAxis(1), two.getAxis(2), 
         cross(one.getAxis(0), two.getAxis(0)), cross(one.getAxis(0), two.getAxis(1)), cross(one.getAxis(0), two.getAxis(2)),
@@ -54,10 +55,9 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
     unsigned bestSingleAxis;
 
     for (int i = 0; i < 15; i++) {
-        if (axis[i].squareLength() < 0.0001f) continue;
-        axis[i].normalize();
-        float peneration = penetrationOnAxis(one, two, axis[i], toCenter);
-
+        if (axes[i].squareLength() < 0.0001f) continue;
+        axes[i].normalize();
+        float peneration = penetrationOnAxis(one, two, axes[i], toCenter);
         if (peneration < smallestPeneration) {
             smallestPeneration = peneration;
             smallestIndex = i;
@@ -68,7 +68,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
         }
     }
 
-    assert(smallestIndex != -1);
+    // assert(smallestIndex != -1);
 
     // penetration logic
     if (smallestPeneration > 0) {
@@ -79,12 +79,12 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
                 normal = normal * -1;
             }
 
+            std::cout << "two vertex, one face \n";
+
             float3 vertex = two.dimensions;
             if (dot(two.getAxis(0), normal) < 0) vertex.x = -vertex.x;
             if (dot(two.getAxis(1), normal) < 0) vertex.y = -vertex.y;
             if (dot(two.getAxis(2), normal) < 0) vertex.z = -vertex.z;
-
-            std::cout << "Box one, Normal: " << normal << ", " << "Penetration: " << smallestPeneration << ", " << "Vertex: " << vertex*two.getTransform() << "\n";
 
             Contact contact;
             contact.contactNormal = normal;
@@ -102,13 +102,12 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
                 normal = normal * -1;
             }
 
+            std::cout << "one vertex, two face \n";
+
             float3 vertex = one.dimensions;
             if (dot(one.getAxis(0), normal) < 0) vertex.x = -vertex.x;
             if (dot(one.getAxis(1), normal) < 0) vertex.y = -vertex.y;
             if (dot(one.getAxis(2), normal) < 0) vertex.z = -vertex.z;
-
-            std::cout << "Box two, Normal: " << normal << ", " << "Penetration: " << smallestPeneration << ", " << "Vertex: " << vertex*one.getTransform() << "\n";
-
 
             Contact contact;
             contact.contactNormal = normal;
@@ -128,6 +127,9 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             float3 twoAxis = two.getAxis(twoAxisIndex);
             float3 axis = cross(oneAxis, twoAxis);
             axis.normalize();
+
+            std::cout << "edge edge, penetration: " << smallestPeneration << "\n" << ", index: " << smallestIndex + 6 << ", axis: " << axes[smallestIndex+6] << "\n";
+            DrawVector(one.body->position, axes[smallestIndex+6], RED, 3.0f);
 
             if (dot(axis,toCenter) < 0) axis = axis * -1;
 

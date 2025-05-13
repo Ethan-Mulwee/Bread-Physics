@@ -3,9 +3,6 @@
 
 #include <bMath/bMath.hpp>
 
-#include <iostream>
-#include <cmath>
-
 namespace bEngine {
 	class RigidBody {
 		public:
@@ -25,9 +22,6 @@ namespace bEngine {
 
 			bMath::float4x4 getTransform() const {
 				bMath::float3x3 o = quaternionToMatrix(orientation);
-                if (std::isnan(o(0,0))) {
-                    // std::cout << "Nan detected \n";
-                }
 				return bMath::matrix4(
 					o(0,0), o(0,1), o(0,2), position.x,
 					o(1,0), o(1,1), o(1,2), position.y,

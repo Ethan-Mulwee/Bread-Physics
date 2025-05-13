@@ -181,13 +181,13 @@ void bEngine::Contact::resolveVelocity() {
 
     float3 implusiveTorque[2]; 
     implusiveTorque[0] = cross(bodyPoint[0], impluse);
-    if (body[1]) implusiveTorque[1] = cross(bodyPoint[1], impluse);
+    if (body[1]) implusiveTorque[1] = cross(bodyPoint[1], -1.0f*impluse);
 
     body[0]->linearVelocity += impluse*body[0]->inverseMass;
     body[0]->angularVelocity += implusiveTorque[0]*body[0]->getInverseInteriaTensorWorld();
     
     if (body[1]) {
         body[1]->linearVelocity += impluse*-body[1]->inverseMass;
-        body[1]->angularVelocity += implusiveTorque[1]*body[1]->getInverseInteriaTensorWorld()*-1.0f;
+        body[1]->angularVelocity += implusiveTorque[1]*body[1]->getInverseInteriaTensorWorld();
     }
 }
