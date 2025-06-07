@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Bread-Physics)
 
-file(GLOB_RECURSE SRC_FILES src/*.cpp)
+file(GLOB_RECURSE ENGINE_SRC_FILES src/*.cpp)
+file(GLOB_RECURSE DEMO_SRC_FILES demo/*.cpp)
 
 set(IMGUI_SOURCES
   ext/imgui/imgui.cpp
@@ -17,7 +18,8 @@ set(IMGUI_SOURCES
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(App demo/main.cpp ${IMGUI_SOURCES} ${SRC_FILES})
+# in the future build the physics engine to a library and include/link it
+add_executable(App ${DEMO_SRC_FILES} ${IMGUI_SOURCES} ${ENGINE_SRC_FILES})
 
 add_subdirectory(ext/glfw)
 add_subdirectory(ext/glew)

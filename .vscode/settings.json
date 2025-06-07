@@ -46,6 +46,10 @@
         "typeinfo": "cpp",
         "sstream": "cpp",
         "fstream": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "chrono": "cpp",
+        "ctime": "cpp",
+        "ratio": "cpp",
+        "cinttypes": "cpp"
     }
 }
