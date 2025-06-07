@@ -32,11 +32,11 @@ int main() {
 
       rlImGuiBegin();
         bool open = true;
+        ImGui::ShowDemoWindow(&open);
+        // ImGui::Begin("test", &open, 0);
 
-        ImGui::Begin("test", &open, 0);
 
-
-        ImGui::End();
+        // ImGui::End();
 
       rlImGuiEnd();
 
