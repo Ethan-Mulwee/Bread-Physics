@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
 #include "imgui.h"
@@ -39,6 +40,8 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
+
+    glewInit();
     
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

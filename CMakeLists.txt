@@ -26,6 +26,7 @@ target_include_directories(App
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include 
   ${CMAKE_CURRENT_SOURCE_DIR}/demo 
   PUBLIC ext/glfw/include
+  PUBLIC ext/glew/include
   PUBLIC ext/imgui
   PUBLIC ext/imgui/backends
   PUBLIC ext/Bread-Math/include/bMath
