@@ -32,9 +32,6 @@ using namespace bEngine;
 //   // return 1;
 // }
 
-#include <bMath/ext/iostream.hpp>
-#include <bMath/ext/raylib.hpp>
-
 void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, ContactPool &contacts) {
     
     using namespace bMath;
@@ -79,7 +76,6 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
                 normal = normal * -1;
             }
 
-            std::cout << "two vertex, one face \n";
 
             float3 vertex = two.dimensions;
             if (dot(two.getAxis(0), normal) < 0) vertex.x = -vertex.x;
@@ -101,8 +97,6 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             if (dot(normal, toCenter*-1.0f) > 0) {
                 normal = normal * -1;
             }
-
-            std::cout << "one vertex, two face \n";
 
             float3 vertex = one.dimensions;
             if (dot(one.getAxis(0), normal) < 0) vertex.x = -vertex.x;
@@ -127,9 +121,6 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             float3 twoAxis = two.getAxis(twoAxisIndex);
             float3 axis = cross(oneAxis, twoAxis);
             axis.normalize();
-
-            std::cout << "edge edge, penetration: " << smallestPeneration << "\n" << ", index: " << smallestIndex + 6 << ", axis: " << axes[smallestIndex+6] << "\n";
-            DrawVector(one.body->position, axes[smallestIndex+6], RED, 3.0f);
 
             if (dot(axis,toCenter) < 0) axis = axis * -1;
 

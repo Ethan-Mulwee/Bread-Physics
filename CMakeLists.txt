@@ -1,24 +1,37 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(Bread-Math)
+project(Bread-Physics)
 
 file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
-find_library(RAYLIB_LIB raylib)
+set(IMGUI_SOURCES
+  ext/imgui/imgui.cpp
+  ext/imgui/imgui_demo.cpp
+  ext/imgui/imgui_draw.cpp
+  ext/imgui/imgui_tables.cpp
+  ext/imgui/imgui_widgets.cpp
+  ext/imgui/backends/imgui_impl_glfw.cpp 
+  ext/imgui/backends/imgui_impl_opengl3.cpp
+)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(Cubes demo/raylib/cubes.cpp demo/raylib/render.cpp demo/raylib/render.hpp ${SRC_FILES})
-target_include_directories(Cubes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/demo/raylib)
-target_link_libraries(Cubes PUBLIC "${RAYLIB_LIB}")
+add_executable(App demo/main.cpp ${IMGUI_SOURCES} ${SRC_FILES})
 
-add_executable(Drag demo/raylib/dragcubes.cpp demo/raylib/render.cpp demo/raylib/render.hpp ${SRC_FILES})
-target_include_directories(Drag PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/demo/raylib)
-target_link_libraries(Drag PUBLIC "${RAYLIB_LIB}")
+add_subdirectory(ext/glfw)
 
-add_executable(App demo/raylib/test.cpp ${SRC_FILES})
-target_include_directories(App PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/demo/raylib)
-target_link_libraries(App PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/librlImGui.a)
-target_link_libraries(App PUBLIC "${RAYLIB_LIB}")
+target_include_directories(App 
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include 
+  ${CMAKE_CURRENT_SOURCE_DIR}/demo 
+  PUBLIC ext/glfw/include
+  PUBLIC ext/imgui
+  PUBLIC ext/imgui/backends
+  PUBLIC ext/Bread-Math/include/bMath
+)
 
+target_link_directories(App
+  PRIVATE ext/glfw/src
+)
+
+target_link_libraries(App glfw GL)

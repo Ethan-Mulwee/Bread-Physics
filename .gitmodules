@@ -1,0 +1,11 @@
+[submodule "ext/glfw"]
+	path = ext/glfw
+	url = https://github.com/glfw/glfw.git
+	branch = docking
+[submodule "ext/imgui"]
+	path = ext/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "Bread-Math"]
+	path = ext/Bread-Math
+	url = https://github.com/Ethan-Mulwee/Bread-Math
