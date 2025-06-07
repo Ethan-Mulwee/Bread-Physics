@@ -39,7 +39,29 @@ int main() {
     glewInit();
 
     std::cout << glGetString(GL_VERSION) << std::endl;
+
+    float positions[6] = {
+        -0.5f, -0.5f, // 0
+        0.0f, 0.5f, // 1
+        0.5f, -0.5f, // 2
+    };
+    unsigned int indices[] {
+        0, 1, 2,
+    };
+
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(float), positions, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, 0);
     
+    unsigned int ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(float), indices, GL_STATIC_DRAW);
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -122,6 +144,7 @@ int main() {
         glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // Update and Render additional Platform Windows
@@ -134,6 +157,7 @@ int main() {
             ImGui::RenderPlatformWindowsDefault();
             glfwMakeContextCurrent(backup_current_context);
         }
+
 
         glfwSwapBuffers(window);
     }
