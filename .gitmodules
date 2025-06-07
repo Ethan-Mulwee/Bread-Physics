@@ -6,5 +6,5 @@
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
 [submodule "Bread-Math"]
-	path = Bread-Math
+	path = ext/Bread-Math
 	url = https://github.com/Ethan-Mulwee/Bread-Math
