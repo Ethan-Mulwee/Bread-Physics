@@ -17,7 +17,7 @@ set(IMGUI_SOURCES
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(App demo/main.cpp ${IMGUI_SOURCES}) #${SRC_FILES}
+add_executable(App demo/main.cpp ${IMGUI_SOURCES} ${SRC_FILES})
 
 add_subdirectory(ext/glfw)
 
@@ -27,6 +27,7 @@ target_include_directories(App
   PUBLIC ext/glfw/include
   PUBLIC ext/imgui
   PUBLIC ext/imgui/backends
+  PUBLIC ext/Bread-Math/include/bMath
 )
 
 target_link_directories(App

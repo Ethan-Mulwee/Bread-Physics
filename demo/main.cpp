@@ -1,13 +1,23 @@
 #include <iostream>
+
 #include "GLFW/glfw3.h"
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "bMath.hpp"
+#include "ext/iostream.hpp"
+
 
 
 int main() {
+    using namespace bMath;
+
     std::cout << "Hello World! \n";
+
+    vector3 testvec(1,2,3);
+    std::cout << testvec << "\n";
 
     const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
