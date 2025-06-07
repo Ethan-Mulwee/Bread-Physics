@@ -1,2 +1,2 @@
-# Bread Engine
- A rewrite of Dough-Engine using my math library Bread-Math
+# Bread Physics
+A simple rigidbody physics engine with a graphical demo made with openGL
