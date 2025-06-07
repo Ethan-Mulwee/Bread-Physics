@@ -9,3 +9,6 @@
 [submodule "Bread-Math"]
 	path = ext/Bread-Math
 	url = https://github.com/Ethan-Mulwee/Bread-Math
+[submodule "ext/glew"]
+	path = ext/glew
+	url = https://github.com/Perlmint/glew-cmake.git

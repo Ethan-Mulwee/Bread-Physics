@@ -29,7 +29,7 @@ int main() {
         exit( EXIT_FAILURE );
     }
 
-    window = glfwCreateWindow(500,500, "Window", NULL, NULL);
+    window = glfwCreateWindow(1920,1080, "Window", NULL, NULL);
 
     if (!window) {
         fprintf(stderr , "Failed to open GLFW window \n");

@@ -20,6 +20,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(App demo/main.cpp ${IMGUI_SOURCES} ${SRC_FILES})
 
 add_subdirectory(ext/glfw)
+add_subdirectory(ext/glew)
 
 target_include_directories(App 
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include 
@@ -32,6 +33,7 @@ target_include_directories(App
 
 target_link_directories(App
   PRIVATE ext/glfw/src
+  PRIVATE ext/glew/lib
 )
 
-target_link_libraries(App glfw GL)
+target_link_libraries(App glfw GL GLEW)
