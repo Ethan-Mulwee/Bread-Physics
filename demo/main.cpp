@@ -15,11 +15,6 @@
 int main() {
     using namespace bMath;
 
-    std::cout << "Hello World! \n";
-
-    vector3 testvec(1,2,3);
-    std::cout << testvec << "\n";
-
     const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
@@ -42,6 +37,8 @@ int main() {
     glfwSwapInterval(1); // Enable vsync
 
     glewInit();
+
+    std::cout << glGetString(GL_VERSION) << std::endl;
     
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -49,7 +46,7 @@ int main() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
     
     ImGuiStyle& style = ImGui::GetStyle();
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
