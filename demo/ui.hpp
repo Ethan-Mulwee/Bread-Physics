@@ -8,14 +8,14 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-class UI {
+class ImGuiHelper {
     public:
 
-    void init(GLFWwindow* window); 
+    static void init(GLFWwindow* window); 
 
-    void intialize_render();
+    static void intialize_render();
 
-    void render();
+    static void render();
 };
 
 #endif

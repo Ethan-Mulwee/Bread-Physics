@@ -2,6 +2,7 @@
 
 void FrameBuffer::create_buffers(int32_t width, int32_t height)
 {
+    ////////// HELLO TRIANGLE TESTING CODE
     float positions[6] = {
         -0.5f, -0.5f, // 0
         0.0f, 0.5f, // 1
@@ -23,8 +24,8 @@ void FrameBuffer::create_buffers(int32_t width, int32_t height)
     glGenBuffers(1, &ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(float), indices, GL_STATIC_DRAW);
+    ////////// HELLO TRIANGLE TESTING CODE
 
-    // Create and bind frame buffer
     m_Width = width;
     m_Height = height;
 

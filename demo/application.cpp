@@ -1,6 +1,6 @@
 #include "application.hpp"
 
-Application::Application(const char *name, int width, int height)
+Application::Application(int width, int height, const char *name)
 {
     window.init(width, height, name);
 }

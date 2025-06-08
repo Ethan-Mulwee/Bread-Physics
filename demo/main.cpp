@@ -1,7 +1,7 @@
 #include "application.hpp"
 
 int main() {
-    Application app("test", 500, 500);
+    Application app(1920, 1080, "test");
 
     app.loop();
 }

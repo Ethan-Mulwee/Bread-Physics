@@ -17,7 +17,7 @@ void GLWindow::init(int width, int height, const char *title)
         exit( EXIT_FAILURE );
     }
 
-    glfwWindow = glfwCreateWindow(1920,1080, "Window", NULL, NULL);
+    glfwWindow = glfwCreateWindow(m_width,m_height, "Window", NULL, NULL);
 
     if (!glfwWindow) {
         fprintf(stderr , "Failed to open GLFW window \n");
@@ -32,7 +32,7 @@ void GLWindow::init(int width, int height, const char *title)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
     
-    m_ui.init(glfwWindow);
+    ImGuiHelper::init(glfwWindow);
     m_scene.init();
 }
 
@@ -41,13 +41,13 @@ void GLWindow::render() {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    m_ui.intialize_render();
+    ImGuiHelper::intialize_render();
     
     m_scene.render();
 
     m_properties.render();
 
-    m_ui.render();
+    ImGuiHelper::render();
 
     glfwPollEvents();
     glfwSwapBuffers(glfwWindow);

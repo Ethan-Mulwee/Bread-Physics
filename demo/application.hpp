@@ -17,7 +17,7 @@
 
 class Application {
     public:
-        Application(const char* name, int width, int height);
+        Application(int width, int height, const char* name);
 
         ~Application();
 
