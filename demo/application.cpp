@@ -30,9 +30,7 @@ Application::Application(const char *name, int width, int height)
     // Create and bind vertex buffers
     scene.init();
 
-    ///////
-
-    ui.intialize(window);
+    ui.init(window);
 
     context = UIContext();
     // Our state

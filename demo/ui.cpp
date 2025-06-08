@@ -1,6 +1,6 @@
 #include "ui.hpp"
 
-void UI::intialize(GLFWwindow *window)
+void UI::init(GLFWwindow *window)
 {
     const char* glsl_version = "#version 130";
 

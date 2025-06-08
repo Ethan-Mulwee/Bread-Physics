@@ -11,7 +11,7 @@
 class UI {
     public:
 
-    void intialize(GLFWwindow* window); 
+    void init(GLFWwindow* window); 
 
     void intialize_render();
 };
