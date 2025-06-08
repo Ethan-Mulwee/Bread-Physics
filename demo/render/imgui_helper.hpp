@@ -1,5 +1,5 @@
-#ifndef BUI
-#define BUI
+#ifndef BENGINE_IMGUIHELPER
+#define BENGINE_IMGUIHELPER
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"

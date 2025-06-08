@@ -1,5 +1,5 @@
-#ifndef BAPP
-#define BAPP
+#ifndef BENGINE_APPLICATION
+#define BENGINE_APPLICATION
 
 #include <iostream>
 

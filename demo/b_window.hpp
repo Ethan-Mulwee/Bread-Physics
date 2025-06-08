@@ -1,5 +1,5 @@
-#ifndef BWINDOW
-#define BWINDOW
+#ifndef BENGINE_WINDOW
+#define BENGINE_WINDOW
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"

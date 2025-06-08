@@ -1,5 +1,5 @@
-#ifndef BFRAMEBUF
-#define BFRAMEBUF
+#ifndef BENGINE_FRAMEBUFFER
+#define BENGINE_FRAMEBUFFER
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
