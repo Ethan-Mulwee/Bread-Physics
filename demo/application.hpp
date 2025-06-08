@@ -27,6 +27,12 @@ class Application {
 
     GLFWwindow* window;
     UIContext context;
+    uint32_t mFBO = 0;
+    uint32_t mTexId = 0;
+    uint32_t mDepthId = 0;
+    int mHeight;
+    int mWidth;
+    bMath::float2 mSize;
 };
 
 #endif
