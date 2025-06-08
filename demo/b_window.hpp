@@ -8,7 +8,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "ui.hpp"
+#include "imgui_helper.hpp"
 #include "scene.hpp"
 #include "properties.hpp"
 

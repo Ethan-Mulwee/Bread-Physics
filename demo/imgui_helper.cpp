@@ -1,4 +1,4 @@
-#include "ui.hpp"
+#include "imgui_helper.hpp"
 
 void ImGuiHelper::init(GLFWwindow *window)
 {
