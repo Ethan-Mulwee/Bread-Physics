@@ -33,7 +33,7 @@ void GLWindow::init(int width, int height, const char *title)
     std::cout << glGetString(GL_VERSION) << std::endl;
     
     ImGuiHelper::init(glfwWindow);
-    m_scene.init();
+    m_scene.init(800,600);
 }
 
 void GLWindow::render() {

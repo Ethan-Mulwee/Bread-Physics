@@ -24,7 +24,7 @@ class GLWindow {
         int m_width;
         int m_height;
 
-        Scene m_scene;
+        SceneRenderer m_scene;
         PropertiesPanel m_properties;
 };
 

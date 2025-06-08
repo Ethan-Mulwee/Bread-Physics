@@ -1,11 +1,11 @@
 #include "scene.hpp"
 
-void Scene::init()
+void SceneRenderer::init(int32_t width, int32_t height)
 {
-    frameBuffer.create_buffers(800,600);
+    frameBuffer.create_buffers(width,height);
 }
 
-void Scene::render()
+void SceneRenderer::render()
 {
     // bind frame buffer
     frameBuffer.bind();

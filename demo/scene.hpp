@@ -12,10 +12,10 @@
 
 #include "framebuffer.hpp"
 
-class Scene {
+class SceneRenderer {
     public:
         
-        void init();
+        void init(int32_t width, int32_t height);
     
         void render();
     
