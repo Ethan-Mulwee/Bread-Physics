@@ -1,5 +1,5 @@
-#ifndef BWINDOW
-#define BWINDOW
+#ifndef BAPP
+#define BAPP
 
 #include <iostream>
 
@@ -13,9 +13,7 @@
 #include "bMath.hpp"
 #include "ext/iostream.hpp"
 
-#include "uicontext.hpp"
-#include "ui.hpp"
-#include "scene.hpp"
+#include "b_window.hpp"
 
 class Application {
     public:
@@ -27,14 +25,8 @@ class Application {
 
     private: 
 
-    GLFWwindow* window;
-    UI ui;
-    Scene scene;
-    UIContext context;
+    GLWindow window;
 
-    int mHeight;
-    int mWidth;
-    bMath::float2 mSize;
 };
 
 #endif

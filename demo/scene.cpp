@@ -10,6 +10,7 @@ void Scene::render()
     // bind frame buffer
     frameBuffer.bind();
     
+    
     // render mesh
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     

@@ -1,5 +1,5 @@
-#ifndef BUI
-#define BUI
+#ifndef BPROPS
+#define BPROPS
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -8,14 +8,9 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-class UI {
+class PropertiesPanel {
     public:
-
-    void init(GLFWwindow* window); 
-
-    void intialize_render();
-
-    void render();
+        void render();
 };
 
 #endif
