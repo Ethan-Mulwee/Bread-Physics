@@ -10,9 +10,9 @@
 
 #include "bMath.hpp"
 
-#include "framebuffer.hpp"
+#include "render/framebuffer.hpp"
 
-class SceneRenderer {
+class SceneView {
     public:
         
         void init(int32_t width, int32_t height);

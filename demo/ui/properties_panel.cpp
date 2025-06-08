@@ -1,4 +1,4 @@
-#include "properties.hpp"
+#include "properties_panel.hpp"
 
 void PropertiesPanel::render() {
     ImGuiIO& io = ImGui::GetIO();

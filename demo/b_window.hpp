@@ -8,9 +8,9 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "imgui_helper.hpp"
-#include "scene.hpp"
-#include "properties.hpp"
+#include "render/imgui_helper.hpp"
+#include "ui/scene_view.hpp"
+#include "ui/properties_panel.hpp"
 
 class GLWindow {
     public:
@@ -24,7 +24,7 @@ class GLWindow {
         int m_Width;
         int m_Height;
 
-        SceneRenderer m_SceneRenderer;
+        SceneView m_SceneRenderer;
         PropertiesPanel m_PropertiesPanel;
 };
 
