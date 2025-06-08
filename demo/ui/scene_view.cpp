@@ -18,6 +18,11 @@ void SceneView::init(int32_t width, int32_t height)
         vector3(1,1,1)
     };
 
+    for (int i = 0; i < 8; i++) {
+        testVertices[i] -= vector3(0.5,0.5,0.5);
+        testVertices[i] *= 0.5f;
+    }
+
     std::vector<uint32_t> testIndices = {
         //Top
         2, 6, 7, 2, 3, 7, 
