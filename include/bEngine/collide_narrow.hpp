@@ -3,7 +3,7 @@
 
 #include "contacts.hpp"
 #include "rigidbody.hpp"
-#include <bMath/bMath.hpp>
+#include "bMath.hpp"
 #include <float.h>
 #include <vector>
 

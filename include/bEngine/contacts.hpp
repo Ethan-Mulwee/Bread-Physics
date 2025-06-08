@@ -1,7 +1,7 @@
 #ifndef BENGINE_CONTACTS
 #define BENGINE_CONTACTS
 
-#include <bMath/bMath.hpp>
+#include "bMath.hpp"
 
 #include "rigidbody.hpp"
 

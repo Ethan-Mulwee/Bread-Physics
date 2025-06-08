@@ -1,7 +1,7 @@
 #ifndef BENGINE_BODY
 #define BENGINE_BODY
 
-#include <bMath/bMath.hpp>
+#include "bMath.hpp"
 
 namespace bEngine {
 	class RigidBody {

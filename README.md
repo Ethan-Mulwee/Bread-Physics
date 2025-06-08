@@ -1,2 +1,21 @@
 # Bread Physics
-A simple rigidbody physics engine with a graphical demo made with openGL
+A simple rigidbody physics engine with a graphical demo made with openGL.
+
+
+# Build Bread Physics Library
+(TODO)
+
+# Build Bread Physics Demo
+
+Dependencies are included as submodules to the project. If you prefer to use precompiled static or dynamic libraries then it's up to you to re-configure the build system as I haven't supported that as of yet.
+
+Clone project: `git clone --recursive https://github.com/Ethan-Mulwee/Bread-Physics.git`
+
+ Build with CMake
+ ```
+ cd Bread-Physics/
+ cmake -S . -B build/
+ cmake --build build/
+ ```
+
+ Binary is generated at build/App to run: `./build/App`
