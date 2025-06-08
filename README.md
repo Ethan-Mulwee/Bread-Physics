@@ -1,5 +1,5 @@
 # Bread Physics
-A simple rigidbody physics engine with a graphical demo made with openGL.
+A simple rigidbody physics engine with a graphical demo made with openGL. Currently under development don't expect a working physics demo yet.
 
 
 # Build Bread Physics Library
