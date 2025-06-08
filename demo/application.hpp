@@ -15,6 +15,7 @@
 
 #include "uicontext.hpp"
 #include "ui.hpp"
+#include "scene.hpp"
 
 class Application {
     public:
@@ -28,10 +29,9 @@ class Application {
 
     GLFWwindow* window;
     UI ui;
+    Scene scene;
     UIContext context;
-    uint32_t mFBO = 0;
-    uint32_t mTexId = 0;
-    uint32_t mDepthId = 0;
+
     int mHeight;
     int mWidth;
     bMath::float2 mSize;

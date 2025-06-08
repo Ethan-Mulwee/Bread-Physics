@@ -26,63 +26,9 @@ Application::Application(const char *name, int width, int height)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
-    float positions[6] = {
-        -0.5f, -0.5f, // 0
-        0.0f, 0.5f, // 1
-        0.5f, -0.5f, // 2
-    };
-    unsigned int indices[] {
-        0, 1, 2,
-    };
 
     // Create and bind vertex buffers
-
-    unsigned int buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(float), positions, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, 0);
-    
-    unsigned int ibo;
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(float), indices, GL_STATIC_DRAW);
-
-    // Create and bind frame buffer
-    mWidth = width;
-    mHeight = height;
-
-
-    glGenFramebuffers(1, &mFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-    glCreateTextures(GL_TEXTURE_2D, 1, &mTexId);
-    glBindTexture(GL_TEXTURE_2D, mTexId);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexId, 0);
-
-    glCreateTextures(GL_TEXTURE_2D, 1, &mDepthId);
-    glBindTexture(GL_TEXTURE_2D, mDepthId);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, mWidth, mHeight);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, mDepthId, 0);
-
-    GLenum buffers[4] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(mTexId, buffers);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    scene.init();
 
     ///////
 
@@ -113,29 +59,7 @@ void Application::loop() {
         //////////
 
         // scene view render
-        
-        // bind frame buffer
-        glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-        glViewport(0,0, mWidth, mHeight);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        // render mesh
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        
-        // unbind buffer
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        
-        // imgui code
-        ImGui::Begin("Scene");
-        
-        ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-        mSize = { viewportPanelSize.x, viewportPanelSize.y };
-        
-        // add rendered texture to ImGUI scene window
-        uint64_t textureID = mTexId;
-        ImGui::Image((ImTextureID)(textureID), ImVec2{ mSize.x, mSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-        
-        ImGui::End();
+        scene.render();
         
         //////////
         ImGuiIO& io = ImGui::GetIO();
