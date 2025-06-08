@@ -19,11 +19,11 @@ class FrameBuffer {
 
     protected:
 
-        uint32_t fBO = 0;
-        uint32_t texId = 0;
-        uint32_t depthId = 0;
-        uint32_t width = 0;
-        uint32_t height = 0;
+        uint32_t m_FBO = 0;
+        uint32_t m_TexId = 0;
+        uint32_t m_DepthId = 0;
+        uint32_t m_Width = 0;
+        uint32_t m_Height = 0;
 
 };
 

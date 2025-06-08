@@ -1,6 +1,6 @@
 #include "framebuffer.hpp"
 
-void FrameBuffer::create_buffers(int32_t _width, int32_t _height)
+void FrameBuffer::create_buffers(int32_t width, int32_t height)
 {
     float positions[6] = {
         -0.5f, -0.5f, // 0
@@ -25,44 +25,44 @@ void FrameBuffer::create_buffers(int32_t _width, int32_t _height)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(float), indices, GL_STATIC_DRAW);
 
     // Create and bind frame buffer
-    width = _width;
-    height = _height;
+    m_Width = width;
+    m_Height = height;
 
 
-    glGenFramebuffers(1, &fBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, fBO);
-    glCreateTextures(GL_TEXTURE_2D, 1, &texId);
-    glBindTexture(GL_TEXTURE_2D, texId);
+    glGenFramebuffers(1, &m_FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_TexId);
+    glBindTexture(GL_TEXTURE_2D, m_TexId);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texId, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TexId, 0);
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &depthId);
-    glBindTexture(GL_TEXTURE_2D, depthId);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_DepthId);
+    glBindTexture(GL_TEXTURE_2D, m_DepthId);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, m_Width, m_Height);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthId, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_DepthId, 0);
 
     GLenum buffers[4] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(texId, buffers);
+    glDrawBuffers(m_TexId, buffers);
 
     unbind();
 }
 
 void FrameBuffer::bind()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, fBO);
-    glViewport(0,0, width, height);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    glViewport(0,0, m_Width, m_Height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -73,5 +73,5 @@ void FrameBuffer::unbind()
 
 uint32_t FrameBuffer::get_texture()
 {
-    return texId;
+    return m_TexId;
 }
