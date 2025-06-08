@@ -11,6 +11,7 @@
 #include "bMath.hpp"
 
 #include "render/framebuffer.hpp"
+#include "render/vertexbuffer.hpp"
 
 class SceneView {
     public:
@@ -20,6 +21,7 @@ class SceneView {
         void render();
     
         FrameBuffer frameBuffer;
+        VertexBuffer vertexBuffer;
         bMath::float2 size;
 };
 

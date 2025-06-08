@@ -1,8 +1,38 @@
 #include "scene_view.hpp"
+#include <vector>
 
 void SceneView::init(int32_t width, int32_t height)
 {
     frameBuffer.create_buffers(width,height);
+
+    using namespace bMath;
+
+    std::vector<vector3> testVertices = {
+        vector3(0,0,0),
+        vector3(0,0,1),
+        vector3(0,1,0),
+        vector3(0,1,1),
+        vector3(1,0,0),
+        vector3(1,0,1),
+        vector3(1,1,0),
+        vector3(1,1,1)
+    };
+
+    std::vector<uint32_t> testIndices = {
+        //Top
+        2, 6, 7, 2, 3, 7, 
+        //Bottom
+        0, 4, 5, 0, 1, 5, 
+        //Left
+        0, 2, 6, 0, 4, 6, 
+        //Right
+        1, 3, 7, 1, 5, 7, 
+        //Front
+        0, 2, 3, 0, 1, 3, 
+        //Back
+        4, 6, 7, 4, 5, 7 
+    };
+    vertexBuffer.create_buffers(testVertices, testIndices);
 }
 
 void SceneView::render()
@@ -12,7 +42,8 @@ void SceneView::render()
     
     
     // render mesh
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+    vertexBuffer.draw();
     
     // unbind buffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
