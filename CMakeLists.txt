@@ -21,7 +21,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # in the future build the physics engine to a library and include/link it
 add_executable(App ${DEMO_SRC_FILES} ${IMGUI_SOURCES} ${ENGINE_SRC_FILES})
 
+set( GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only" )
+set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
+
 add_subdirectory(ext/glfw)
+
+set( glew-cmake_BUILD_SHARED FALSE )
+
 add_subdirectory(ext/glew)
 
 target_include_directories(App 
