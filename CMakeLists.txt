@@ -21,6 +21,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # in the future build the physics engine to a library and include/link it
 
 set( glew-cmake_BUILD_SHARED FALSE )
+set( ONLY_LIBS TRUE )
 
 add_subdirectory(ext/glew)
 
