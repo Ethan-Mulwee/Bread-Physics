@@ -14,6 +14,7 @@
 #include "ext/iostream.hpp"
 
 #include "uicontext.hpp"
+#include "ui.hpp"
 
 class Application {
     public:
@@ -26,6 +27,7 @@ class Application {
     private: 
 
     GLFWwindow* window;
+    UI ui;
     UIContext context;
     uint32_t mFBO = 0;
     uint32_t mTexId = 0;
