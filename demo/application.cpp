@@ -10,12 +10,12 @@ Application::~Application() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    glfwDestroyWindow(window.glfwWindow);
+    glfwDestroyWindow(window.m_GLFWWindow);
     glfwTerminate(); 
 }
 
 void Application::loop() {
-    while (!glfwWindowShouldClose(window.glfwWindow)) {
+    while (!glfwWindowShouldClose(window.m_GLFWWindow)) {
         window.render();
     }
 }

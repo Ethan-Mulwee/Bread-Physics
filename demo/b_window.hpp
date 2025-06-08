@@ -18,14 +18,14 @@ class GLWindow {
 
         void render();
     
-        GLFWwindow* glfwWindow;
+        GLFWwindow* m_GLFWWindow;
 
-        const char* m_title;
-        int m_width;
-        int m_height;
+        const char* m_Title;
+        int m_Width;
+        int m_Height;
 
-        SceneRenderer m_scene;
-        PropertiesPanel m_properties;
+        SceneRenderer m_SceneRenderer;
+        PropertiesPanel m_PropertiesPanel;
 };
 
 #endif
