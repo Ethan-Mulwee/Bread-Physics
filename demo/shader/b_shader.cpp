@@ -26,6 +26,8 @@ unsigned int Shader::get_compiled_shader(unsigned int shaderType, const std::str
         delete[] strInfoLog;
     }
 
+    std::cout << "compile result: " << result << "\n";
+
     return shader_id;
 }
 
@@ -38,8 +40,11 @@ void Shader::load(const std::string &vertShader, const std::string &fragShader) 
 
     m_ProgramId = glCreateProgram();
 
+    std::cout << "m_ProgramId: " << m_ProgramId << "\n";
     unsigned int vs = get_compiled_shader(GL_VERTEX_SHADER, f_vs);
     unsigned int fs = get_compiled_shader(GL_FRAGMENT_SHADER, f_fs);
+    std::cout << "vs: " << vs << "\n";
+    std::cout << "fs: " << fs << "\n";
 
     glAttachShader(m_ProgramId, vs);
     glAttachShader(m_ProgramId, fs);
@@ -47,8 +52,16 @@ void Shader::load(const std::string &vertShader, const std::string &fragShader) 
     glLinkProgram(m_ProgramId);
     glValidateProgram(m_ProgramId);
 
+    GLint validationResult;
+    glGetProgramiv(m_ProgramId, GL_VALIDATE_STATUS, &validationResult);
+    if (validationResult == GL_FALSE) {
+        std::cout << "shader validation failed \n";
+    }
+
+
     glDeleteShader(vs);
     glDeleteShader(fs);
+
 }
 
 void Shader::use()

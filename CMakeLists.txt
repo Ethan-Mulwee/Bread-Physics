@@ -18,6 +18,9 @@ set(IMGUI_SOURCES
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# add_compile_options(-fsanitize=address)
+# add_link_options(-fsanitize=address)
+
 # in the future build the physics engine to a library and include/link it
 
 set( glew-cmake_BUILD_SHARED FALSE )
