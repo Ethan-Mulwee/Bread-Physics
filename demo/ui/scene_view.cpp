@@ -46,16 +46,11 @@ void SceneView::init(int32_t width, int32_t height)
 
 void SceneView::render()
 {
-    // bind frame buffer
     frameBuffer.bind();
     
-    
-    // render mesh
-    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     vertexBuffer.draw();
     
-    // unbind buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    frameBuffer.unbind();
     
     // imgui code
     ImGui::Begin("Scene");

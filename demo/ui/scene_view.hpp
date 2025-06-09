@@ -12,6 +12,7 @@
 
 #include "render/framebuffer.hpp"
 #include "render/vertexbuffer.hpp"
+#include "shader/b_shader.hpp"
 
 class SceneView {
     public:
@@ -22,6 +23,7 @@ class SceneView {
     
         FrameBuffer frameBuffer;
         VertexBuffer vertexBuffer;
+        Shader shader;
         bMath::float2 size;
 };
 
