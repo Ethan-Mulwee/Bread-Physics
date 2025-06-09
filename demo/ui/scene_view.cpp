@@ -7,6 +7,8 @@ void SceneView::init(int32_t width, int32_t height)
 
     using namespace bMath;
 
+    // quaternion rotation(34, float3(0.5f,0.3f,0.0f));
+
     std::vector<vector3> testVertices = {
         vector3(0,0,0),
         vector3(0,0,1),
@@ -21,6 +23,8 @@ void SceneView::init(int32_t width, int32_t height)
     for (int i = 0; i < 8; i++) {
         testVertices[i] -= vector3(0.5,0.5,0.5);
         testVertices[i] *= 0.5f;
+        // test rotation
+        // testVertices[i] = testVertices[i] * rotation;
     }
 
     std::vector<uint32_t> testIndices = {
