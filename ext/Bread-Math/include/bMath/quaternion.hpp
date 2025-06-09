@@ -15,8 +15,10 @@ namespace bMath {
 
         Quaternion() {}
 
+        // Construct quaternion directly from values
         Quaternion(T w, T x, T y, T z) : w(w), x(x), y(y), z(z) {}
 
+        // Construct quaternion from axis and an angle
         Quaternion(T angle, Vector<T,3> axis) {
             axis.normalize();
             vec.w = cos(angle/2);
@@ -24,6 +26,15 @@ namespace bMath {
             vec.x = s*axis.x;
             vec.y = s*axis.y;
             vec.z = s*axis.z;
+        }
+
+        // Construct quaternion from xyz euler angles
+        Quaternion(T x, T y, T z) {
+            Quaternion<T> xq(x, Vector<T,3>(1,0,0));
+            Quaternion<T> yq(y, Vector<T,3>(0,1,0));
+            Quaternion<T> zq(z, Vector<T,3>(0,0,1));
+            Quaternion<T> result = xq*yq*zq;
+            vec = result.vec;
         }
 
         Quaternion(Vector<T,4> v) : vec(v) {}

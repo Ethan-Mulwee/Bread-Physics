@@ -45,6 +45,8 @@ void SceneView::init(int32_t width, int32_t height)
     vertexBuffer.create_buffers(testVertices, testIndices);
 
     shader.load("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
+
+    camera.init(bMath::float3(0,0,3), 45.0f, 1.3f, 0.1f, 100.0f);
 }
 
 void SceneView::render()

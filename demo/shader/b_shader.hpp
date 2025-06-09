@@ -25,8 +25,8 @@ class Shader {
         void set_mat4(const bMath::matrix4 &mat4, const std::string &name);
         void set_int(int v, const std::string &name);
         void set_float(float v, const std::string &name);
-        void set_float3(bMath::float3, const std::string &name);
-        void set_float4(bMath::float4, const std::string &name);
+        void set_float3(bMath::float3 &v, const std::string &name);
+        void set_float4(bMath::float4 &v, const std::string &name);
 };
 
 #endif

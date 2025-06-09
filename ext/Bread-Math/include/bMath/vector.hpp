@@ -237,7 +237,7 @@ Vector<T, N> operator*(const Vector<T,N> &a, const Vector<T,N> &b) {
 
 // Multiples vector component wise by another vector
 template <typename T, std::size_t N>
-Vector<T, N> operator*=(Vector<T,N> &a, const Vector<T,N> &b) {
+void operator*=(Vector<T,N> &a, const Vector<T,N> &b) {
     for (int i = 0; i < N; i++) {
         a[i] *= b[i];
     }
