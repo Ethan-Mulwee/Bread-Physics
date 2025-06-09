@@ -64,8 +64,7 @@ void Shader::unload()
 void Shader::set_mat4(const bMath::matrix4 &mat4, const std::string &name)
 {
     GLint myLoc = glGetUniformLocation(get_program_id(), name.c_str());
-    // glUniformMatrix4fv(myLoc, 1, GL_FALSE, mat4.data);
-    std::cout << "matrix setting not yet implemeneted \n";
+    glUniformMatrix4fv(myLoc, 1, GL_FALSE, &mat4.data[0][0]);
 }
 
 void Shader::set_int(const int v, const std::string &name) {

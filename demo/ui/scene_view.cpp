@@ -41,11 +41,16 @@ void SceneView::init(int32_t width, int32_t height)
         //Back
         4, 6, 7, 4, 5, 7 
     };
+
     vertexBuffer.create_buffers(testVertices, testIndices);
+
+    shader.load("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
 }
 
 void SceneView::render()
 {
+    shader.use();
+
     frameBuffer.bind();
     
     vertexBuffer.draw();
