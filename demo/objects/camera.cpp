@@ -19,7 +19,7 @@ void Camera::updateShader(Shader *shader) {
 }
 
 void Camera::setAspect(float aspect) {
-    // m_Projection = bMath perpsective matrix generation function 
+    m_Projection = bMath::perspectiveMatrix(m_FOV, m_Aspect, m_Near, m_Far);
 }
 
 const bMath::matrix4 &Camera::getProjection() const
