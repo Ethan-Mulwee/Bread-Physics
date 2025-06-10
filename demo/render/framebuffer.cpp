@@ -1,6 +1,6 @@
 #include "framebuffer.hpp"
 
-void FrameBuffer::create_buffers(int32_t width, int32_t height)
+void FrameBuffer::createBuffers(int32_t width, int32_t height)
 {
     // ////////// HELLO TRIANGLE TESTING CODE
     // float positions[6] = {

@@ -10,7 +10,7 @@
 class VertexBuffer {
     public:
 
-        void create_buffers(std::vector<bMath::vector3> vertices, std::vector<uint32_t> indices);
+        void createBuffers(std::vector<bMath::vector3> vertices, std::vector<uint32_t> indices);
 
         void delete_buffers();
 

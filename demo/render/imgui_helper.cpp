@@ -1,6 +1,6 @@
 #include "imgui_helper.hpp"
 
-void ImGuiHelper::init(GLFWwindow *window)
+void ImGuiHelperFunctions::init(GLFWwindow *window)
 {
     const char* glsl_version = "#version 130";
 
@@ -42,7 +42,7 @@ void ImGuiHelper::init(GLFWwindow *window)
     ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
-void ImGuiHelper::intialize_render()
+void ImGuiHelperFunctions::intializeRender()
 {
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -72,7 +72,7 @@ void ImGuiHelper::intialize_render()
     ImGui::End();
 }
 
-void ImGuiHelper::render()
+void ImGuiHelperFunctions::render()
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

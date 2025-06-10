@@ -1,7 +1,7 @@
 #include "vertexbuffer.hpp"
 
 
-void VertexBuffer::create_buffers(std::vector<bMath::vector3> vertices, std::vector<uint32_t> indices) {
+void VertexBuffer::createBuffers(std::vector<bMath::vector3> vertices, std::vector<uint32_t> indices) {
 
     m_Vertices = vertices;
     m_Indices = indices;

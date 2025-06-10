@@ -7,7 +7,7 @@
 class FrameBuffer {
     public:
 
-        void create_buffers(int32_t width, int32_t height);
+        void createBuffers(int32_t width, int32_t height);
 
         void delete_buffers();
 

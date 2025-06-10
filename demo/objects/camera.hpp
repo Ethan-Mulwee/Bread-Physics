@@ -13,11 +13,11 @@ class Camera {
 
 
 
-        void set_aspect(float aspect);
+        void setAspect(float aspect);
 
         void set_distance(float offset);
 
-        const bMath::matrix4& get_projection() const;
+        const bMath::matrix4& getProjection() const;
 
         const bMath::matrix4& get_view_projection() const;
 
@@ -25,13 +25,13 @@ class Camera {
         
         bMath::float3 get_right() const;
 
-        bMath::float3 get_forward() const;
+        bMath::float3 getForward() const;
 
-        bMath::quaternion get_direction() const;
+        bMath::quaternion getDirection() const;
 
-        bMath::matrix4 get_view_matrix() const;
+        bMath::matrix4 getViewMatrix() const;
 
-        void update_view_matrix();
+        void updateViewMatrix();
 
 
     private:

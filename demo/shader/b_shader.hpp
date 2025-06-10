@@ -11,7 +11,7 @@ class Shader {
     private:
         unsigned int m_ProgramId;
 
-        unsigned int get_compiled_shader(unsigned int shaderType, const std::string &shaderSource);
+        unsigned int getCompiledShader(unsigned int shaderType, const char* shaderSource);
 
     public:
         void load(const std::string &vertShader, const std::string &fragShader);
@@ -22,10 +22,10 @@ class Shader {
 
         unsigned int get_program_id() {return m_ProgramId;}
 
-        void set_mat4(const bMath::matrix4 &mat4, const std::string &name);
-        void set_int(int v, const std::string &name);
+        void setMatrix4(const bMath::matrix4 &mat4, const std::string &name);
+        void setInt(int v, const std::string &name);
         void set_float(float v, const std::string &name);
-        void set_float3(bMath::float3 &v, const std::string &name);
+        void setFloat3(bMath::float3 &v, const std::string &name);
         void set_float4(bMath::float4 &v, const std::string &name);
 };
 

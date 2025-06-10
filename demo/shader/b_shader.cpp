@@ -3,12 +3,13 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <cerrno>
+#include <cstring>
 
-unsigned int Shader::get_compiled_shader(unsigned int shaderType, const std::string &shaderSource) {
+unsigned int Shader::getCompiledShader(unsigned int shaderType, const char* shaderSource) {
     unsigned int shader_id = glCreateShader(shaderType);
 
-    const char* c_source = shaderSource.c_str();
-    glShaderSource(shader_id, 1, &c_source, nullptr);
+    glShaderSource(shader_id, 1, &shaderSource, nullptr);
     glCompileShader(shader_id);
 
     GLint result;
@@ -26,30 +27,53 @@ unsigned int Shader::get_compiled_shader(unsigned int shaderType, const std::str
         delete[] strInfoLog;
     }
 
-    std::cout << "compile result: " << result << "\n";
-
     return shader_id;
 }
 
 void Shader::load(const std::string &vertShader, const std::string &fragShader) {
+    
     std::ifstream is_vs(vertShader);
+    if (!is_vs.is_open()) {
+        std::cerr << "Error opening file: " << strerror(errno) << std::endl;
+    }
+
     const std::string f_vs((std::istreambuf_iterator<char>(is_vs)), std::istreambuf_iterator<char>());
 
     std::ifstream is_fs(fragShader);
+        if (!is_fs.is_open()) {
+        std::cerr << "Error opening file: " << strerror(errno) << std::endl;
+    }
+
     const std::string f_fs((std::istreambuf_iterator<char>(is_fs)), std::istreambuf_iterator<char>());
 
     m_ProgramId = glCreateProgram();
 
-    std::cout << "m_ProgramId: " << m_ProgramId << "\n";
-    unsigned int vs = get_compiled_shader(GL_VERTEX_SHADER, f_vs);
-    unsigned int fs = get_compiled_shader(GL_FRAGMENT_SHADER, f_fs);
-    std::cout << "vs: " << vs << "\n";
-    std::cout << "fs: " << fs << "\n";
+    unsigned int vs = getCompiledShader(GL_VERTEX_SHADER, f_vs.c_str());
+    unsigned int fs = getCompiledShader(GL_FRAGMENT_SHADER, f_fs.c_str());
 
     glAttachShader(m_ProgramId, vs);
     glAttachShader(m_ProgramId, fs);
 
+    GLint attached = 0;
+
     glLinkProgram(m_ProgramId);
+
+    GLint linkResult;
+    glGetProgramiv(m_ProgramId, GL_LINK_STATUS, &linkResult);
+    if (linkResult == GL_FALSE) {
+        std::cout << "shader linking failed \n";
+
+        int length;
+        glGetProgramiv(m_ProgramId, GL_INFO_LOG_LENGTH, &length);
+
+        GLchar* strInfoLog = new GLchar[length + 1];
+        glGetShaderInfoLog(m_ProgramId, length, &length, strInfoLog);
+
+        fprintf(stderr, "Shader linking error: %s\n", strInfoLog);
+        delete[] strInfoLog;
+    }
+
+
     glValidateProgram(m_ProgramId);
 
     GLint validationResult;
@@ -74,18 +98,18 @@ void Shader::unload()
     glDeleteProgram(m_ProgramId);
 }
 
-void Shader::set_mat4(const bMath::matrix4 &mat4, const std::string &name)
+void Shader::setMatrix4(const bMath::matrix4 &mat4, const std::string &name)
 {
     GLint myLoc = glGetUniformLocation(get_program_id(), name.c_str());
     glUniformMatrix4fv(myLoc, 1, GL_FALSE, &mat4.data[0][0]);
 }
 
-void Shader::set_int(const int v, const std::string &name) {
+void Shader::setInt(const int v, const std::string &name) {
     GLint myLoc = glGetUniformLocation(get_program_id(), name.c_str());
     glUniform1i(myLoc, v);
 }
 
-void Shader::set_float3(bMath::float3 &v, const std::string &name) {
+void Shader::setFloat3(bMath::float3 &v, const std::string &name) {
     GLint myLoc = glGetUniformLocation(get_program_id(), name.c_str());
     glProgramUniform3fv(get_program_id(), myLoc, 1, v.data);
 }

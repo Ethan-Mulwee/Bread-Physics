@@ -3,11 +3,11 @@
 
 void SceneView::init(int32_t width, int32_t height)
 {
-    frameBuffer.create_buffers(width,height);
+    frameBuffer.createBuffers(width,height);
 
     using namespace bMath;
 
-    // quaternion rotation(34, float3(0.5f,0.3f,0.0f));
+    quaternion rotation(34, float3(0.5f,0.3f,0.0f));
 
     std::vector<vector3> testVertices = {
         vector3(0,0,0),
@@ -24,7 +24,7 @@ void SceneView::init(int32_t width, int32_t height)
         testVertices[i] -= vector3(0.5,0.5,0.5);
         testVertices[i] *= 0.5f;
         // test rotation
-        // testVertices[i] = testVertices[i] * rotation;
+        testVertices[i] = testVertices[i] * rotation;
     }
 
     std::vector<uint32_t> testIndices = {
@@ -42,9 +42,10 @@ void SceneView::init(int32_t width, int32_t height)
         4, 6, 7, 4, 5, 7 
     };
 
-    vertexBuffer.create_buffers(testVertices, testIndices);
+    vertexBuffer.createBuffers(testVertices, testIndices);
 
-    shader.load("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
+    // fix these paths, so that they can be found from 
+    shader.load("/home/ethan/Documents/GitHub/Bread-Physics/demo/shaders/shader.vert", "/home/ethan/Documents/GitHub/Bread-Physics/demo/shaders/shader.frag");
 
     camera.init(bMath::float3(0,0,3), 45.0f, 1.3f, 0.1f, 100.0f);
 }

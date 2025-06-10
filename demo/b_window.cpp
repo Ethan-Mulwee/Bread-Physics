@@ -32,8 +32,8 @@ void GLWindow::init(int width, int height, const char *title)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
     
-    ImGuiHelper::init(m_GLFWWindow);
-    m_SceneRenderer.init(800,600);
+    ImGuiHelperFunctions::init(m_GLFWWindow);
+    m_SceneRenderer.init(1920,1080);
 }
 
 void GLWindow::render() {
@@ -41,13 +41,13 @@ void GLWindow::render() {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    ImGuiHelper::intialize_render();
+    ImGuiHelperFunctions::intializeRender();
     
     m_SceneRenderer.render();
 
     m_PropertiesPanel.render();
 
-    ImGuiHelper::render();
+    ImGuiHelperFunctions::render();
 
     glfwPollEvents();
     glfwSwapBuffers(m_GLFWWindow);
