@@ -15,15 +15,15 @@ class Camera {
 
         void setAspect(float aspect);
 
-        void set_distance(float offset);
+        void setDistance(float offset);
 
         const bMath::matrix4& getProjection() const;
 
-        const bMath::matrix4& get_view_projection() const;
+        const bMath::matrix4& getViewProjection() const;
 
-        bMath::float3 get_up() const;
+        bMath::float3 getUp() const;
         
-        bMath::float3 get_right() const;
+        bMath::float3 getRight() const;
 
         bMath::float3 getForward() const;
 
@@ -32,6 +32,8 @@ class Camera {
         bMath::matrix4 getViewMatrix() const;
 
         void updateViewMatrix();
+
+        void onMouseWheel(double delta);
 
 
     private:

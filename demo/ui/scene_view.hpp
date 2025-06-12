@@ -21,13 +21,15 @@ class SceneView {
         void init(int32_t width, int32_t height);
     
         void render();
-    
+
+        void onScroll(double delta);
+
         FrameBuffer frameBuffer;
         VertexBuffer vertexBuffer;
-        Shader shader;
-        Camera camera;
+        Shader m_Shader;
+        Camera m_Camera;
 
-        bMath::float2 size;
+        bMath::float2 m_Size;
 };
 
 #endif

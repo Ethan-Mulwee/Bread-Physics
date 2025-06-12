@@ -28,12 +28,14 @@ void GLWindow::init(int width, int height, const char *title)
     glfwMakeContextCurrent(m_GLFWWindow);
     glfwSwapInterval(1); // Enable vsync
 
+    glfwSetScrollCallback(m_GLFWWindow, onScrollCallback);
+
     glewInit();
 
     std::cout << glGetString(GL_VERSION) << std::endl;
     
     ImGuiHelperFunctions::init(m_GLFWWindow);
-    m_SceneRenderer.init(1920,1080);
+    s_SceneView.init(1920,1080);
 }
 
 void GLWindow::render() {
@@ -43,7 +45,7 @@ void GLWindow::render() {
     
     ImGuiHelperFunctions::intializeRender();
     
-    m_SceneRenderer.render();
+    s_SceneView.render();
 
     m_PropertiesPanel.render();
 
@@ -52,3 +54,12 @@ void GLWindow::render() {
     glfwPollEvents();
     glfwSwapBuffers(m_GLFWWindow);
 }
+
+SceneView GLWindow::s_SceneView;
+
+// this is static
+void GLWindow::onScrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
+    std::cout << "happened \n"; 
+    s_SceneView.onScroll(xoffset);
+}
+

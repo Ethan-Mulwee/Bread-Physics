@@ -22,9 +22,10 @@ void SceneView::init(int32_t width, int32_t height)
 
     for (int i = 0; i < 8; i++) {
         testVertices[i] -= vector3(0.5,0.5,0.5);
-        testVertices[i] *= 0.5f;
-        // test rotation
         testVertices[i] = testVertices[i] * rotation;
+        testVertices[i] *= 0.2f;
+        testVertices[i] -= vector3(0,0,0.5);
+        // test rotation
     }
 
     std::vector<uint32_t> testIndices = {
@@ -45,14 +46,15 @@ void SceneView::init(int32_t width, int32_t height)
     vertexBuffer.createBuffers(testVertices, testIndices);
 
     // fix these paths, so that they can be found from 
-    shader.load("/home/ethan/Documents/GitHub/Bread-Physics/demo/shaders/shader.vert", "/home/ethan/Documents/GitHub/Bread-Physics/demo/shaders/shader.frag");
+    m_Shader.load("/home/ethan/Documents/GitHub/Bread-Physics/demo/shaders/shader.vert", "/home/ethan/Documents/GitHub/Bread-Physics/demo/shaders/shader.frag");
 
-    camera.init(bMath::float3(0,0,3), 45.0f, 1.3f, 0.1f, 100.0f);
+    m_Camera.init(bMath::float3(0,0,10), 45.0f, 1.0f, 0.1f, 100.0f);
+
 }
 
 void SceneView::render()
 {
-    shader.use();
+    m_Shader.use();
 
     frameBuffer.bind();
     
@@ -64,11 +66,18 @@ void SceneView::render()
     ImGui::Begin("Scene");
     
     ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    size = { viewportPanelSize.x, viewportPanelSize.y };
+    m_Size = { viewportPanelSize.x, viewportPanelSize.y };
+
+    m_Camera.setAspect(m_Size.x / m_Size.y);
+    m_Camera.updateShader(&m_Shader);
     
     // add rendered texture to ImGUI scene window
     uint64_t textureID = frameBuffer.get_texture();
-    ImGui::Image((ImTextureID)(textureID), ImVec2{ size.x, size.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+    ImGui::Image((ImTextureID)(textureID), ImVec2{ m_Size.x, m_Size.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
     
     ImGui::End();
+}
+
+void SceneView::onScroll(double delta) {
+    m_Camera.onMouseWheel(delta);
 }

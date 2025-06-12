@@ -17,6 +17,8 @@ class GLWindow {
         void init(int width, int height, const char* title);
 
         void render();
+
+        static void onScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
     
         GLFWwindow* m_GLFWWindow;
 
@@ -24,8 +26,9 @@ class GLWindow {
         int m_Width;
         int m_Height;
 
-        SceneView m_SceneRenderer;
+        static SceneView s_SceneView;
         PropertiesPanel m_PropertiesPanel;
 };
+
 
 #endif
