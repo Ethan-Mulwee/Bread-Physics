@@ -29,11 +29,15 @@ class Camera {
 
         bMath::quaternion getDirection() const;
 
+        bMath::float3 getPosition() const;
+
         bMath::matrix4 getViewMatrix() const;
 
         void updateViewMatrix();
 
         void onMouseWheel(double delta);
+
+        void onMouseMove(double x, double y);
 
 
     private:

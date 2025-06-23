@@ -47,19 +47,28 @@ void GLWindow::render() {
     
     s_SceneView.render();
 
-    m_PropertiesPanel.render();
+    m_PropertiesPanel.render(s_SceneView);
 
     ImGuiHelperFunctions::render();
 
     glfwPollEvents();
     glfwSwapBuffers(m_GLFWWindow);
+    
+    input();
 }
 
 SceneView GLWindow::s_SceneView;
 
+void GLWindow::input()
+{
+    double x, y;
+    glfwGetCursorPos(m_GLFWWindow, &x, &y);
+    s_SceneView.onMove(x, y);
+}
+
+
 // this is static
 void GLWindow::onScrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
-    std::cout << "happened \n"; 
-    s_SceneView.onScroll(xoffset);
+    s_SceneView.onScroll(yoffset);
 }
 

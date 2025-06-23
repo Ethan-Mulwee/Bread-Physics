@@ -101,7 +101,7 @@ void Shader::unload()
 void Shader::setMatrix4(const bMath::matrix4 &mat4, const std::string &name)
 {
     GLint myLoc = glGetUniformLocation(get_program_id(), name.c_str());
-    glUniformMatrix4fv(myLoc, 1, GL_FALSE, &mat4.data[0][0]);
+    glUniformMatrix4fv(myLoc, 1, GL_TRUE, &mat4.data[0][0]);
 }
 
 void Shader::setInt(const int v, const std::string &name) {

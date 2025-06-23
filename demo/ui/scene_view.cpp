@@ -7,7 +7,7 @@ void SceneView::init(int32_t width, int32_t height)
 
     using namespace bMath;
 
-    quaternion rotation(34, float3(0.5f,0.3f,0.0f));
+    // quaternion rotation(34, float3(0.5f,0.3f,0.0f));
 
     std::vector<vector3> testVertices = {
         vector3(0,0,0),
@@ -22,9 +22,9 @@ void SceneView::init(int32_t width, int32_t height)
 
     for (int i = 0; i < 8; i++) {
         testVertices[i] -= vector3(0.5,0.5,0.5);
-        testVertices[i] = testVertices[i] * rotation;
+        // testVertices[i] = testVertices[i] * rotation;
         testVertices[i] *= 0.2f;
-        testVertices[i] -= vector3(0,0,0.5);
+        // testVertices[i] -= vector3(0,0,0.5);
         // test rotation
     }
 
@@ -48,7 +48,7 @@ void SceneView::init(int32_t width, int32_t height)
     // fix these paths, so that they can be found from 
     m_Shader.load("/home/ethan/Documents/GitHub/Bread-Physics/demo/shaders/shader.vert", "/home/ethan/Documents/GitHub/Bread-Physics/demo/shaders/shader.frag");
 
-    m_Camera.init(bMath::float3(0,0,10), 45.0f, 1.0f, 0.1f, 100.0f);
+    m_Camera.init(bMath::float3(0,0,10), 45.0f, 1.0f, 0.01f, 50.0f);
 
 }
 
@@ -80,4 +80,9 @@ void SceneView::render()
 
 void SceneView::onScroll(double delta) {
     m_Camera.onMouseWheel(delta);
+}
+
+void SceneView::onMove(double x, double y)
+{
+    m_Camera.onMouseMove(x, y);
 }

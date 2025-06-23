@@ -24,6 +24,8 @@ class SceneView {
 
         void onScroll(double delta);
 
+        void onMove(double x, double y);
+
         FrameBuffer frameBuffer;
         VertexBuffer vertexBuffer;
         Shader m_Shader;

@@ -18,6 +18,8 @@ class GLWindow {
 
         void render();
 
+        void input();
+
         static void onScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
     
         GLFWwindow* m_GLFWWindow;
