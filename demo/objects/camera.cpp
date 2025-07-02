@@ -19,12 +19,12 @@ void Camera::updateShader(Shader *shader) {
     shader->setMatrix4(getProjection(), "projection");
     shader->setFloat3(m_Position, "camPos");
 
-    std::cout << getProjection() << "\n";
-    std::cout << m_ViewMatrix << "\n";
+    // std::cout << getProjection() << "\n";
+    // std::cout << m_ViewMatrix << "\n";
 }
 
 void Camera::setAspect(float aspect) {
-    m_Projection = bMath::transpose(bMath::perspectiveMatrix(m_FOV, m_Aspect, m_Near, m_Far));
+    m_Projection = bMath::perspectiveMatrix(m_FOV, m_Aspect, m_Near, m_Far);
 }
 
 void Camera::setDistance(float offset) {
@@ -79,8 +79,8 @@ void Camera::updateViewMatrix() {
                   0,           0,           0, 1
     );
     m_ViewMatrix = bMath::translationMatrix(m_Position) * rotmat4;
-    std::cout << "before inverse: \n" << m_ViewMatrix << "\n";
-    std::cout << "check: " << m_ViewMatrix * bMath::inverse(m_ViewMatrix) << "\n";
+    // std::cout << "before inverse: \n" << m_ViewMatrix << "\n";
+    // std::cout << "check: " << m_ViewMatrix * bMath::inverse(m_ViewMatrix) << "\n";
     m_ViewMatrix = bMath::inverse(m_ViewMatrix);
 }
 
