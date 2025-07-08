@@ -50,6 +50,9 @@ void SceneView::init(int32_t width, int32_t height)
 
     m_Camera.init(bMath::float3(0,0,10), 45.0f, 1.0f, 0.01f, 50.0f);
 
+    object.init(&vertexBuffer, &m_Shader, bMath::float3(0.5f, 0.1f, 1.0f), bMath::translationMatrix(bMath::float3(0.1f,0.5f,0.2f)));
+    object2.init(&vertexBuffer, &m_Shader, bMath::float3(1.0f, 0.3f, 0.2f), bMath::translationMatrix(bMath::float3(-0.1f,-0.3f,0.0f)));
+
 }
 
 void SceneView::render()
@@ -58,7 +61,9 @@ void SceneView::render()
 
     frameBuffer.bind();
     
-    vertexBuffer.draw();
+    // vertexBuffer.draw();
+    object.draw();
+    object2.draw();
     
     frameBuffer.unbind();
     

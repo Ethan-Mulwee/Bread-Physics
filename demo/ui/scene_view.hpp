@@ -14,6 +14,9 @@
 #include "render/vertexbuffer.hpp"
 #include "shader/b_shader.hpp"
 #include "objects/camera.hpp"
+#include "objects/object.hpp"
+
+
 
 class SceneView {
     public:
@@ -30,6 +33,9 @@ class SceneView {
         VertexBuffer vertexBuffer;
         Shader m_Shader;
         Camera m_Camera;
+
+        Object object;
+        Object object2;
 
         bMath::float2 m_Size;
 };
