@@ -34,7 +34,12 @@ void VertexBuffer::bind() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 }
 
+void VertexBuffer::unbind() {
+    glBindVertexArray(0);
+}
+
 void VertexBuffer::draw() {
     bind();
     glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, nullptr);
+    unbind();
 }
