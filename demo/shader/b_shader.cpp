@@ -116,5 +116,5 @@ void Shader::setFloat3(bMath::float3 &v, const std::string &name) {
 
 void Shader::setFloat4(bMath::float4 &v, const std::string &name) {
     GLint myLoc = glGetUniformLocation(get_program_id(), name.c_str());
-    glProgramUniform3fv(get_program_id(), myLoc, 1, v.data);
+    glProgramUniform4fv(get_program_id(), myLoc, 1, v.data);
 }
