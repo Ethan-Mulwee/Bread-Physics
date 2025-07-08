@@ -7,10 +7,15 @@
 
 #include <vector>
 
+struct Vertex {
+    bMath::float3 position;
+    bMath::float3 normal;
+};
+
 class VertexBuffer {
     public:
 
-        void createBuffers(std::vector<bMath::vector3> vertices, std::vector<uint32_t> indices);
+        void createBuffers(std::vector<Vertex> vertices, std::vector<uint32_t> indices);
 
         void delete_buffers();
 
@@ -21,7 +26,8 @@ class VertexBuffer {
         void draw();
 
     protected:
-        std::vector<bMath::vector3> m_Vertices; std::vector<uint32_t> m_Indices;
+        std::vector<Vertex> m_Vertices; 
+        std::vector<uint32_t> m_Indices;
         uint32_t vao, vbo, ebo;
 
 };

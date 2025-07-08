@@ -9,21 +9,21 @@ void SceneView::init(int32_t width, int32_t height)
 
     // quaternion rotation(34, float3(0.5f,0.3f,0.0f));
 
-    std::vector<vector3> testVertices = {
-        vector3(0,0,0),
-        vector3(0,0,1),
-        vector3(0,1,0),
-        vector3(0,1,1),
-        vector3(1,0,0),
-        vector3(1,0,1),
-        vector3(1,1,0),
-        vector3(1,1,1)
+    std::vector<Vertex> testVertices = {
+        {vector3(0,0,0), vector3(0,0,0)},
+        {vector3(0,0,1), vector3(0,0,1)},
+        {vector3(0,1,0), vector3(0,1,0)},
+        {vector3(0,1,1), vector3(0,1,1)},
+        {vector3(1,0,0), vector3(1,0,0)},
+        {vector3(1,0,1), vector3(1,0,1)},
+        {vector3(1,1,0), vector3(1,1,0)},
+        {vector3(1,1,1), vector3(1,1,1)}
     };
 
     for (int i = 0; i < 8; i++) {
-        testVertices[i] -= vector3(0.5,0.5,0.5);
+        testVertices[i].position -= vector3(0.5,0.5,0.5);
         // testVertices[i] = testVertices[i] * rotation;
-        testVertices[i] *= 0.2f;
+        testVertices[i].position *= 0.35f;
         // testVertices[i] -= vector3(0,0,0.5);
         // test rotation
     }
