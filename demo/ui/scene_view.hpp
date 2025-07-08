@@ -16,6 +16,8 @@
 #include "objects/camera.hpp"
 #include "objects/object.hpp"
 
+#include "bEngine/world.hpp"
+
 
 
 class SceneView {
@@ -36,6 +38,8 @@ class SceneView {
 
         Object object;
         Object object2;
+
+        bEngine::World physicsWorld;
 
         bMath::float2 m_Size;
 };

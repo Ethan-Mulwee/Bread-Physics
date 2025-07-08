@@ -5,6 +5,8 @@
 
 #include "shader/b_shader.hpp"
 
+#include "bEngine/rigidbody.hpp"
+
 #include "bMath.hpp"
 
 class Object {
@@ -19,6 +21,8 @@ class Object {
 
         bMath::float3 color;
         bMath::matrix4 transform;
+
+        bEngine::RigidBody* body;
 
 };
 
