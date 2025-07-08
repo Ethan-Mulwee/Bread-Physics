@@ -6,6 +6,6 @@ layout(location = 0) out vec4 color;
 
 void main()
 {
-    color = Color;
-    // color = vec4(Normal, 1.0f);
+    // color = Color;
+    color = vec4(Normal, 1.0f);
 };
