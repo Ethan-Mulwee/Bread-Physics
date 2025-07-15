@@ -11,11 +11,17 @@ Dependencies are included as submodules to the project. If you prefer to use pre
 
 Clone project: `git clone --recursive https://github.com/Ethan-Mulwee/Bread-Physics.git`
 
+ Linux build requirements for debian
+ ```
+ sudo apt install libxmu-dev libxi-dev libgl-dev dos2unix git wget # GLEW
+ sudo apt install libwayland-dev libxkbcommon-dev xorg-dev # GLFW
+ ```
  Build with CMake
  ```
  cd Bread-Physics/
  cmake -S . -B build/
  cmake --build build/
  ```
+
 
  Binary is generated at build/App to run: `./build/App`
