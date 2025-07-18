@@ -46,7 +46,7 @@ void SceneView::init(int32_t width, int32_t height)
     vertexBuffer.createBuffers(testVertices, testIndices);
 
     // fix these paths, so that they can be found from 
-    m_Shader.load("/home/ethan/GitHub/Bread-Physics/demo/shaders/shader.vert", "/home/ethan/GitHub/Bread-Physics/demo/shaders/shader.frag");
+    m_Shader.load("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
 
     m_Camera.init(bMath::float3(0,0,10), 45.0f, 1.0f, 0.01f, 50.0f);
 
