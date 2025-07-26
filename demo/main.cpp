@@ -404,6 +404,7 @@ Camera createCamera(bMath::vector3 focus, float distance, float fov, float near,
     camera.near = near;
     camera.far = far;
 
+    camera.aspect = 1.0f;
     camera.pitch = 45.0f;
     camera.yaw = 45.0f;
 
@@ -557,8 +558,13 @@ void setShaderUniformFloat4(const Shader &shader, bMath::float4 &v, const std::s
 
 void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
     setShaderUniformMatrix4(shader, bMath::matrix4::identity(), "model"); // TEMP CODE REMOVE LATER
-    setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
-    setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
+    setShaderUniformMatrix4(shader, bMath::matrix4::identity(), "view"); // TEMP CODE REMOVE LATER
+    setShaderUniformMatrix4(shader, bMath::matrix4::identity(), "projection"); // TEMP CODE REMOVE LATER
+    // std::cout << "model: \n" << bMath::matrix4::identity() << "\n";
+    // setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
+    // std::cout << "view: \n" << calculateCameraView(camera) << "\n";
+    // setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
+    // std::cout << "projection: \n" << calculateCameraProjection(camera) << "\n";
 }
 
 
