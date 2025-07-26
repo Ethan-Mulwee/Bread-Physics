@@ -383,6 +383,62 @@ void drawVertexBuffer(const VertexBuffer &buffer) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                                   Camera                                   */
+/* -------------------------------------------------------------------------- */
+
+struct Camera {
+    bMath::vector3 focus;
+
+    float distance;
+    float pitch, yaw;
+    float aspect, fov, near, far;
+};
+
+Camera createCamera(bMath::vector3 focus, float distance, float fov, float near, float far) {
+    Camera camera;
+
+    camera.focus = focus;
+    camera.distance = distance;
+
+    camera.fov = fov;
+    camera.near = near;
+    camera.far = far;
+
+    camera.pitch = 45.0f;
+    camera.yaw = 45.0f;
+
+    return camera;
+}
+
+bMath::quaternion calculateCameraOrientation(const Camera &camera) {
+    return bMath::quaternion(-camera.pitch, -camera.yaw, 0.0f);
+}
+
+bMath::matrix4 calculateCameraView(const Camera &camera) {
+    bMath::matrix4 viewMatrix;
+
+    bMath::quaternion orientation = calculateCameraOrientation(camera);
+
+    bMath::vector3 position = camera.focus - bMath::vector3(0.0f, 0.0f, -1.0f) * orientation;
+    bMath::matrix3 rotmat = bMath::quaternionToMatrix(orientation);
+
+    bMath::matrix4 rotmat4(
+        rotmat(0,0), rotmat(0,1), rotmat(0,2), 0, 
+        rotmat(1,0), rotmat(1,1), rotmat(1,2), 0, 
+        rotmat(2,0), rotmat(2,1), rotmat(2,2), 0, 
+                  0,           0,           0, 1
+    );
+
+    viewMatrix = bMath::translationMatrix(position) * rotmat4;
+
+    return bMath::inverse(viewMatrix);
+}
+
+bMath::matrix4 calculateCameraProjection(const Camera &camera) {
+    return bMath::perspectiveMatrix(camera.fov, camera.near, camera.near, camera.far);
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                   Shader                                   */
 /* -------------------------------------------------------------------------- */
 
@@ -479,15 +535,36 @@ void useShader(const Shader &shader) {
     glUseProgram(shader.programId);
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                 Application                                */
-/* -------------------------------------------------------------------------- */
+void setShaderUniformMatrix4(const Shader &shader, const bMath::matrix4 &mat4, const std::string &name) {
+    GLint myLoc = glGetUniformLocation(shader.programId, name.c_str());
+    glUniformMatrix4fv(myLoc, 1, GL_TRUE, &mat4.data[0][0]);
+}
 
-struct Scene {
-    FrameBuffer* frameBuffer;
-    VertexBuffer* vertexBuffer;
+void setShaderUniformInt(const Shader &shader, const int v, const std::string &name) {
+    GLint myLoc = glGetUniformLocation(shader.programId, name.c_str());
+    glUniform1i(myLoc, v);
+}
 
-};
+void setShaderUniformFloat3(const Shader &shader, bMath::float3 &v, const std::string &name) {
+    GLint myLoc = glGetUniformLocation(shader.programId, name.c_str());
+    glProgramUniform3fv(shader.programId, myLoc, 1, v.data);
+}
+
+void setShaderUniformFloat4(const Shader &shader, bMath::float4 &v, const std::string &name) {
+    GLint myLoc = glGetUniformLocation(shader.programId, name.c_str());
+    glProgramUniform4fv(shader.programId, myLoc, 1, v.data);
+}
+
+void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
+    setShaderUniformMatrix4(shader, bMath::matrix4::identity(), "model"); // TEMP CODE REMOVE LATER
+    setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
+    setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
+}
+
+
+/* -------------------------------------------------------------------------- */
+/*                                     UI                                     */
+/* -------------------------------------------------------------------------- */
 
 void uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
     ImGui::Begin("Scene");
@@ -513,11 +590,23 @@ void uiProperties() {
     ImGui::End();
 }
 
-void render(const GLWindow &window, const FrameBuffer &frameBuffer, const VertexBuffer &vertexBuffer, const Shader &shader) {
+/* -------------------------------------------------------------------------- */
+/*                                 Application                                */
+/* -------------------------------------------------------------------------- */
+
+struct Scene {
+    FrameBuffer* frameBuffer;
+    VertexBuffer* vertexBuffer;
+};
+
+
+void render(const GLWindow &window, const FrameBuffer &frameBuffer, const VertexBuffer &vertexBuffer, const Shader &shader, const Camera &camera) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
 
     useShader(shader);
+
+    setShaderUniformsFromCamera(shader, camera);
 
     bindFramebuffer(frameBuffer);
 
@@ -540,11 +629,12 @@ int main() {
     Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
     VertexBuffer vertexBuffer = createVertexBuffer(genCubeMesh());
+    Camera camera = createCamera(bMath::vector3(0.0f,0.0f,0.0f), 10.0f, 45.0f, 0.1f, 100.0f);
 
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
 
-        render(window, frameBuffer, vertexBuffer, shader);
+        render(window, frameBuffer, vertexBuffer, shader, camera);
     }
 
     destroyWindow(window);
