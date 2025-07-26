@@ -396,6 +396,18 @@ void uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
     ImGui::End();
 }
 
+void uiProperties() {
+    ImGuiIO& io = ImGui::GetIO();
+    
+    ImGui::Begin("Properties");
+    if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Text("Hello World");
+
+    }
+
+    ImGui::End();
+}
+
 void render(const GLWindow &window, const FrameBuffer &frameBuffer/* , const VertexBuffer &vertexBuffer */) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
@@ -403,11 +415,12 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer/* , const Ver
     bindFramebuffer(frameBuffer);
 
         // drawVertexBuffer(vertexBuffer);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 
     unbindFramebuffer();
 
     uiFrameBufferWindow(frameBuffer);
+    // uiProperties();
 
     imGuiRender();
 }
