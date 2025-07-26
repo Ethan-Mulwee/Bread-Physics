@@ -14,7 +14,20 @@
 /*                                 GLFW Window                                */
 /* -------------------------------------------------------------------------- */
 
-GLFWwindow* createWindow(int width, int height, const char* name) {
+struct GLWindow {
+    GLFWwindow* glfwWindow;
+    int width, height;
+    const char* name;
+};
+
+GLWindow createWindow(int width, int height, const char* name) {
+
+    GLWindow window;
+
+    window.width = width;
+    window.height = height;
+    window.name = name;
+
     const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
@@ -24,15 +37,15 @@ GLFWwindow* createWindow(int width, int height, const char* name) {
         exit( EXIT_FAILURE );
     }
 
-    GLFWwindow* glfwWindow = glfwCreateWindow(width, height, name, NULL, NULL);
+    window.glfwWindow = glfwCreateWindow(width, height, name, NULL, NULL);
 
-    if (!glfwWindow) {
+    if (!window.glfwWindow) {
         fprintf(stderr , "Failed to open GLFW window \n");
         glfwTerminate();
         exit( EXIT_FAILURE);
     }
 
-    glfwMakeContextCurrent(glfwWindow);
+    glfwMakeContextCurrent(window.glfwWindow);
     glfwSwapInterval(1); // Enable vsync
 
     // glfwSetScrollCallback(glfwWindow, onScrollCallback);
@@ -41,20 +54,20 @@ GLFWwindow* createWindow(int width, int height, const char* name) {
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
-    return glfwWindow;
+    return window;
 }
 
-void updateWindow(GLFWwindow* glfwWindow) {
-    glfwSwapBuffers(glfwWindow);
+void updateWindow(const GLWindow &window) {
+    glfwSwapBuffers(window.glfwWindow);
     glfwPollEvents();
 }
 
-void destroyWindow(GLFWwindow* glfwWindow) {
-    // ImGui_ImplOpenGL3_Shutdown();
-    // ImGui_ImplGlfw_Shutdown();
-    // ImGui::DestroyContext();
+void destroyWindow(const GLWindow &window) {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
-    glfwDestroyWindow(glfwWindow);
+    glfwDestroyWindow(window.glfwWindow);
     glfwTerminate(); 
 }
 
@@ -155,6 +168,12 @@ void openGLInit() {
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
+}
+
+void openGLIntializeRender(GLWindow window) {
+    glViewport(0, 0, window.width, window.height);
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -302,15 +321,15 @@ void drawVertexBuffer(const VertexBuffer &buffer) {
 
 
 int main() {
-    GLFWwindow* glfwWindow = createWindow(500, 500, "window"); 
-    imGuiInit(glfwWindow);
+    GLWindow window = createWindow(500, 500, "window"); 
+    imGuiInit(window.glfwWindow);
     openGLInit();
 
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
 
-    while(!glfwWindowShouldClose(glfwWindow)) { 
-        updateWindow(glfwWindow);
+    while(!glfwWindowShouldClose(window.glfwWindow)) { 
+        updateWindow(window);
     }
 
-    destroyWindow(glfwWindow);
+    destroyWindow(window);
 }
