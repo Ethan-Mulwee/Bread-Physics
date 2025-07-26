@@ -10,6 +10,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include "bMath.hpp"
+#include "smath.hpp"
 #include "ext/iostream.hpp"
 
 /* -------------------------------------------------------------------------- */
@@ -202,29 +203,6 @@ void bindFramebuffer(const FrameBuffer &buffer) {
 }
 
 FrameBuffer createFrameBuffer(int32_t width, int32_t height) {
-    // ////////// HELLO TRIANGLE TESTING CODE
-    // float positions[6] = {
-    //     -0.5f, -0.5f, // 0
-    //     0.0f, 0.5f, // 1
-    //     0.5f, -0.5f, // 2
-    // };
-    // unsigned int indices[] {
-    //     0, 1, 2,
-    // };
-
-    // unsigned int vbuffer;
-    // glGenBuffers(1, &vbuffer);
-    // glBindBuffer(GL_ARRAY_BUFFER, vbuffer);
-    // glBufferData(GL_ARRAY_BUFFER, 8*sizeof(float), positions, GL_STATIC_DRAW);
-
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, 0);
-    
-    // unsigned int ibo;
-    // glGenBuffers(1, &ibo);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(float), indices, GL_STATIC_DRAW);
-    // ////////// HELLO TRIANGLE TESTING CODE
 
     FrameBuffer buffer;
 
@@ -387,14 +365,14 @@ void drawVertexBuffer(const VertexBuffer &buffer) {
 /* -------------------------------------------------------------------------- */
 
 struct Camera {
-    bMath::vector3 focus;
+    smath::vector3 focus;
 
     float distance;
     float pitch, yaw;
     float aspect, fov, near, far;
 };
 
-Camera createCamera(bMath::vector3 focus, float distance, float fov, float near, float far) {
+Camera createCamera(smath::vector3 focus, float distance, float fov, float near, float far) {
     Camera camera;
 
     camera.focus = focus;
@@ -420,7 +398,7 @@ bMath::matrix4 calculateCameraView(const Camera &camera) {
 
     bMath::quaternion orientation = calculateCameraOrientation(camera);
 
-    bMath::vector3 position = camera.focus - bMath::vector3(0.0f, 0.0f, -1.0f) * orientation;
+    bMath::vector3 position = *(bMath::vector3*)&camera.focus - bMath::vector3(0.0f, 0.0f, -1.0f) * orientation;
     bMath::matrix3 rotmat = bMath::quaternionToMatrix(orientation);
 
     bMath::matrix4 rotmat4(
@@ -617,7 +595,6 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const Vertex
     bindFramebuffer(frameBuffer);
 
         drawVertexBuffer(vertexBuffer);
-        // glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 
     unbindFramebuffer();
 
@@ -635,7 +612,7 @@ int main() {
     Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
     VertexBuffer vertexBuffer = createVertexBuffer(genCubeMesh());
-    Camera camera = createCamera(bMath::vector3(0.0f,0.0f,0.0f), 10.0f, 45.0f, 0.1f, 100.0f);
+    Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 10.0f, 45.0f, 0.1f, 100.0f);
 
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);

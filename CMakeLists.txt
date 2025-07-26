@@ -44,6 +44,7 @@ target_include_directories(App
   PUBLIC ext/imgui
   PUBLIC ext/imgui/backends
   PUBLIC ext/Bread-Math/include/bMath
+  PUBLIC ext/Simple-Math/smath
 )
 
 target_link_directories(App

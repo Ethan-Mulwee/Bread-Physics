@@ -11,3 +11,6 @@
 [submodule "ext/Bread-Math"]
 	path = ext/Bread-Math
 	url = https://github.com/Ethan-Mulwee/Bread-Math
+[submodule "ext/Simple-Math"]
+	path = ext/Simple-Math
+	url = https://github.com/Ethan-Mulwee/Simple-Math.git
