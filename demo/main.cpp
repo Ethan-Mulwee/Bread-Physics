@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -195,7 +197,7 @@ void unbindFramebuffer() {
 void bindFramebuffer(const FrameBuffer &buffer) {
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.fBO);
     glViewport(0,0, buffer.width, buffer.height);
-    glClearColor(0.5f, 0.2f, 0.2f, 1.0f);
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -381,6 +383,103 @@ void drawVertexBuffer(const VertexBuffer &buffer) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                                   Shader                                   */
+/* -------------------------------------------------------------------------- */
+
+struct Shader {
+    unsigned int programId;
+};
+
+unsigned int getCompiledShader(unsigned int shaderType, const char* shaderSource) {
+    unsigned int shader_id = glCreateShader(shaderType);
+
+    glShaderSource(shader_id, 1, &shaderSource, nullptr);
+    glCompileShader(shader_id);
+
+    GLint result;
+    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &result);
+
+    if (result == GL_FALSE)
+    {
+        int length;
+        glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length);
+
+        GLchar* strInfoLog = new GLchar[length + 1];
+        glGetShaderInfoLog(shader_id, length, &length, strInfoLog);
+
+        fprintf(stderr, "Compile error in shader: %s\n", strInfoLog);
+        delete[] strInfoLog;
+    }
+
+    return shader_id;
+}
+
+Shader createShader(const std::string &vertShader, const std::string &fragShader) {
+
+    Shader shader;
+
+    std::ifstream is_vs(vertShader);
+    if (!is_vs.is_open()) {
+        std::cerr << "Error opening file: " << strerror(errno) << std::endl;
+    }
+
+    const std::string f_vs((std::istreambuf_iterator<char>(is_vs)), std::istreambuf_iterator<char>());
+
+    std::ifstream is_fs(fragShader);
+        if (!is_fs.is_open()) {
+        std::cerr << "Error opening file: " << strerror(errno) << std::endl;
+    }
+
+    const std::string f_fs((std::istreambuf_iterator<char>(is_fs)), std::istreambuf_iterator<char>());
+
+    shader.programId = glCreateProgram();
+
+    unsigned int vs = getCompiledShader(GL_VERTEX_SHADER, f_vs.c_str());
+    unsigned int fs = getCompiledShader(GL_FRAGMENT_SHADER, f_fs.c_str());
+
+    glAttachShader(shader.programId, vs);
+    glAttachShader(shader.programId, fs);
+
+    GLint attached = 0;
+
+    glLinkProgram(shader.programId);
+
+    GLint linkResult;
+    glGetProgramiv(shader.programId, GL_LINK_STATUS, &linkResult);
+    if (linkResult == GL_FALSE) {
+        std::cout << "shader linking failed \n";
+
+        int length;
+        glGetProgramiv(shader.programId, GL_INFO_LOG_LENGTH, &length);
+
+        GLchar* strInfoLog = new GLchar[length + 1];
+        glGetShaderInfoLog(shader.programId, length, &length, strInfoLog);
+
+        fprintf(stderr, "Shader linking error: %s\n", strInfoLog);
+        delete[] strInfoLog;
+    }
+
+
+    glValidateProgram(shader.programId);
+
+    GLint validationResult;
+    glGetProgramiv(shader.programId, GL_VALIDATE_STATUS, &validationResult);
+    if (validationResult == GL_FALSE) {
+        std::cout << "shader validation failed \n";
+    }
+
+
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    return shader;
+}
+
+void useShader(const Shader &shader) {
+    glUseProgram(shader.programId);
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                 Application                                */
 /* -------------------------------------------------------------------------- */
 
@@ -414,9 +513,11 @@ void uiProperties() {
     ImGui::End();
 }
 
-void render(const GLWindow &window, const FrameBuffer &frameBuffer, const VertexBuffer &vertexBuffer) {
+void render(const GLWindow &window, const FrameBuffer &frameBuffer, const VertexBuffer &vertexBuffer, const Shader &shader) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
+
+    useShader(shader);
 
     bindFramebuffer(frameBuffer);
 
@@ -432,17 +533,18 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const Vertex
 }
 
 int main() {
-    GLWindow window = createWindow(500, 500, "window"); 
+    GLWindow window = createWindow(1920, 1080, "window"); 
     imGuiInit(window.glfwWindow);
     openGLInit();
 
+    Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
     VertexBuffer vertexBuffer = createVertexBuffer(genCubeMesh());
 
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
 
-        render(window, frameBuffer, vertexBuffer);
+        render(window, frameBuffer, vertexBuffer, shader);
     }
 
     destroyWindow(window);
