@@ -200,29 +200,29 @@ void bindFramebuffer(const FrameBuffer &buffer) {
 }
 
 FrameBuffer createFrameBuffer(int32_t width, int32_t height) {
-    ////////// HELLO TRIANGLE TESTING CODE
-    float positions[6] = {
-        -0.5f, -0.5f, // 0
-        0.0f, 0.5f, // 1
-        0.5f, -0.5f, // 2
-    };
-    unsigned int indices[] {
-        0, 1, 2,
-    };
+    // ////////// HELLO TRIANGLE TESTING CODE
+    // float positions[6] = {
+    //     -0.5f, -0.5f, // 0
+    //     0.0f, 0.5f, // 1
+    //     0.5f, -0.5f, // 2
+    // };
+    // unsigned int indices[] {
+    //     0, 1, 2,
+    // };
 
-    unsigned int vbuffer;
-    glGenBuffers(1, &vbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vbuffer);
-    glBufferData(GL_ARRAY_BUFFER, 8*sizeof(float), positions, GL_STATIC_DRAW);
+    // unsigned int vbuffer;
+    // glGenBuffers(1, &vbuffer);
+    // glBindBuffer(GL_ARRAY_BUFFER, vbuffer);
+    // glBufferData(GL_ARRAY_BUFFER, 8*sizeof(float), positions, GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, 0);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, 0);
     
-    unsigned int ibo;
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(float), indices, GL_STATIC_DRAW);
-    ////////// HELLO TRIANGLE TESTING CODE
+    // unsigned int ibo;
+    // glGenBuffers(1, &ibo);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(float), indices, GL_STATIC_DRAW);
+    // ////////// HELLO TRIANGLE TESTING CODE
 
     FrameBuffer buffer;
 
@@ -257,6 +257,8 @@ FrameBuffer createFrameBuffer(int32_t width, int32_t height) {
     glDrawBuffers(buffer.texId, buffers);
     
     unbindFramebuffer();
+
+    return buffer;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -269,24 +271,24 @@ struct Vertex {
 };
 
 struct Mesh {
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
+    std::vector<Vertex>* vertices;
+    std::vector<uint32_t>* indices;
 };
 
-Mesh* createMesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices) {
-    Mesh* mesh = new Mesh();
+Mesh createMesh(std::vector<Vertex>* vertices, std::vector<uint32_t>* indices) {
+    Mesh mesh;
 
-    mesh->vertices = vertices;
-    mesh->indices = indices;
+    mesh.vertices = vertices;
+    mesh.indices = indices;
 
     return mesh;
 }
 
-Mesh* genCubeMesh() {
+Mesh genCubeMesh() {
 
     using namespace bMath;
 
-    std::vector<Vertex> testVertices = {
+    std::vector<Vertex>* testVertices = new std::vector<Vertex>{
         {vector3(0,0,0), vector3(0,0,0)},
         {vector3(0,0,1), vector3(0,0,1)},
         {vector3(0,1,0), vector3(0,1,0)},
@@ -298,14 +300,14 @@ Mesh* genCubeMesh() {
     };
 
     for (int i = 0; i < 8; i++) {
-        testVertices[i].position -= vector3(0.5,0.5,0.5);
+        (*testVertices)[i].position -= vector3(0.5,0.5,0.5);
         // testVertices[i] = testVertices[i] * rotation;
-        testVertices[i].position *= 0.35f;
+        (*testVertices)[i].position *= 0.35f;
         // testVertices[i] -= vector3(0,0,0.5);
         // test rotation
     }
 
-    std::vector<uint32_t> testIndices = {
+    std::vector<uint32_t>* testIndices = new std::vector<uint32_t>{
         //Top
         2, 6, 7, 2, 3, 7, 
         //Bottom
@@ -328,7 +330,7 @@ Mesh* genCubeMesh() {
 /* -------------------------------------------------------------------------- */
 
 struct VertexBuffer {
-    Mesh* mesh;
+    Mesh mesh;
     uint32_t vao, vbo, ebo;
 };
 
@@ -341,9 +343,11 @@ void unbindVertexBuffer() {
     glBindVertexArray(0);
 }
 
-VertexBuffer createVertexBuffer(Mesh* mesh) {
+VertexBuffer createVertexBuffer(Mesh mesh) {
 
     VertexBuffer buffer;
+
+    buffer.mesh = mesh;
 
     glGenBuffers(1, &buffer.vbo);
     glGenBuffers(1, &buffer.ebo);
@@ -352,10 +356,10 @@ VertexBuffer createVertexBuffer(Mesh* mesh) {
     glBindVertexArray(buffer.vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
-    glBufferData(GL_ARRAY_BUFFER, mesh->vertices.size() * sizeof(Vertex), mesh->vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mesh.vertices->size() * sizeof(Vertex), mesh.vertices->data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->indices.size() * sizeof(uint32_t), mesh->indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indices->size() * sizeof(uint32_t), mesh.indices->data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
     glEnableVertexAttribArray(0);
@@ -366,11 +370,13 @@ VertexBuffer createVertexBuffer(Mesh* mesh) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    return buffer;
 }
 
 void drawVertexBuffer(const VertexBuffer &buffer) {
     bindVertexBuffer(buffer);
-    glDrawElements(GL_TRIANGLES, buffer.mesh->indices.size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, buffer.mesh.indices->size(), GL_UNSIGNED_INT, nullptr);
     unbindVertexBuffer();
 }
 
@@ -408,19 +414,19 @@ void uiProperties() {
     ImGui::End();
 }
 
-void render(const GLWindow &window, const FrameBuffer &frameBuffer/* , const VertexBuffer &vertexBuffer */) {
+void render(const GLWindow &window, const FrameBuffer &frameBuffer, const VertexBuffer &vertexBuffer) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
 
     bindFramebuffer(frameBuffer);
 
-        // drawVertexBuffer(vertexBuffer);
-        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
+        drawVertexBuffer(vertexBuffer);
+        // glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 
     unbindFramebuffer();
 
     uiFrameBufferWindow(frameBuffer);
-    // uiProperties();
+    uiProperties();
 
     imGuiRender();
 }
@@ -431,12 +437,12 @@ int main() {
     openGLInit();
 
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
-    // VertexBuffer vertexBuffer = createVertexBuffer(genCubeMesh());
+    VertexBuffer vertexBuffer = createVertexBuffer(genCubeMesh());
 
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
 
-        render(window, frameBuffer/* , vertexBuffer */);
+        render(window, frameBuffer, vertexBuffer);
     }
 
     destroyWindow(window);
