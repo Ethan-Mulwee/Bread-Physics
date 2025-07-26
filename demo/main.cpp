@@ -147,6 +147,17 @@ void imGuiRender() {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                                   OpenGL                                   */
+/* -------------------------------------------------------------------------- */
+
+void openGLInit() {
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS);
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                 Framebuffer                                */
 /* -------------------------------------------------------------------------- */
 
@@ -162,14 +173,13 @@ void unbindFramebuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void bindFramebuffer(FrameBuffer buffer) {
+void bindFramebuffer(const FrameBuffer &buffer) {
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.fBO);
     glViewport(0,0, buffer.width, buffer.height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-FrameBuffer createFrameBuffer(int32_t width, int32_t height)
-{
+FrameBuffer createFrameBuffer(int32_t width, int32_t height) {
     // ////////// HELLO TRIANGLE TESTING CODE
     // float positions[6] = {
     //     -0.5f, -0.5f, // 0
@@ -225,8 +235,68 @@ FrameBuffer createFrameBuffer(int32_t width, int32_t height)
 
     GLenum buffers[4] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(buffer.texId, buffers);
-
+    
     unbindFramebuffer();
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                VertexBuffer                                */
+/* -------------------------------------------------------------------------- */
+
+struct Vertex {
+    bMath::float3 position;
+    bMath::float3 normal;
+};
+
+struct VertexBuffer {
+    std::vector<Vertex> vertices; 
+    std::vector<uint32_t> indices;
+    uint32_t vao, vbo, ebo;
+};
+
+void bindVertexBuffer(const VertexBuffer &buffer) {
+    glBindVertexArray(buffer.vao);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ebo);
+}
+
+void unbindVertexBuffer() {
+    glBindVertexArray(0);
+}
+
+VertexBuffer createVertexBuffer(std::vector<Vertex> vertices, std::vector<uint32_t> indices) {
+
+    VertexBuffer buffer;
+
+    buffer.vertices = vertices;
+    buffer.indices = indices;
+
+    glGenBuffers(1, &buffer.vbo);
+    glGenBuffers(1, &buffer.ebo);
+    glGenVertexArrays(1, &buffer.vao);
+    
+    glBindVertexArray(buffer.vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
+    glEnableVertexAttribArray(0);
+    
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glEnableVertexAttribArray(1);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void drawVertexBuffer(const VertexBuffer &buffer) {
+    bindVertexBuffer(buffer);
+    glDrawElements(GL_TRIANGLES, buffer.indices.size(), GL_UNSIGNED_INT, nullptr);
+    unbindVertexBuffer();
 }
 
 
@@ -234,6 +304,7 @@ FrameBuffer createFrameBuffer(int32_t width, int32_t height)
 int main() {
     GLFWwindow* glfwWindow = createWindow(500, 500, "window"); 
     imGuiInit(glfwWindow);
+    openGLInit();
 
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
 
