@@ -322,6 +322,24 @@ void drawVertexBuffer(const VertexBuffer &buffer) {
 /*                                 Application                                */
 /* -------------------------------------------------------------------------- */
 
+struct Scene {
+    FrameBuffer* frameBuffer;
+    VertexBuffer* vertexBuffer;
+
+};
+
+void uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
+    ImGui::Begin("Scene");
+    
+    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    
+    // add rendered texture to ImGUI scene window
+    uint64_t textureID = frameBuffer.texId;
+    ImGui::Image((ImTextureID)(textureID), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+    
+    ImGui::End();
+}
+
 void render(const GLWindow &window, const FrameBuffer &frameBuffer/* , const VertexBuffer &vertexBuffer */) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
@@ -332,15 +350,7 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer/* , const Ver
 
     unbindFramebuffer();
 
-    ImGui::Begin("Scene");
-    
-    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    
-    // add rendered texture to ImGUI scene window
-    uint64_t textureID = frameBuffer.texId;
-    ImGui::Image((ImTextureID)(textureID), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-    
-    ImGui::End();
+    uiFrameBufferWindow(frameBuffer);
 
     imGuiRender();
 }
