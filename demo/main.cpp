@@ -384,8 +384,8 @@ Camera createCamera(smath::vector3 focus, float distance, float fov, float near,
     camera.far = far;
 
     camera.aspect = 1.0f;
-    camera.pitch = 45.0f;
-    camera.yaw = 45.0f;
+    camera.pitch = M_PI/4.0f;
+    camera.yaw = 0.0f;
 
     return camera;
 }
@@ -397,7 +397,7 @@ smath::quaternion calculateCameraOrientation(const Camera &camera) {
 smath::matrix4x4 calculateCameraView(const Camera &camera) {
     smath::quaternion orientation = calculateCameraOrientation(camera);
 
-    smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, -1.0f});
+    smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, 1.0f});
     smath::vector3 position = camera.focus - forwardVector * camera.distance;
     smath::matrix3x3 rotationMatrix = smath::matrix3x3_from_quaternion(orientation);
 
@@ -407,11 +407,13 @@ smath::matrix4x4 calculateCameraView(const Camera &camera) {
     transformationMatrix[1][3] = position.y;
     transformationMatrix[2][3] = position.z;
 
+    std::cout << smath::to_string_pretty(transformationMatrix) << "\n\n";
+
     return smath::invert_transform(transformationMatrix);
 }
 
 smath::matrix4x4 calculateCameraProjection(const Camera &camera) {
-    return smath::matrix4x4_from_perspective(camera.fov, camera.near, camera.near, camera.far);
+    return smath::matrix4x4_from_perspective(camera.fov, camera.aspect, camera.near, camera.far);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -532,14 +534,16 @@ void setShaderUniformFloat4(const Shader &shader, smath::vector4 &v, const std::
 }
 
 void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
+    smath::matrix4x4 id = smath::matrix4x4_from_identity();
+    id[0][3] = 1.0f;
     setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "model"); // TEMP CODE REMOVE LATER
     // setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "view"); // TEMP CODE REMOVE LATER
     // setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "projection"); // TEMP CODE REMOVE LATER
     // std::cout << "model: \n" << bMath::matrix4::identity() << "\n";
     setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
-    std::cout << "view: \n" << to_string_pretty(calculateCameraView(camera)) << "\n";
+    // std::cout << "view: \n" << to_string_pretty(calculateCameraView(camera)) << "\n";
     setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
-    std::cout << "projection: \n" << to_string_pretty(calculateCameraProjection(camera)) << "\n";
+    // std::cout << "projection: \n" << to_string_pretty(calculateCameraProjection(camera)) << "\n";
 }
 
 
@@ -609,7 +613,7 @@ int main() {
     Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
     VertexBuffer vertexBuffer = createVertexBuffer(genCubeMesh());
-    Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 10.0f, 45.0f, 0.1f, 100.0f);
+    Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 4.0f, 45.0f, 0.1f, 100.0f);
 
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
