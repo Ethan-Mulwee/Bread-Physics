@@ -391,6 +391,7 @@ Camera createCamera(smath::vector3 focus, float distance, float fov, float near,
 
 bMath::quaternion calculateCameraOrientation(const Camera &camera) {
     return bMath::quaternion(-camera.pitch, -camera.yaw, 0.0f);
+    // return smath::quaternion_from_euler_angles(-camera.pitch, -camera.yaw, 0.0f);
 }
 
 bMath::matrix4 calculateCameraView(const Camera &camera) {
