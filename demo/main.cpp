@@ -246,8 +246,8 @@ FrameBuffer createFrameBuffer(int32_t width, int32_t height) {
 /* -------------------------------------------------------------------------- */
 
 struct Vertex {
-    bMath::float3 position;
-    bMath::float3 normal;
+    smath::vector3 position;
+    smath::vector3 normal;
 };
 
 struct Mesh {
@@ -266,21 +266,21 @@ Mesh createMesh(std::vector<Vertex>* vertices, std::vector<uint32_t>* indices) {
 
 Mesh genCubeMesh() {
 
-    using namespace bMath;
+    using namespace smath;
 
     std::vector<Vertex>* testVertices = new std::vector<Vertex>{
-        {vector3(0,0,0), vector3(0,0,0)},
-        {vector3(0,0,1), vector3(0,0,1)},
-        {vector3(0,1,0), vector3(0,1,0)},
-        {vector3(0,1,1), vector3(0,1,1)},
-        {vector3(1,0,0), vector3(1,0,0)},
-        {vector3(1,0,1), vector3(1,0,1)},
-        {vector3(1,1,0), vector3(1,1,0)},
-        {vector3(1,1,1), vector3(1,1,1)}
+        {vector3{0,0,0}, vector3{0,0,0}},
+        {vector3{0,0,1}, vector3{0,0,1}},
+        {vector3{0,1,0}, vector3{0,1,0}},
+        {vector3{0,1,1}, vector3{0,1,1}},
+        {vector3{1,0,0}, vector3{1,0,0}},
+        {vector3{1,0,1}, vector3{1,0,1}},
+        {vector3{1,1,0}, vector3{1,1,0}},
+        {vector3{1,1,1}, vector3{1,1,1}}
     };
 
     for (int i = 0; i < 8; i++) {
-        (*testVertices)[i].position -= vector3(0.5,0.5,0.5);
+        (*testVertices)[i].position -= vector3{0.5,0.5,0.5};
         // testVertices[i] = testVertices[i] * rotation;
         (*testVertices)[i].position *= 0.35f;
         // testVertices[i] -= vector3(0,0,0.5);
@@ -389,33 +389,28 @@ Camera createCamera(smath::vector3 focus, float distance, float fov, float near,
     return camera;
 }
 
-bMath::quaternion calculateCameraOrientation(const Camera &camera) {
-    return bMath::quaternion(-camera.pitch, -camera.yaw, 0.0f);
-    // return smath::quaternion_from_euler_angles(-camera.pitch, -camera.yaw, 0.0f);
+smath::quaternion calculateCameraOrientation(const Camera &camera) {
+    return smath::quaternion_from_euler_angles(-camera.pitch, -camera.yaw, 0.0f);
 }
 
-bMath::matrix4 calculateCameraView(const Camera &camera) {
-    bMath::matrix4 viewMatrix;
+smath::matrix4x4 calculateCameraView(const Camera &camera) {
+    smath::quaternion orientation = calculateCameraOrientation(camera);
 
-    bMath::quaternion orientation = calculateCameraOrientation(camera);
+    smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, -1.0f});
+    smath::vector3 position = camera.focus - forwardVector * camera.distance;
+    smath::matrix3x3 rotationMatrix = smath::matrix3x3_from_quaternion(orientation);
 
-    bMath::vector3 position = *(bMath::vector3*)&camera.focus - bMath::vector3(0.0f, 0.0f, -1.0f) * orientation;
-    bMath::matrix3 rotmat = bMath::quaternionToMatrix(orientation);
+    smath::matrix4x4 transformationMatrix = smath::matrix4x4_from_matrix3x3(rotationMatrix);
 
-    bMath::matrix4 rotmat4(
-        rotmat(0,0), rotmat(0,1), rotmat(0,2), 0, 
-        rotmat(1,0), rotmat(1,1), rotmat(1,2), 0, 
-        rotmat(2,0), rotmat(2,1), rotmat(2,2), 0, 
-                  0,           0,           0, 1
-    );
+    transformationMatrix[0][3] = position.x;
+    transformationMatrix[1][3] = position.y;
+    transformationMatrix[2][3] = position.z;
 
-    viewMatrix = bMath::translationMatrix(position) * rotmat4;
-
-    return bMath::inverse(viewMatrix);
+    return smath::invert_transform(transformationMatrix);
 }
 
-bMath::matrix4 calculateCameraProjection(const Camera &camera) {
-    return bMath::perspectiveMatrix(camera.fov, camera.near, camera.near, camera.far);
+smath::matrix4x4 calculateCameraProjection(const Camera &camera) {
+    return smath::matrix4x4_from_perspective(camera.fov, camera.near, camera.near, camera.far);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -515,7 +510,7 @@ void useShader(const Shader &shader) {
     glUseProgram(shader.programId);
 }
 
-void setShaderUniformMatrix4(const Shader &shader, const bMath::matrix4 &mat4, const std::string &name) {
+void setShaderUniformMatrix4(const Shader &shader, const smath::matrix4x4 &mat4, const std::string &name) {
     GLint myLoc = glGetUniformLocation(shader.programId, name.c_str());
     glUniformMatrix4fv(myLoc, 1, GL_TRUE, &mat4.data[0][0]);
 }
@@ -525,20 +520,20 @@ void setShaderUniformInt(const Shader &shader, const int v, const std::string &n
     glUniform1i(myLoc, v);
 }
 
-void setShaderUniformFloat3(const Shader &shader, bMath::float3 &v, const std::string &name) {
+void setShaderUniformFloat3(const Shader &shader, smath::vector3 &v, const std::string &name) {
     GLint myLoc = glGetUniformLocation(shader.programId, name.c_str());
-    glProgramUniform3fv(shader.programId, myLoc, 1, v.data);
+    glProgramUniform3fv(shader.programId, myLoc, 1, (float*)&v);
 }
 
-void setShaderUniformFloat4(const Shader &shader, bMath::float4 &v, const std::string &name) {
+void setShaderUniformFloat4(const Shader &shader, smath::vector4 &v, const std::string &name) {
     GLint myLoc = glGetUniformLocation(shader.programId, name.c_str());
-    glProgramUniform4fv(shader.programId, myLoc, 1, v.data);
+    glProgramUniform4fv(shader.programId, myLoc, 1, (float*)&v);
 }
 
 void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
-    setShaderUniformMatrix4(shader, bMath::matrix4::identity(), "model"); // TEMP CODE REMOVE LATER
-    setShaderUniformMatrix4(shader, bMath::matrix4::identity(), "view"); // TEMP CODE REMOVE LATER
-    setShaderUniformMatrix4(shader, bMath::matrix4::identity(), "projection"); // TEMP CODE REMOVE LATER
+    setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "model"); // TEMP CODE REMOVE LATER
+    setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "view"); // TEMP CODE REMOVE LATER
+    setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "projection"); // TEMP CODE REMOVE LATER
     // std::cout << "model: \n" << bMath::matrix4::identity() << "\n";
     // setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
     // std::cout << "view: \n" << calculateCameraView(camera) << "\n";
