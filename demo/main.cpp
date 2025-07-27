@@ -11,6 +11,7 @@
 
 #include "bMath.hpp"
 #include "smath.hpp"
+#include "to_string.hpp"
 #include "ext/iostream.hpp"
 
 /* -------------------------------------------------------------------------- */
@@ -532,13 +533,13 @@ void setShaderUniformFloat4(const Shader &shader, smath::vector4 &v, const std::
 
 void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
     setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "model"); // TEMP CODE REMOVE LATER
-    setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "view"); // TEMP CODE REMOVE LATER
-    setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "projection"); // TEMP CODE REMOVE LATER
+    // setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "view"); // TEMP CODE REMOVE LATER
+    // setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "projection"); // TEMP CODE REMOVE LATER
     // std::cout << "model: \n" << bMath::matrix4::identity() << "\n";
-    // setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
-    // std::cout << "view: \n" << calculateCameraView(camera) << "\n";
-    // setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
-    // std::cout << "projection: \n" << calculateCameraProjection(camera) << "\n";
+    setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
+    std::cout << "view: \n" << to_string_pretty(calculateCameraView(camera)) << "\n";
+    setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
+    std::cout << "projection: \n" << to_string_pretty(calculateCameraProjection(camera)) << "\n";
 }
 
 
