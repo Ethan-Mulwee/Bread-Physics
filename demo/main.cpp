@@ -384,14 +384,14 @@ Camera createCamera(smath::vector3 focus, float distance, float fov, float near,
     camera.far = far;
 
     camera.aspect = 1.0f;
-    camera.pitch = M_PI/4.0f;
+    camera.pitch = 0.0f;
     camera.yaw = 0.0f;
 
     return camera;
 }
 
 smath::quaternion calculateCameraOrientation(const Camera &camera) {
-    return smath::quaternion_from_euler_angles(-camera.pitch, -camera.yaw, 0.0f);
+    return smath::quaternion_from_euler_angles_ZYX(0.0f, camera.yaw, 0.0f);
 }
 
 smath::matrix4x4 calculateCameraView(const Camera &camera) {
@@ -407,7 +407,7 @@ smath::matrix4x4 calculateCameraView(const Camera &camera) {
     transformationMatrix[1][3] = position.y;
     transformationMatrix[2][3] = position.z;
 
-    std::cout << smath::to_string_pretty(transformationMatrix) << "\n\n";
+    // std::cout << smath::to_string_pretty(transformationMatrix) << "\n\n";
 
     return smath::invert_transform(transformationMatrix);
 }
@@ -617,6 +617,8 @@ int main() {
 
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
+
+        camera.yaw += 0.05f;
 
         render(window, frameBuffer, vertexBuffer, shader, camera);
     }
