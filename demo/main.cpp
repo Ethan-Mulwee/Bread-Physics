@@ -657,7 +657,7 @@ int main() {
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
 
-        // camera.yaw += 0.05f;
+        camera.yaw += 0.05f;
 
 
 
