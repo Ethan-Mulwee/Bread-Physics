@@ -265,7 +265,7 @@ Mesh createMesh(std::vector<Vertex>* vertices, std::vector<uint32_t>* indices) {
     return mesh;
 }
 
-Mesh genCubeMesh() {
+Mesh genMeshCube() {
 
     using namespace smath;
 
@@ -285,7 +285,7 @@ Mesh genCubeMesh() {
         // testVertices[i] = testVertices[i] * rotation;
         (*testVertices)[i].position = smath::quaternion_transform_vector(smath::quaternion_from_axis_angle(smath::vector3{1.0f,0.0f,1.0},1.1f), (*testVertices)[i].position); 
         (*testVertices)[i].position *= 0.35f;
-        (*testVertices)[i].position -= vector3{0.8,0.0,2.0};
+        // (*testVertices)[i].position -= vector3{0.0,0.0,2.0};
         // testVertices[i] -= vector3(0,0,0.5);
         // test rotation
         // std::cout << smath::to_string((*testVertices)[i].position) << "\n";
@@ -400,7 +400,7 @@ smath::quaternion calculateCameraOrientation(const Camera &camera) {
 smath::matrix4x4 calculateCameraView(const Camera &camera) {
     smath::quaternion orientation = calculateCameraOrientation(camera);
 
-    smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, 1.0f});
+    smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, -1.0f});
     smath::vector3 position = camera.focus - forwardVector * camera.distance;
     smath::matrix3x3 rotationMatrix = smath::matrix3x3_from_quaternion(orientation);
 
@@ -616,7 +616,7 @@ int main() {
 
     Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
-    Mesh cubeMesh = genCubeMesh();
+    Mesh cubeMesh = genMeshCube();
     VertexBuffer vertexBuffer = createVertexBuffer(cubeMesh);
     Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 4.0f, 45.0f, 0.1f, 100.0f);
 
@@ -640,10 +640,10 @@ int main() {
 
     for (int i = 0; i < cubeMesh.vertices->size(); i++) {
         Vertex vertex = (*cubeMesh.vertices)[i];
-        // smath::matrix4x4 viewTransform = calculateCameraView(camera);
-        // smath::vector3 viewTransformedPosition = smath::matrix4x4_transform_vector3(viewTransform, vertex.position);
+        smath::matrix4x4 viewTransform = calculateCameraView(camera);
+        smath::vector3 viewTransformedPosition = smath::matrix4x4_transform_vector3(viewTransform, vertex.position);
 
-        smath::vector4 homoCord = smath::vector4{vertex.position.x, vertex.position.y, vertex.position.z, 1.0f};
+        smath::vector4 homoCord = smath::vector4{viewTransformedPosition.x, viewTransformedPosition.y, viewTransformedPosition.z, 1.0f};
 
         smath::matrix4x4 projectionTransform = calculateCameraProjection(camera);
         smath::vector4 projectionTransformedPosition = smath::matrix4x4_transform_vector4(projectionTransform, homoCord);
