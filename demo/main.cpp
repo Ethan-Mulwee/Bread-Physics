@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -9,10 +10,9 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "bMath.hpp"
 #include "smath.hpp"
 #include "to_string.hpp"
-#include "ext/iostream.hpp"
+#include "smath_iostream.hpp"
 
 /* -------------------------------------------------------------------------- */
 /*                                 GLFW Window                                */
@@ -265,7 +265,7 @@ Mesh createMesh(std::vector<Vertex>* vertices, std::vector<uint32_t>* indices) {
     return mesh;
 }
 
-Mesh genMeshCube() {
+Mesh genMeshCube(const float size = 0.5f) {
 
     using namespace smath;
 
@@ -282,13 +282,7 @@ Mesh genMeshCube() {
 
     for (int i = 0; i < 8; i++) {
         (*testVertices)[i].position -= vector3{0.5,0.5,0.5};
-        // testVertices[i] = testVertices[i] * rotation;
-        (*testVertices)[i].position = smath::quaternion_transform_vector(smath::quaternion_from_axis_angle(smath::vector3{1.0f,0.0f,1.0},1.1f), (*testVertices)[i].position); 
-        (*testVertices)[i].position *= 0.35f;
-        // (*testVertices)[i].position -= vector3{0.0,0.0,2.0};
-        // testVertices[i] -= vector3(0,0,0.5);
-        // test rotation
-        // std::cout << smath::to_string((*testVertices)[i].position) << "\n";
+        (*testVertices)[i].position *= size;
     }
 
     std::vector<uint32_t>* testIndices = new std::vector<uint32_t>{
@@ -394,7 +388,7 @@ Camera createCamera(smath::vector3 focus, float distance, float fov, float near,
 }
 
 smath::quaternion calculateCameraOrientation(const Camera &camera) {
-    return smath::quaternion_from_euler_angles_ZYX(0.0f, camera.yaw, camera.pitch);
+    return smath::quaternion_from_euler_angles_ZYX(0.0f, 0.0f, camera.pitch);
 }
 
 smath::matrix4x4 calculateCameraView(const Camera &camera) {
@@ -402,13 +396,10 @@ smath::matrix4x4 calculateCameraView(const Camera &camera) {
     using namespace smath;
 
     smath::quaternion orientation = calculateCameraOrientation(camera);
-    std::cout << orientation.length() << "\n";
 
     smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, -1.0f});
     smath::vector3 position = camera.focus - (forwardVector * camera.distance);
     smath::matrix3x3 rotationMatrix = smath::matrix3x3_from_quaternion(orientation); /* smath::matrix3x3_from_identity(); */
-    std::cout << "rotation matrix: \n" << to_string_pretty(rotationMatrix) << "\n\n";
-    std::cout << "Det: " << determinant(rotationMatrix) << "\n\n";
 
     smath::matrix4x4 transformationMatrix = smath::matrix4x4_from_matrix3x3(rotationMatrix);
 
@@ -416,9 +407,8 @@ smath::matrix4x4 calculateCameraView(const Camera &camera) {
     transformationMatrix[1][3] = position.y;
     transformationMatrix[2][3] = position.z;
 
-    std::cout << smath::to_string_pretty(transformationMatrix) << "\n\n";
-    // std::cout << "inverted: \n" << smath::to_string_pretty(smath::invert_transform(transformationMatrix)) << "\n\n";
-    // std::cout << determinant(matrix3x3_from_matrix4x4(smath::invert_transform(transformationMatrix))) << "\n\n";
+    std::cout << transformationMatrix << "\n";
+    std::cout << determinant(matrix3x3_from_matrix4x4(transformationMatrix)) << "\n";
 
     return invert_transform(transformationMatrix);
 }
