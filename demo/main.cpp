@@ -394,15 +394,21 @@ Camera createCamera(smath::vector3 focus, float distance, float fov, float near,
 }
 
 smath::quaternion calculateCameraOrientation(const Camera &camera) {
-    return smath::quaternion_from_euler_angles_ZYX(0.0f, camera.yaw, 0.0f);
+    return smath::quaternion_from_euler_angles_ZYX(0.0f, camera.yaw, camera.pitch);
 }
 
 smath::matrix4x4 calculateCameraView(const Camera &camera) {
+
+    using namespace smath;
+
     smath::quaternion orientation = calculateCameraOrientation(camera);
+    std::cout << orientation.length() << "\n";
 
     smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, -1.0f});
-    smath::vector3 position = camera.focus - forwardVector * camera.distance;
-    smath::matrix3x3 rotationMatrix = smath::matrix3x3_from_quaternion(orientation);
+    smath::vector3 position = camera.focus - (forwardVector * camera.distance);
+    smath::matrix3x3 rotationMatrix = smath::matrix3x3_from_quaternion(orientation); /* smath::matrix3x3_from_identity(); */
+    std::cout << "rotation matrix: \n" << to_string_pretty(rotationMatrix) << "\n\n";
+    std::cout << "Det: " << determinant(rotationMatrix) << "\n\n";
 
     smath::matrix4x4 transformationMatrix = smath::matrix4x4_from_matrix3x3(rotationMatrix);
 
@@ -410,9 +416,11 @@ smath::matrix4x4 calculateCameraView(const Camera &camera) {
     transformationMatrix[1][3] = position.y;
     transformationMatrix[2][3] = position.z;
 
-    // std::cout << smath::to_string_pretty(transformationMatrix) << "\n\n";
+    std::cout << smath::to_string_pretty(transformationMatrix) << "\n\n";
+    // std::cout << "inverted: \n" << smath::to_string_pretty(smath::invert_transform(transformationMatrix)) << "\n\n";
+    // std::cout << determinant(matrix3x3_from_matrix4x4(smath::invert_transform(transformationMatrix))) << "\n\n";
 
-    return smath::invert_transform(transformationMatrix);
+    return invert_transform(transformationMatrix);
 }
 
 smath::matrix4x4 calculateCameraProjection(const Camera &camera) {
@@ -657,7 +665,8 @@ int main() {
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
 
-        camera.yaw += 0.05f;
+        camera.yaw += 0.02f;
+        camera.pitch += 0.01f;
 
 
 
