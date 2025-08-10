@@ -399,7 +399,7 @@ smath::matrix4x4 calculateCameraView(const Camera &camera) {
 
     smath::quaternion orientation = calculateCameraOrientation(camera);
 
-    smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, -1.0f});
+    smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, 1.0f});
     smath::vector3 position = camera.focus - (forwardVector * camera.distance);
     smath::matrix3x3 rotationMatrix = smath::matrix3x3_from_quaternion(orientation); /* smath::matrix3x3_from_identity(); */
     std::cout << orientation << "\n";
