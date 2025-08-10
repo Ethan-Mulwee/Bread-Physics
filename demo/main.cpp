@@ -309,6 +309,7 @@ Mesh genMeshCube(const float size = 0.5f) {
 
 struct VertexBuffer {
     Mesh mesh;
+    smath::matrix4x4 transform;
     uint32_t vao, vbo, ebo;
 };
 
@@ -326,6 +327,7 @@ VertexBuffer createVertexBuffer(Mesh mesh) {
     VertexBuffer buffer;
 
     buffer.mesh = mesh;
+    buffer.transform = smath::matrix4x4_from_identity();
 
     glGenBuffers(1, &buffer.vbo);
     glGenBuffers(1, &buffer.ebo);
@@ -388,7 +390,7 @@ Camera createCamera(smath::vector3 focus, float distance, float fov, float near,
 }
 
 smath::quaternion calculateCameraOrientation(const Camera &camera) {
-    return smath::quaternion_from_euler_angles_ZYX(0.0f, 0.0f, camera.pitch);
+    return smath::quaternion_from_euler_angles_ZYX(0.0f, camera.yaw, camera.pitch);
 }
 
 smath::matrix4x4 calculateCameraView(const Camera &camera) {
@@ -400,17 +402,24 @@ smath::matrix4x4 calculateCameraView(const Camera &camera) {
     smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, -1.0f});
     smath::vector3 position = camera.focus - (forwardVector * camera.distance);
     smath::matrix3x3 rotationMatrix = smath::matrix3x3_from_quaternion(orientation); /* smath::matrix3x3_from_identity(); */
+    std::cout << orientation << "\n";
 
-    smath::matrix4x4 transformationMatrix = smath::matrix4x4_from_matrix3x3(rotationMatrix);
+    smath::matrix4x4 transformationMatrix = smath::matrix4x4_from_matrix3x3(transpose(rotationMatrix));
+
+    position = matrix3x3_transform_vector3(transpose(rotationMatrix), position);
 
     transformationMatrix[0][3] = position.x;
     transformationMatrix[1][3] = position.y;
     transformationMatrix[2][3] = position.z;
 
-    std::cout << transformationMatrix << "\n";
-    std::cout << determinant(matrix3x3_from_matrix4x4(transformationMatrix)) << "\n";
+    // std::cout << transformationMatrix << "\n";
+    // std::cout << matrix3x3_from_matrix4x4(transformationMatrix) << "\n";
 
-    return invert_transform(transformationMatrix);
+    // std::cout << "before: " << transformationMatrix << "\n";
+    // TODO: fix invert transform in smath
+    // std::cout << "after: " << invert_transform(transformationMatrix) << "\n";
+
+    return transformationMatrix;
 }
 
 smath::matrix4x4 calculateCameraProjection(const Camera &camera) {
@@ -537,15 +546,19 @@ void setShaderUniformFloat4(const Shader &shader, smath::vector4 &v, const std::
 void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
     smath::matrix4x4 id = smath::matrix4x4_from_identity();
     id[0][3] = 1.0f;
-    setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "model"); // TEMP CODE REMOVE LATER
     // setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "view"); // TEMP CODE REMOVE LATER
     // setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "projection"); // TEMP CODE REMOVE LATER
     // std::cout << "model: \n" << bMath::matrix4::identity() << "\n";
     setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
     // std::cout << "view: \n" << to_string_pretty(calculateCameraView(camera)) << "\n";
     setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
-    // std::cout << "projection: \n" << to_string_pretty(calculateCameraProjection(camera)) << "\n";
+    // std::cout << "projection: " << (calculateCameraProjection(camera)) << "\n";
     // std::cout << "transformed (0.5,0.5,0.5): " << smath::to_string(smath::matrix4x4_transform_vector3(calculateCameraProjection(camera), smath::vector3{0.5f, 0.5f, 0.5f})) << "\n"; 
+}
+
+// TODO: make a model struct instead of usign a vertex buffer for this
+void setShaderUniformsFromModel(const Shader &shader, const VertexBuffer &buffer) {
+    setShaderUniformMatrix4(shader, buffer.transform, "model");
 }
 
 
@@ -595,6 +608,26 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const Vertex
 
     setShaderUniformsFromCamera(shader, camera);
 
+    setShaderUniformsFromModel(shader, vertexBuffer);
+
+    for (int i = 0; i < vertexBuffer.mesh.vertices->size(); i++) {
+        smath::vector3 position = (*vertexBuffer.mesh.vertices)[i].position;
+        smath::vector4 homoPosition = {position.x, position.y, position.z, 1.0f};
+
+        smath::matrix4x4 model = vertexBuffer.transform;
+        smath::matrix4x4 view = calculateCameraView(camera);
+        smath::matrix4x4 projection = calculateCameraProjection(camera); 
+
+        homoPosition = smath::matrix4x4_transform_vector4(model, homoPosition);
+        homoPosition = smath::matrix4x4_transform_vector4(view, homoPosition);
+        // homoPosition = smath::matrix4x4_transform_vector4(projection, homoPosition);
+
+        // std::cout << "Homogenous position" << homoPosition << "\n";
+        // std::cout << "Transformed position[" <<  i << "]" << smath::vector3_from_homogeneous_coordinate(homoPosition) << "\n";
+        std::cout << "View Transfrom: " << view << "\n";
+    }
+    std::cout << "\n\n";
+
     bindFramebuffer(frameBuffer);
 
         drawVertexBuffer(vertexBuffer);
@@ -614,9 +647,12 @@ int main() {
 
     Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
-    Mesh cubeMesh = genMeshCube();
+    Mesh cubeMesh = genMeshCube(0.2f);
     VertexBuffer vertexBuffer = createVertexBuffer(cubeMesh);
-    Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 4.0f, 45.0f, 0.1f, 100.0f);
+
+    std::cout << vertexBuffer.transform << "\n";
+
+    Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 0.5f, 45.0f, 0.1f, 100.0f);
 
     std::cout << "Model positions: \n";
 
@@ -658,6 +694,8 @@ int main() {
         camera.yaw += 0.02f;
         camera.pitch += 0.01f;
 
+        // vertexBuffer.transform = smath::matrix4x4_from_matrix3x3(smath::matrix3x3_from_quaternion(smath::quaternion_from_euler_angles_ZYX(0.0f, 0.0f, camera.pitch)));
+        
 
 
         render(window, frameBuffer, vertexBuffer, shader, camera);
