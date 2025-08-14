@@ -639,28 +639,30 @@ Mesh importObj(const char* path) {
 
         }
     }
-    // for (int i = 0; i < vertexIndices.size(); i++) {
-    //     // unsigned int vertexIndex = vertexIndices[i];
-    //     // smath::vector3 vertex = temp_vertices[vertexIndex-1];
-
-    //     // Vertex out_vertex;
-    //     // out_vertex.position = vertex;
-    //     // out_vertex.normal = vertex;
-    //     // mesh.vertices.push_back(out_vertex);
-    //     // mesh.indices.push_back(i);
-    // }
     for (int i = 0; i < vertexIndices.size(); i++) {
-        vertexIndices[i] = vertexIndices[i]-1;
-    }
-    std::cout << temp_vertices.size() << "\n";
-    for (int i = 0; i < temp_vertices.size(); i++) {
+        unsigned int vertexIndex = vertexIndices[i];
+        unsigned int normalIndex = normalIndices[i];
+        smath::vector3 position = temp_vertices[vertexIndex-1];
+        smath::vector3 normal = temp_normals[normalIndex-1];
+
         Vertex vertex;
-        vertex.position = temp_vertices[i];
-        vertex.normal = temp_vertices[i];
+        vertex.position = position;
+        vertex.normal = normal;
         mesh.vertices.push_back(vertex);
-        unsigned int vertexIndex = vertexIndices[i]-1;
-        mesh.indices = vertexIndices;
+        mesh.indices.push_back(i);
     }
+    // for (int i = 0; i < vertexIndices.size(); i++) {
+    //     vertexIndices[i] = vertexIndices[i]-1;
+    // }
+    // std::cout << temp_vertices.size() << "\n";
+    // for (int i = 0; i < temp_vertices.size(); i++) {
+    //     Vertex vertex;
+    //     vertex.position = temp_vertices[i];
+    //     vertex.normal = temp_vertices[i];
+    //     mesh.vertices.push_back(vertex);
+    //     unsigned int vertexIndex = vertexIndices[i]-1;
+    //     mesh.indices = vertexIndices;
+    // }
     return mesh;
 }
 
