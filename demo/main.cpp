@@ -252,11 +252,11 @@ struct Vertex {
 };
 
 struct Mesh {
-    std::vector<Vertex>* vertices;
-    std::vector<uint32_t>* indices;
+    std::vector<Vertex> vertices;
+    std::vector<uint32_t> indices;
 };
 
-Mesh createMesh(std::vector<Vertex>* vertices, std::vector<uint32_t>* indices) {
+Mesh createMesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices) {
     Mesh mesh;
 
     mesh.vertices = vertices;
@@ -269,7 +269,7 @@ Mesh genMeshCube(const float size = 0.5f) {
 
     using namespace smath;
 
-    std::vector<Vertex>* testVertices = new std::vector<Vertex>{
+    std::vector<Vertex> testVertices = std::vector<Vertex>{
         {vector3{0,0,0}, vector3{0,0,0}},
         {vector3{0,0,1}, vector3{0,0,1}},
         {vector3{0,1,0}, vector3{0,1,0}},
@@ -281,11 +281,11 @@ Mesh genMeshCube(const float size = 0.5f) {
     };
 
     for (int i = 0; i < 8; i++) {
-        (*testVertices)[i].position -= vector3{0.5,0.5,0.5};
-        (*testVertices)[i].position *= size;
+        (testVertices)[i].position -= vector3{0.5,0.5,0.5};
+        (testVertices)[i].position *= size;
     }
 
-    std::vector<uint32_t>* testIndices = new std::vector<uint32_t>{
+    std::vector<uint32_t> testIndices = std::vector<uint32_t>{
         //Top
         2, 6, 7, 2, 3, 7, 
         //Bottom
@@ -336,10 +336,10 @@ VertexBuffer createVertexBuffer(Mesh mesh) {
     glBindVertexArray(buffer.vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
-    glBufferData(GL_ARRAY_BUFFER, mesh.vertices->size() * sizeof(Vertex), mesh.vertices->data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indices->size() * sizeof(uint32_t), mesh.indices->data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indices.size() * sizeof(uint32_t), mesh.indices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
     glEnableVertexAttribArray(0);
@@ -356,7 +356,7 @@ VertexBuffer createVertexBuffer(Mesh mesh) {
 
 void drawVertexBuffer(const VertexBuffer &buffer) {
     bindVertexBuffer(buffer);
-    glDrawElements(GL_TRIANGLES, buffer.mesh.indices->size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, buffer.mesh.indices.size(), GL_UNSIGNED_INT, nullptr);
     unbindVertexBuffer();
 }
 
@@ -575,6 +575,96 @@ void uiProperties() {
     ImGui::End();
 }
 
+
+/* -------------------------------------------------------------------------- */
+/*                                OBJ Importer                                */
+/* -------------------------------------------------------------------------- */
+
+// Code adapted from https://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
+Mesh importObj(const char* path) {
+    std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
+    std::vector<smath::vector3> temp_vertices;
+    std::vector<smath::vector2> temp_uvs;
+    std::vector<smath::vector3> temp_normals;
+
+    Mesh mesh;
+
+    FILE* file = fopen(path, "r");
+    if (file == NULL) {
+        std::cout << "Error opening file \n";
+        return mesh;
+    }
+
+    while(true) {
+        char lineHeader[128];
+        int res = fscanf(file, "%s", lineHeader);
+        if (res == EOF)
+            break;
+        
+        if (strcmp(lineHeader, "v") == 0) {
+            smath::vector3 vertex;
+            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
+            temp_vertices.push_back(vertex);
+        } else if (strcmp(lineHeader, "vt") == 0) {
+            smath::vector2 uv;
+            fscanf(file, "%f %f\n", &uv.x, &uv.y);
+            temp_uvs.push_back(uv);
+        } else if (strcmp(lineHeader, "vn") == 0) {
+            smath::vector3 normal;
+            fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
+            temp_normals.push_back(normal);
+        } else if (strcmp(lineHeader, "f") == 0) {
+            std::string vertex1, vertex2, vertex3;
+            unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+            int matches = fscanf(
+                file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", 
+                &vertexIndex[0], &uvIndex[0], &normalIndex[0],
+                &vertexIndex[1], &uvIndex[1], &normalIndex[1],
+                &vertexIndex[2], &uvIndex[2], &normalIndex[2]
+            );
+            if (matches != 9) {
+                std::cout << "Parsing error \n";
+                return mesh;
+            }
+
+            vertexIndices.push_back(vertexIndex[0]);
+            vertexIndices.push_back(vertexIndex[1]);
+            vertexIndices.push_back(vertexIndex[2]);
+            uvIndices.push_back(uvIndex[0]);
+            uvIndices.push_back(uvIndex[1]);
+            uvIndices.push_back(uvIndex[2]);
+            normalIndices.push_back(normalIndex[0]);
+            normalIndices.push_back(normalIndex[1]);
+            normalIndices.push_back(normalIndex[2]);
+
+        }
+    }
+    // for (int i = 0; i < vertexIndices.size(); i++) {
+    //     // unsigned int vertexIndex = vertexIndices[i];
+    //     // smath::vector3 vertex = temp_vertices[vertexIndex-1];
+
+    //     // Vertex out_vertex;
+    //     // out_vertex.position = vertex;
+    //     // out_vertex.normal = vertex;
+    //     // mesh.vertices.push_back(out_vertex);
+    //     // mesh.indices.push_back(i);
+    // }
+    for (int i = 0; i < vertexIndices.size(); i++) {
+        vertexIndices[i] = vertexIndices[i]-1;
+    }
+    std::cout << temp_vertices.size() << "\n";
+    for (int i = 0; i < temp_vertices.size(); i++) {
+        Vertex vertex;
+        vertex.position = temp_vertices[i];
+        vertex.normal = temp_vertices[i];
+        mesh.vertices.push_back(vertex);
+        unsigned int vertexIndex = vertexIndices[i]-1;
+        mesh.indices = vertexIndices;
+    }
+    return mesh;
+}
+
+
 /* -------------------------------------------------------------------------- */
 /*                                 Application                                */
 /* -------------------------------------------------------------------------- */
@@ -617,7 +707,15 @@ int main() {
     Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
     Mesh cubeMesh = genMeshCube(0.2f);
-    VertexBuffer vertexBuffer = createVertexBuffer(cubeMesh);
+    Mesh cube2 = importObj("../demo/OBJs/Cube.obj");
+
+    for (int i = 0; i < cube2.vertices.size(); i++) {
+        std::cout << cube2.vertices[i].position << "\n";
+    }
+    VertexBuffer vertexBuffer = createVertexBuffer(cube2);
+    smath::matrix4x4 scaleMatrix = smath::matrix4x4_from_diagonal(0.1f);
+    scaleMatrix[3][3] = 1.0f;
+    vertexBuffer.transform = scaleMatrix;
 
     Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 0.5f, 45.0f, 0.1f, 100.0f);
 
