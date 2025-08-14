@@ -536,16 +536,8 @@ void setShaderUniformFloat4(const Shader &shader, smath::vector4 &v, const std::
 }
 
 void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
-    smath::matrix4x4 id = smath::matrix4x4_from_identity();
-    id[0][3] = 1.0f;
-    // setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "view"); // TEMP CODE REMOVE LATER
-    // setShaderUniformMatrix4(shader, smath::matrix4x4_from_identity(), "projection"); // TEMP CODE REMOVE LATER
-    // std::cout << "model: \n" << bMath::matrix4::identity() << "\n";
     setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
-    // std::cout << "view: \n" << to_string_pretty(calculateCameraView(camera)) << "\n";
     setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
-    // std::cout << "projection: " << (calculateCameraProjection(camera)) << "\n";
-    // std::cout << "transformed (0.5,0.5,0.5): " << smath::to_string(smath::matrix4x4_transform_vector3(calculateCameraProjection(camera), smath::vector3{0.5f, 0.5f, 0.5f})) << "\n"; 
 }
 
 // TODO: make a model struct instead of usign a vertex buffer for this
@@ -558,7 +550,7 @@ void setShaderUniformsFromModel(const Shader &shader, const VertexBuffer &buffer
 /*                                     UI                                     */
 /* -------------------------------------------------------------------------- */
 
-void uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
+ImVec2 uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
     ImGui::Begin("Scene");
     
     ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -568,6 +560,7 @@ void uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
     ImGui::Image((ImTextureID)(textureID), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
     
     ImGui::End();
+    return viewportPanelSize;
 }
 
 void uiProperties() {
@@ -592,7 +585,7 @@ struct Scene {
 };
 
 
-void render(const GLWindow &window, const FrameBuffer &frameBuffer, const VertexBuffer &vertexBuffer, const Shader &shader, const Camera &camera) {
+void render(const GLWindow &window, const FrameBuffer &frameBuffer, const VertexBuffer &vertexBuffer, const Shader &shader, Camera &camera) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
 
@@ -608,7 +601,9 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const Vertex
 
     unbindFramebuffer();
 
-    uiFrameBufferWindow(frameBuffer);
+    ImVec2 frameSize = uiFrameBufferWindow(frameBuffer);
+    camera.aspect = frameSize.x / frameSize.y;
+
     uiProperties();
 
     imGuiRender();
