@@ -309,7 +309,6 @@ Mesh genMeshCube(const float size = 0.5f) {
 
 struct VertexBuffer {
     Mesh mesh;
-    smath::matrix4x4 transform;
     uint32_t vao, vbo, ebo;
 };
 
@@ -327,7 +326,6 @@ VertexBuffer createVertexBuffer(Mesh mesh) {
     VertexBuffer buffer;
 
     buffer.mesh = mesh;
-    buffer.transform = smath::matrix4x4_from_identity();
 
     glGenBuffers(1, &buffer.vbo);
     glGenBuffers(1, &buffer.ebo);
@@ -525,12 +523,12 @@ void setShaderUniformInt(const Shader &shader, const int v, const std::string &n
     glUniform1i(myLoc, v);
 }
 
-void setShaderUniformFloat3(const Shader &shader, smath::vector3 &v, const std::string &name) {
+void setShaderUniformFloat3(const Shader &shader, const smath::vector3 &v, const std::string &name) {
     GLint myLoc = glGetUniformLocation(shader.programId, name.c_str());
     glProgramUniform3fv(shader.programId, myLoc, 1, (float*)&v);
 }
 
-void setShaderUniformFloat4(const Shader &shader, smath::vector4 &v, const std::string &name) {
+void setShaderUniformFloat4(const Shader &shader, const smath::vector4 &v, const std::string &name) {
     GLint myLoc = glGetUniformLocation(shader.programId, name.c_str());
     glProgramUniform4fv(shader.programId, myLoc, 1, (float*)&v);
 }
@@ -539,12 +537,6 @@ void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
     setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
     setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
 }
-
-// TODO: make a model struct instead of usign a vertex buffer for this
-void setShaderUniformsFromModel(const Shader &shader, const VertexBuffer &buffer) {
-    setShaderUniformMatrix4(shader, buffer.transform, "model");
-}
-
 
 /* -------------------------------------------------------------------------- */
 /*                                     UI                                     */
@@ -666,6 +658,32 @@ Mesh importObj(const char* path) {
     return mesh;
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                   Objects                                  */
+/* -------------------------------------------------------------------------- */
+
+struct Object {
+    VertexBuffer buffer;
+
+    smath::vector4 color;
+    smath::matrix4x4 transform;
+};
+
+Object createObject(const VertexBuffer &buffer) {
+    Object object;
+    object.buffer = buffer;
+
+    object.color = smath::vector4{1.0f,1.0f,1.0f,1.0f};
+    object.transform = smath::matrix4x4_from_identity();
+
+    return object;
+}
+
+void drawObject(const Object &object, const Shader &shader) {
+    setShaderUniformMatrix4(shader, object.transform, "model");
+    setShaderUniformFloat4(shader, object.color, "color");
+    drawVertexBuffer(object.buffer);
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                 Application                                */
@@ -677,7 +695,7 @@ struct Scene {
 };
 
 
-void render(const GLWindow &window, const FrameBuffer &frameBuffer, const VertexBuffer &vertexBuffer, const Shader &shader, Camera &camera) {
+void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::vector<Object> &objects, const Shader &shader, Camera &camera) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
 
@@ -685,11 +703,12 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const Vertex
 
     setShaderUniformsFromCamera(shader, camera);
 
-    setShaderUniformsFromModel(shader, vertexBuffer);
-
     bindFramebuffer(frameBuffer);
 
-        drawVertexBuffer(vertexBuffer);
+        for (int i = 0; i < objects.size(); i++) {
+            Object object = objects[i];
+            drawObject(object, shader);
+        }
 
     unbindFramebuffer();
 
@@ -707,14 +726,37 @@ int main() {
     openGLInit();
 
     Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
-    FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
-    Mesh cubeMesh = genMeshCube(0.2f);
-    Mesh objMesh = importObj("../demo/OBJs/Suzanne.obj");
+    FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);    
+    std::vector<Object> objects;
 
-    VertexBuffer vertexBuffer = createVertexBuffer(objMesh);
-    smath::matrix4x4 scaleMatrix = smath::matrix4x4_from_diagonal(0.15f);
+    //// Create objects
+
+    Mesh suzanneMesh = importObj("../demo/OBJs/Suzanne.obj");
+    VertexBuffer suzanneVertexBuffer = createVertexBuffer(suzanneMesh);
+
+    Object suzanneObject = createObject(suzanneVertexBuffer);
+
+    smath::matrix4x4 scaleMatrix = smath::matrix4x4_from_diagonal(0.12f);
     scaleMatrix[3][3] = 1.0f;
-    vertexBuffer.transform = scaleMatrix;
+    scaleMatrix = scaleMatrix * smath::matrix4x4_from_translation(smath::vector3{-0.7f,0.0f,0.0f});
+    suzanneObject.transform = scaleMatrix;
+
+    objects.push_back(suzanneObject);
+
+    Mesh teapotMesh = importObj("../demo/OBJs/Utah-Teapot.obj");
+    VertexBuffer teapotVertexBuffer = createVertexBuffer(teapotMesh);
+
+    Object teapotObject = createObject(teapotVertexBuffer);
+
+    smath::matrix4x4 teapotMatrix = smath::matrix4x4_from_diagonal(0.04f);
+    teapotMatrix[3][3] = 1.0f;
+    teapotMatrix = teapotMatrix * smath::matrix4x4_from_translation(smath::vector3{3.5f,0.0f,0.0f});
+    teapotObject.transform = teapotMatrix;
+
+    objects.push_back(teapotObject);
+
+    //// Create objects
+
 
     Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 0.5f, 45.0f, 0.1f, 100.0f);
 
@@ -724,7 +766,7 @@ int main() {
         camera.yaw += 0.02f;
         camera.pitch += 0.01f;        
 
-        render(window, frameBuffer, vertexBuffer, shader, camera);
+        render(window, frameBuffer, objects, shader, camera);
     }
 
     destroyWindow(window);

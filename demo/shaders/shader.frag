@@ -2,6 +2,7 @@
 
 in vec4 Color;
 in vec3 Normal;
+in vec3 WorldPos;
 layout(location = 0) out vec4 color;
 
 void main()
@@ -18,5 +19,5 @@ void main()
 
     light += light2;
 
-    color = vec4(vec3(light), 1.0f);
+    color = vec4(WorldPos*8.0*light, 1.0f);
 };
