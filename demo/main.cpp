@@ -707,13 +707,10 @@ int main() {
     Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);
     Mesh cubeMesh = genMeshCube(0.2f);
-    Mesh cube2 = importObj("../demo/OBJs/Cube.obj");
+    Mesh objMesh = importObj("../demo/OBJs/Suzanne.obj");
 
-    for (int i = 0; i < cube2.vertices.size(); i++) {
-        std::cout << cube2.vertices[i].position << "\n";
-    }
-    VertexBuffer vertexBuffer = createVertexBuffer(cube2);
-    smath::matrix4x4 scaleMatrix = smath::matrix4x4_from_diagonal(0.1f);
+    VertexBuffer vertexBuffer = createVertexBuffer(objMesh);
+    smath::matrix4x4 scaleMatrix = smath::matrix4x4_from_diagonal(0.15f);
     scaleMatrix[3][3] = 1.0f;
     vertexBuffer.transform = scaleMatrix;
 
