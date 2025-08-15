@@ -789,7 +789,7 @@ int main() {
             camera.pitch -= window.deltaMousePos.y*0.01f;
         }    
 
-        camera.distance -= window.scrollInput*0.05f;
+        camera.distance -= window.scrollInput*camera.distance*0.075f;
 
         render(window, frameBuffer, objects, shader, camera);
     }
