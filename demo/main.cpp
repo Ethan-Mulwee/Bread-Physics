@@ -22,6 +22,8 @@ struct GLWindow {
     GLFWwindow* glfwWindow;
     int width, height;
     const char* name;
+    smath::vector2 mousePos = {0.0f,0.0f};
+    smath::vector2 deltaMousePos = {0.0f,0.0f};
 };
 
 GLWindow createWindow(int width, int height, const char* name) {
@@ -61,9 +63,15 @@ GLWindow createWindow(int width, int height, const char* name) {
     return window;
 }
 
-void updateWindow(const GLWindow &window) {
+void updateWindow(GLWindow &window) {
     glfwSwapBuffers(window.glfwWindow);
     glfwPollEvents();
+
+    double x, y;
+    glfwGetCursorPos(window.glfwWindow, &x, &y);
+    smath::vector2 currentPos = smath::vector2{(float)x,(float)y};
+    window.deltaMousePos = currentPos - window.mousePos;
+    window.mousePos = currentPos;
 }
 
 void destroyWindow(const GLWindow &window) {
@@ -738,7 +746,7 @@ int main() {
 
     smath::matrix4x4 scaleMatrix = smath::matrix4x4_from_diagonal(0.12f);
     scaleMatrix[3][3] = 1.0f;
-    scaleMatrix = scaleMatrix * smath::matrix4x4_from_translation(smath::vector3{-0.7f,0.0f,0.0f});
+    scaleMatrix = scaleMatrix * smath::matrix4x4_from_translation(smath::vector3{-0.7f,-0.0f,0.0f});
     suzanneObject.transform = scaleMatrix;
 
     objects.push_back(suzanneObject);
@@ -750,21 +758,23 @@ int main() {
 
     smath::matrix4x4 teapotMatrix = smath::matrix4x4_from_diagonal(0.04f);
     teapotMatrix[3][3] = 1.0f;
-    teapotMatrix = teapotMatrix * smath::matrix4x4_from_translation(smath::vector3{3.5f,0.0f,0.0f});
+    teapotMatrix = teapotMatrix * smath::matrix4x4_from_translation(smath::vector3{3.5f,-2.0f,0.0f});
     teapotObject.transform = teapotMatrix;
 
     objects.push_back(teapotObject);
 
     //// Create objects
 
-
     Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 0.5f, 45.0f, 0.1f, 100.0f);
+
 
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
 
-        camera.yaw += 0.02f;
-        camera.pitch += 0.01f;        
+        if (glfwGetMouseButton(window.glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE)) {
+            camera.yaw -= window.deltaMousePos.x*0.01f;
+            camera.pitch -= window.deltaMousePos.y*0.01f;
+        }    
 
         render(window, frameBuffer, objects, shader, camera);
     }
