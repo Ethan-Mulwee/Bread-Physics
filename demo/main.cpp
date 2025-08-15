@@ -24,7 +24,12 @@ struct GLWindow {
     const char* name;
     smath::vector2 mousePos = {0.0f,0.0f};
     smath::vector2 deltaMousePos = {0.0f,0.0f};
+    float scrollInput = 0.0f;
 };
+
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    std::cout << xoffset << ", " << yoffset << "\n";
+}
 
 GLWindow createWindow(int width, int height, const char* name) {
 
@@ -60,10 +65,19 @@ GLWindow createWindow(int width, int height, const char* name) {
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
+    glfwSetWindowUserPointer(window.glfwWindow, &window);
+    glfwSetScrollCallback(window.glfwWindow, [](GLFWwindow* window,double xoffset, double yoffset) { 
+        GLWindow* windowA = (GLWindow*)glfwGetWindowUserPointer(window);
+        windowA->scrollInput = yoffset; 
+    });
+
     return window;
 }
 
+
 void updateWindow(GLWindow &window) {
+    window.scrollInput = 0.0f;
+
     glfwSwapBuffers(window.glfwWindow);
     glfwPollEvents();
 
@@ -767,7 +781,6 @@ int main() {
 
     Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 0.5f, 45.0f, 0.1f, 100.0f);
 
-
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
 
@@ -775,6 +788,8 @@ int main() {
             camera.yaw -= window.deltaMousePos.x*0.01f;
             camera.pitch -= window.deltaMousePos.y*0.01f;
         }    
+
+        camera.distance -= window.scrollInput*0.05f;
 
         render(window, frameBuffer, objects, shader, camera);
     }
