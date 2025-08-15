@@ -770,10 +770,13 @@ int main() {
 
     Object teapotObject = createObject(teapotVertexBuffer);
 
-    smath::matrix4x4 teapotMatrix = smath::matrix4x4_from_diagonal(0.04f);
-    teapotMatrix[3][3] = 1.0f;
-    teapotMatrix = teapotMatrix * smath::matrix4x4_from_translation(smath::vector3{3.5f,-2.0f,0.0f});
-    teapotObject.transform = teapotMatrix;
+    smath::transform teapotTransform = {
+        .translation = smath::vector3{0.1f,-0.1f,0.0f},
+        .rotation = smath::quaternion_from_euler_angles_XYZ(0.5f,0.2f,0.1f),
+        .scale = smath::vector3{0.04,0.04f,0.04}
+    };
+    
+    teapotObject.transform = smath::matrix4x4_from_transform(teapotTransform);
 
     objects.push_back(teapotObject);
 
@@ -784,10 +787,20 @@ int main() {
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
 
-        if (glfwGetMouseButton(window.glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE)) {
-            camera.yaw -= window.deltaMousePos.x*0.01f;
-            camera.pitch -= window.deltaMousePos.y*0.01f;
-        }    
+        if (glfwGetMouseButton(window.glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE) && !glfwGetKey(window.glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
+            camera.yaw -= window.deltaMousePos.x*0.0075f;
+            camera.pitch -= window.deltaMousePos.y*0.0075f;
+        }   
+        
+        if (glfwGetMouseButton(window.glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE) && glfwGetKey(window.glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
+            smath::vector3 movement = smath::vector3{-window.deltaMousePos.x,window.deltaMousePos.y,0.0f};
+            smath::quaternion cameraOrientation = calculateCameraOrientation(camera);
+
+            movement = smath::quaternion_transform_vector(cameraOrientation, movement);
+            movement *= 0.00075f;
+
+            camera.focus -= movement;
+        }   
 
         camera.distance -= window.scrollInput*camera.distance*0.075f;
 
