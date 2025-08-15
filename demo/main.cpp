@@ -14,6 +14,8 @@
 #include "to_string.hpp"
 #include "smath_iostream.hpp"
 
+#include "bEngine/world.hpp"
+
 /* -------------------------------------------------------------------------- */
 /*                                 GLFW Window                                */
 /* -------------------------------------------------------------------------- */
@@ -22,9 +24,12 @@ struct GLWindow {
     GLFWwindow* glfwWindow;
     int width, height;
     const char* name;
+    
     smath::vector2 mousePos = {0.0f,0.0f};
     smath::vector2 deltaMousePos = {0.0f,0.0f};
     float scrollInput = 0.0f;
+    float time = 0.0f;
+    float deltaTime = 0.0f;
 };
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -86,6 +91,10 @@ void updateWindow(GLWindow &window) {
     smath::vector2 currentPos = smath::vector2{(float)x,(float)y};
     window.deltaMousePos = currentPos - window.mousePos;
     window.mousePos = currentPos;
+
+    float currentTime = glfwGetTime();
+    window.deltaTime = currentTime - window.time;
+    window.time = currentTime;
 }
 
 void destroyWindow(const GLWindow &window) {
@@ -707,6 +716,11 @@ void drawObject(const Object &object, const Shader &shader) {
     drawVertexBuffer(object.buffer);
 }
 
+struct PhysicsObject {
+    Object object;
+    bEngine::RigidBody* rigidBody;
+};
+
 /* -------------------------------------------------------------------------- */
 /*                                 Application                                */
 /* -------------------------------------------------------------------------- */
@@ -746,6 +760,8 @@ int main() {
     GLWindow window = createWindow(1920, 1080, "window"); 
     imGuiInit(window.glfwWindow);
     openGLInit();
+    
+    bEngine::World physicsWorld;
 
     Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);    
@@ -803,6 +819,8 @@ int main() {
         }   
 
         camera.distance -= window.scrollInput*camera.distance*0.075f;
+
+        physicsWorld.step(window.deltaTime);
 
         render(window, frameBuffer, objects, shader, camera);
     }
