@@ -203,6 +203,9 @@ void openGLInit() {
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void openGLIntializeRender(GLWindow window) {
@@ -296,11 +299,11 @@ Mesh createMesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices) {
     return mesh;
 }
 
-Mesh genMeshCube(const float size = 0.5f) {
+Mesh generateMeshCube(const float size = 0.5f) {
 
     using namespace smath;
 
-    std::vector<Vertex> testVertices = std::vector<Vertex>{
+    std::vector<Vertex> vertices = {
         {vector3{0,0,0}, vector3{0,0,0}},
         {vector3{0,0,1}, vector3{0,0,1}},
         {vector3{0,1,0}, vector3{0,1,0}},
@@ -312,11 +315,11 @@ Mesh genMeshCube(const float size = 0.5f) {
     };
 
     for (int i = 0; i < 8; i++) {
-        (testVertices)[i].position -= vector3{0.5,0.5,0.5};
-        (testVertices)[i].position *= size;
+        (vertices)[i].position -= vector3{0.5,0.5,0.5};
+        (vertices)[i].position *= size;
     }
 
-    std::vector<uint32_t> testIndices = std::vector<uint32_t>{
+    std::vector<uint32_t> indices = {
         //Top
         2, 6, 7, 2, 3, 7, 
         //Bottom
@@ -331,7 +334,29 @@ Mesh genMeshCube(const float size = 0.5f) {
         4, 6, 7, 4, 5, 7 
     };
 
-    return createMesh(testVertices, testIndices);
+    return createMesh(vertices, indices);
+}
+
+Mesh generateMeshPlane(const float size) {
+    using namespace smath;
+
+    std::vector<Vertex> vertices = {
+        {vector3{0.0f,0.0f,0.0f}, vector3{0,1,0}},
+        {vector3{0.0f,0.0f,size}, vector3{0,1,0}},
+        {vector3{size,0.0f,0.0f}, vector3{0,1,0}},
+        {vector3{size,0.0f,size}, vector3{0,1,0}},
+    };
+
+    for (int i = 0; i < 4; i++) {
+        vertices[i].position -= vector3{size/2.0f, 0.0f, size/2.0f};
+    }
+
+    std::vector<uint32_t> indices = {
+        0, 1, 2,
+        2, 1, 3
+    };
+
+    return createMesh(vertices, indices);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -711,13 +736,14 @@ Object createObject(const VertexBuffer &buffer) {
 }
 
 void drawObject(const Object &object, const Shader &shader) {
+    useShader(shader);
     setShaderUniformMatrix4(shader, object.transform, "model");
     setShaderUniformFloat4(shader, object.color, "color");
     drawVertexBuffer(object.buffer);
 }
 
 struct PhysicsObject {
-    Object object;
+    Object* object;
     bEngine::RigidBody* rigidBody;
 };
 
@@ -731,20 +757,26 @@ struct Scene {
 };
 
 
-void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::vector<Object> &objects, const Shader &shader, Camera &camera) {
+void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::vector<Object> &objects, const Shader &objectShader, const Shader &gridShader, const Object &gridObject, Camera &camera) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
 
-    useShader(shader);
-
-    setShaderUniformsFromCamera(shader, camera);
-
+    
+    
     bindFramebuffer(frameBuffer);
+
+        useShader(objectShader);
+        setShaderUniformsFromCamera(objectShader, camera);
 
         for (int i = 0; i < objects.size(); i++) {
             Object object = objects[i];
-            drawObject(object, shader);
+            drawObject(object, objectShader);
         }
+
+        useShader(gridShader);
+        setShaderUniformsFromCamera(gridShader, camera);
+        drawObject(gridObject, gridShader);
+
 
     unbindFramebuffer();
 
@@ -763,7 +795,8 @@ int main() {
     
     bEngine::World physicsWorld;
 
-    Shader shader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
+    Shader objectShader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
+    Shader gridShader = createShader("../demo/shaders/shader.vert", "../demo/shaders/grid.frag");
     FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);    
     std::vector<Object> objects;
 
@@ -796,7 +829,50 @@ int main() {
 
     objects.push_back(teapotObject);
 
+    Mesh planeMesh = generateMeshPlane(100.0f);
+    VertexBuffer planeVertexBuffer = createVertexBuffer(planeMesh);
+    Object planeObject = createObject(planeVertexBuffer);
+
+    // objects.push_back(planeObject);
+
     //// Create objects
+
+    // Cube1 ///////////////////////////////////////////////////////////////////////////////
+    bEngine::RigidBody* body = new bEngine::RigidBody();
+    body->inverseMass = 0.5f;
+    body->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
+    body->position = bMath::float3(0,2,0);
+    body->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
+    body->orientation.normalize();
+
+    bEngine::Primitive collider;
+    collider.type = bEngine::PrimitiveType::Cube;
+    collider.dimensions = bMath::float3(0.5,0.5,0.5);
+
+    collider.offset = bMath::matrix4::identity();
+    collider.body = body;
+
+    physicsWorld.bodies.push_back(body);
+    physicsWorld.colliders.push_back(collider);
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    // Cube2 ///////////////////////////////////////////////////////////////////////////////
+    bEngine::RigidBody* body2 = new bEngine::RigidBody();
+    body2->inverseMass = 0.5f;
+    body2->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
+    body2->position = bMath::float3(2,2,0);
+    body2->orientation = bMath::quaternion(1,0,0,0);
+    body2->angularVelocity = bMath::float3(0,0,0);
+
+    bEngine::Primitive collider2;
+    collider2.type = bEngine::PrimitiveType::Cube;
+    collider2.dimensions = bMath::float3(0.5,0.5,0.5);
+    collider2.offset = bMath::matrix4::identity();
+    collider2.body = body2;
+
+    physicsWorld.bodies.push_back(body2);
+    physicsWorld.colliders.push_back(collider2);
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 0.5f, 45.0f, 0.1f, 100.0f);
 
@@ -820,9 +896,25 @@ int main() {
 
         camera.distance -= window.scrollInput*camera.distance*0.075f;
 
-        physicsWorld.step(window.deltaTime);
+        bMath::matrix4 btransform0 = physicsWorld.bodies[0]->getTransform();
+        bMath::matrix4 btransform1 = physicsWorld.bodies[1]->getTransform();
+        smath::matrix4x4 transform0 = *(smath::matrix4x4*)&(btransform0);
+        smath::matrix4x4 transform1 = *(smath::matrix4x4*)&(btransform1);
+        smath::matrix4x4 scaling = smath::matrix4x4_from_diagonal(0.25f);
+        scaling[3][3] = 1.0f;
+        transform0 = transform0 * scaling;
+        transform1 = transform1 * scaling;
 
-        render(window, frameBuffer, objects, shader, camera);
+        // objects[0].transform = transform0;
+        // objects[1].transform = transform1;
+
+        for (int i = 0; i < physicsWorld.bodies.size(); i++) {
+          physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
+        }
+
+        physicsWorld.step(window.deltaTime*0.5f);
+
+        render(window, frameBuffer, objects, objectShader, gridShader, planeObject, camera);
     }
 
     destroyWindow(window);
