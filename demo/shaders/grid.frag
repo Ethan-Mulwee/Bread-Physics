@@ -29,7 +29,14 @@ float pristineGrid( vec2 uv, vec2 lineWidth)
 
 void main()
 {
-    float gridTest = pristineGrid(WorldPos.xz*10.0, vec2(0.01,0.01));
+    float gridAlpha = pristineGrid(WorldPos.xz, vec2(0.01,0.01));
+    vec3 gridColor = vec3(0.35,0.35,0.35);
+    if (WorldPos.x < 0.02 && WorldPos.x > -0.02) {
+      gridColor = vec3(1.000,0.200,0.322);
+    } else if (WorldPos.z < 0.02 && WorldPos.z > -0.02) {
+      gridColor = vec3(0.157,0.565,1.0);
+      // gridColor = vec3(0.471,0.863,0.000); Green
+    }
 
-    color = vec4(vec3(1.0f,1.0f,1.0f), gridTest);
+    color = vec4(gridColor, gridAlpha);
 };

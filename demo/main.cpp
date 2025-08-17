@@ -426,7 +426,7 @@ struct Camera {
     float aspect, fov, near, far;
 };
 
-Camera createCamera(smath::vector3 focus, float distance, float fov, float near, float far) {
+Camera createCamera(smath::vector3 focus, float distance, float fov, float near, float far, float pitch = 0.0f, float yaw = 0.0f) {
     Camera camera;
 
     camera.focus = focus;
@@ -437,14 +437,23 @@ Camera createCamera(smath::vector3 focus, float distance, float fov, float near,
     camera.far = far;
 
     camera.aspect = 1.0f;
-    camera.pitch = 0.0f;
-    camera.yaw = 0.0f;
+    camera.pitch = pitch;
+    camera.yaw = yaw;
 
     return camera;
 }
 
 smath::quaternion calculateCameraOrientation(const Camera &camera) {
     return smath::quaternion_from_euler_angles_ZYX(0.0f, camera.yaw, camera.pitch);
+}
+
+smath::vector3 calculateCameraPosition(const Camera &camera) {
+    smath::quaternion orientation = calculateCameraOrientation(camera);
+
+    smath::vector3 forwardVector = smath::quaternion_transform_vector(orientation, smath::vector3{0.0f, 0.0f, 1.0f});
+    smath::vector3 position = camera.focus - (forwardVector * camera.distance);
+
+    return position;
 }
 
 smath::matrix4x4 calculateCameraView(const Camera &camera) {
@@ -757,7 +766,7 @@ struct Scene {
 };
 
 
-void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::vector<Object> &objects, const Shader &objectShader, const Shader &gridShader, const Object &gridObject, Camera &camera) {
+void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::vector<Object> &objects, const Shader &objectShader, const Shader &gridShader, Object &gridObject, Camera &camera) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
 
@@ -776,6 +785,10 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::v
         useShader(gridShader);
         setShaderUniformsFromCamera(gridShader, camera);
         drawObject(gridObject, gridShader);
+
+        smath::vector3 cameraPosition = calculateCameraPosition(camera);
+        gridObject.transform[0][3] = -cameraPosition.x;
+        gridObject.transform[2][3] = -cameraPosition.z;
 
 
     unbindFramebuffer();
@@ -807,10 +820,13 @@ int main() {
 
     Object suzanneObject = createObject(suzanneVertexBuffer);
 
-    smath::matrix4x4 scaleMatrix = smath::matrix4x4_from_diagonal(0.12f);
-    scaleMatrix[3][3] = 1.0f;
-    scaleMatrix = scaleMatrix * smath::matrix4x4_from_translation(smath::vector3{-0.7f,-0.0f,0.0f});
-    suzanneObject.transform = scaleMatrix;
+    smath::transform suzanneTransform = {
+        .translation = smath::vector3{-1.0f,0.5f,0.0f},
+        .rotation = smath::quaternion_from_euler_angles_XYZ(-0.6f,0.0f,0.0f),
+        .scale = smath::vector3{1.0f,1.0f,1.0f}
+    };
+
+    suzanneObject.transform = smath::matrix4x4_from_transform(suzanneTransform);
 
     objects.push_back(suzanneObject);
 
@@ -820,16 +836,16 @@ int main() {
     Object teapotObject = createObject(teapotVertexBuffer);
 
     smath::transform teapotTransform = {
-        .translation = smath::vector3{0.1f,-0.1f,0.0f},
-        .rotation = smath::quaternion_from_euler_angles_XYZ(0.5f,0.2f,0.1f),
-        .scale = smath::vector3{0.04,0.04f,0.04}
+        .translation = smath::vector3{1.0f,0.0f,0.6f},
+        .rotation = smath::quaternion_from_euler_angles_XYZ(0.0f,1.0f,0.0f),
+        .scale = smath::vector3{0.4f,0.4f,0.4f}
     };
     
     teapotObject.transform = smath::matrix4x4_from_transform(teapotTransform);
 
     objects.push_back(teapotObject);
 
-    Mesh planeMesh = generateMeshPlane(100.0f);
+    Mesh planeMesh = generateMeshPlane(250.0f);
     VertexBuffer planeVertexBuffer = createVertexBuffer(planeMesh);
     Object planeObject = createObject(planeVertexBuffer);
 
@@ -874,7 +890,7 @@ int main() {
     physicsWorld.colliders.push_back(collider2);
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 0.5f, 45.0f, 0.1f, 100.0f);
+    Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 5.0f, 45.0f, 0.1f, 100.0f, -M_PI/4.0f, M_PI/4.0f);
 
     while(!glfwWindowShouldClose(window.glfwWindow)) { 
         updateWindow(window);
@@ -891,7 +907,7 @@ int main() {
             movement = smath::quaternion_transform_vector(cameraOrientation, movement);
             movement *= 0.00075f;
 
-            camera.focus -= movement;
+            camera.focus -= movement*camera.distance;
         }   
 
         camera.distance -= window.scrollInput*camera.distance*0.075f;

@@ -5,34 +5,8 @@ in vec3 Normal;
 in vec3 WorldPos;
 layout(location = 0) out vec4 color;
 
-float pristineGrid( vec2 uv, vec2 lineWidth)
-{
-    vec2 ddx = dFdx(uv);
-    vec2 ddy = dFdy(uv);
-    vec2 uvDeriv = vec2(length(vec2(ddx.x, ddy.x)), length(vec2(ddx.y, ddy.y)));
-    bvec2 invertLine = bvec2(lineWidth.x > 0.5, lineWidth.y > 0.5);
-    vec2 targetWidth = vec2(
-      invertLine.x ? 1.0 - lineWidth.x : lineWidth.x,
-      invertLine.y ? 1.0 - lineWidth.y : lineWidth.y
-      );
-    vec2 drawWidth = clamp(targetWidth, uvDeriv, vec2(0.5));
-    vec2 lineAA = uvDeriv * 1.5;
-    vec2 gridUV = abs(fract(uv) * 2.0 - 1.0);
-    gridUV.x = invertLine.x ? gridUV.x : 1.0 - gridUV.x;
-    gridUV.y = invertLine.y ? gridUV.y : 1.0 - gridUV.y;
-    vec2 grid2 = smoothstep(drawWidth + lineAA, drawWidth - lineAA, gridUV);
-
-    grid2 *= clamp(targetWidth / drawWidth, 0.0, 1.0);
-    grid2 = mix(grid2, targetWidth, clamp(uvDeriv * 2.0 - 1.0, 0.0, 1.0));
-    grid2.x = invertLine.x ? 1.0 - grid2.x : grid2.x;
-    grid2.y = invertLine.y ? 1.0 - grid2.y : grid2.y;
-    return mix(grid2.x, 1.0, grid2.y);
-}
-
 void main()
 {
-    // color = Color;
-    // color = vec4(Normal, 1.0f);
     float light = dot(Normal, normalize(vec3(1.0,1.0,1.0)));
     light = clamp(light, 0.0, 1.0);
     light += 0.1;
@@ -43,8 +17,6 @@ void main()
 
     light += light2;
 
-    float gridTest = pristineGrid(WorldPos.xz*10.0, vec2(0.01,0.01));
 
-    color = vec4(WorldPos*8.0*light, 1.0f);
-    // color = vec4(vec3(1.0f,1.0f,1.0f), gridTest);
+    color = vec4(WorldPos*light, 1.0f);
 };
