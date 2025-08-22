@@ -30,6 +30,7 @@ struct GLWindow {
     float scrollInput = 0.0f;
     float time = 0.0f;
     float deltaTime = 0.0f;
+    double perviousRenderTime = 0.0;
 };
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -69,6 +70,7 @@ GLWindow createWindow(int width, int height, const char* name) {
     glewInit();
 
     std::cout << glGetString(GL_VERSION) << std::endl;
+    std::cout << glGetString(GL_RENDERER) << std::endl;
 
     glfwSetWindowUserPointer(window.glfwWindow, &window);
     glfwSetScrollCallback(window.glfwWindow, [](GLFWwindow* window,double xoffset, double yoffset) { 
@@ -204,8 +206,9 @@ void openGLInit() {
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
 }
 
 void openGLIntializeRender(GLWindow window) {
@@ -620,10 +623,11 @@ ImVec2 uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
     return viewportPanelSize;
 }
 
-void uiProperties() {
+void uiProperties(const GLWindow &window) {
     ImGuiIO& io = ImGui::GetIO();
     
     ImGui::Begin("Properties");
+    ImGui::Text("Render time: %fms", window.perviousRenderTime*1000.0);
     if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Hello World");
 
@@ -774,13 +778,22 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::v
     
     bindFramebuffer(frameBuffer);
 
+        glDisable(GL_BLEND);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+
         useShader(objectShader);
         setShaderUniformsFromCamera(objectShader, camera);
 
         for (int i = 0; i < objects.size(); i++) {
-            Object object = objects[i];
-            drawObject(object, objectShader);
+            drawObject(objects[i], objectShader);
         }
+
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glDisable(GL_CULL_FACE);
 
         useShader(gridShader);
         setShaderUniformsFromCamera(gridShader, camera);
@@ -796,7 +809,7 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::v
     ImVec2 frameSize = uiFrameBufferWindow(frameBuffer);
     camera.aspect = frameSize.x / frameSize.y;
 
-    uiProperties();
+    uiProperties(window);
 
     imGuiRender();
 }
@@ -924,13 +937,17 @@ int main() {
         // objects[0].transform = transform0;
         // objects[1].transform = transform1;
 
-        for (int i = 0; i < physicsWorld.bodies.size(); i++) {
-          physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
-        }
+        // for (int i = 0; i < physicsWorld.bodies.size(); i++) {
+        //   physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
+        // }
 
-        physicsWorld.step(window.deltaTime*0.5f);
+        // physicsWorld.step(window.deltaTime*0.5f);
 
+        double beforeTime = glfwGetTime();
         render(window, frameBuffer, objects, objectShader, gridShader, planeObject, camera);
+        double afterTime = glfwGetTime();
+        
+        window.perviousRenderTime = afterTime - beforeTime;
     }
 
     destroyWindow(window);
