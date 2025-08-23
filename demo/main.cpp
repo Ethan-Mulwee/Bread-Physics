@@ -828,7 +828,7 @@ int main() {
 
     //// Create objects
 
-    Mesh suzanneMesh = importObj("../demo/OBJs/Suzanne.obj");
+    Mesh suzanneMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
     VertexBuffer suzanneVertexBuffer = createVertexBuffer(suzanneMesh);
 
     Object suzanneObject = createObject(suzanneVertexBuffer);
@@ -840,10 +840,11 @@ int main() {
     };
 
     suzanneObject.transform = smath::matrix4x4_from_transform(suzanneTransform);
+    suzanneObject.color = smath::vector4{1.000f,0.200f,0.322f,1.0f};
 
     objects.push_back(suzanneObject);
 
-    Mesh teapotMesh = importObj("../demo/OBJs/Utah-Teapot.obj");
+    Mesh teapotMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
     VertexBuffer teapotVertexBuffer = createVertexBuffer(teapotMesh);
 
     Object teapotObject = createObject(teapotVertexBuffer);
@@ -855,6 +856,7 @@ int main() {
     };
     
     teapotObject.transform = smath::matrix4x4_from_transform(teapotTransform);
+    teapotObject.color = smath::vector4{0.157f,0.565f,1.0f,1.0f};
 
     objects.push_back(teapotObject);
 
@@ -929,19 +931,19 @@ int main() {
         bMath::matrix4 btransform1 = physicsWorld.bodies[1]->getTransform();
         smath::matrix4x4 transform0 = *(smath::matrix4x4*)&(btransform0);
         smath::matrix4x4 transform1 = *(smath::matrix4x4*)&(btransform1);
-        smath::matrix4x4 scaling = smath::matrix4x4_from_diagonal(0.25f);
+        smath::matrix4x4 scaling = smath::matrix4x4_from_diagonal(0.5f);
         scaling[3][3] = 1.0f;
         transform0 = transform0 * scaling;
         transform1 = transform1 * scaling;
 
-        // objects[0].transform = transform0;
-        // objects[1].transform = transform1;
+        objects[0].transform = transform0;
+        objects[1].transform = transform1;
 
-        // for (int i = 0; i < physicsWorld.bodies.size(); i++) {
-        //   physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
-        // }
+        for (int i = 0; i < physicsWorld.bodies.size(); i++) {
+          physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
+        }
 
-        // physicsWorld.step(window.deltaTime*0.5f);
+        physicsWorld.step(window.deltaTime*0.5f);
 
         double beforeTime = glfwGetTime();
         render(window, frameBuffer, objects, objectShader, gridShader, planeObject, camera);
