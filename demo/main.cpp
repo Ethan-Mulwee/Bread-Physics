@@ -11,7 +11,6 @@
 #include "imgui_impl_opengl3.h"
 
 #include "smath.hpp"
-#include "to_string.hpp"
 #include "smath_iostream.hpp"
 
 #include "bEngine/world.hpp"
@@ -817,10 +816,12 @@ void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitives
             }
         case RenderCommandType::Vector:
             {
+                smath::quaternion orientation = smath::quaternion_from_matrix3x3(smath::matrix3x3_from_jhat(command.direction));
+
                 smath::transform transform{
                     .translation = command.positon,
-                    .rotation = smath::quaternion_from_vector3(command.direction),
-                    .scale = smath::vector3{1.0f,1.0f,1.0f}
+                    .rotation = orientation,
+                    .scale = smath::vector3{0.05f,0.3f,0.05f}
                 };
                 primitives->cylinderPrimitive.transform = smath::matrix4x4_from_transform(transform);
                 drawObject(primitives->cylinderPrimitive, shader);
@@ -1086,7 +1087,7 @@ int main() {
 
         DrawCommandSphere(renderer, smath::vector3{1.0f,1.0f,0.0f}, 0.1f);
         DrawCommandSphere(renderer, smath::vector3{1.0f,2.0f,0.0f}, 0.1f);
-        DrawCommandVector(renderer, smath::vector3{1.0f,2.0f,0.0f}, smath::vector3{1.0f,0.0f,0.0f}, 2.0f, 1.0f, smath::vector4{1.0f,1.0f,1.0f,1.0f});
+        DrawCommandVector(renderer, smath::vector3{1.0f,2.0f,0.0f}, smath::vector3{0.0f,5.0f,0.0f}, 2.0f, 1.0f, smath::vector4{1.0f,1.0f,1.0f,1.0f});
 
         for (int i = 0; i < physicsWorld.bodies.size(); i++) {
           physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
@@ -1095,7 +1096,6 @@ int main() {
         physicsWorld.step(window->deltaTime*0.5f);
 
         double beforeTime = glfwGetTime();
-        // render(window, frameBuffer, objects, objectShader, gridShader, planeObject, camera, renderCommandBuffer, spherePrimitiveObject);
         render(renderer, scene);
         double afterTime = glfwGetTime();
         
