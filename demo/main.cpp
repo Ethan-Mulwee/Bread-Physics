@@ -782,7 +782,7 @@ struct RenderCommand {
     float radius;
     float length;
 
-    smath::vector4 color;
+    smath::vector4 color = smath::vector4{1.0f,1.0f,1.0f,1.0f};
 };
 
 struct RenderCommandBuffer {
@@ -811,20 +811,32 @@ void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitives
                     .scale = smath::vector3{command.radius,command.radius,command.radius}
                 };
                 primitives->spherePrimitive.transform = smath::matrix4x4_from_transform(transform);
+                primitives->spherePrimitive.color = command.color;
                 drawObject(primitives->spherePrimitive, shader);
                 break;           
             }
         case RenderCommandType::Vector:
             {
-                smath::quaternion orientation = smath::quaternion_from_matrix3x3(smath::matrix3x3_from_jhat(command.direction));
+                smath::vector3 direction = smath::normalized(command.direction);
+                smath::quaternion orientation = smath::quaternion_from_matrix3x3(smath::matrix3x3_from_jhat(direction));
 
-                smath::transform transform{
+                smath::matrix4x4 translateUp = smath::matrix4x4_from_translation(smath::vector3{0.0f,1.0f,0.0f});
+                smath::transform cylinderTransform{
                     .translation = command.positon,
                     .rotation = orientation,
-                    .scale = smath::vector3{0.05f,0.3f,0.05f}
+                    .scale = smath::vector3{command.radius,command.length*0.5f,command.radius}
                 };
-                primitives->cylinderPrimitive.transform = smath::matrix4x4_from_transform(transform);
+                smath::transform coneTransform{
+                    .translation = command.positon+(direction*command.length),
+                    .rotation = orientation,
+                    .scale = smath::vector3{command.radius*2.0f, command.radius*2.0f, command.radius*2.0f}
+                };
+                primitives->cylinderPrimitive.transform = smath::matrix4x4_from_transform(cylinderTransform)*translateUp;
+                primitives->cylinderPrimitive.color = command.color;
                 drawObject(primitives->cylinderPrimitive, shader);
+                primitives->conePrimitive.color = command.color;
+                primitives->conePrimitive.transform = smath::matrix4x4_from_transform(coneTransform)*translateUp;
+                drawObject(primitives->conePrimitive, shader);
                 break;
             }
     }
@@ -935,6 +947,18 @@ void DrawCommandSphere(Renderer* renderer, const smath::vector3 &position, const
         .type = RenderCommandType::Sphere,
         .positon = position,
         .radius = radius
+    };
+
+    renderer->commandBuffer.add(command);
+}
+
+void DrawCommandVector(Renderer* renderer, const smath::vector3 &positon, const smath::vector3 &direction, const float length, const float radius) {
+    RenderCommand command = {
+        .type = RenderCommandType::Vector,
+        .positon = positon,
+        .direction = direction,
+        .radius = radius,
+        .length = length,
     };
 
     renderer->commandBuffer.add(command);
@@ -1085,9 +1109,7 @@ int main() {
         objects[0].transform = transform0;
         objects[1].transform = transform1;
 
-        DrawCommandSphere(renderer, smath::vector3{1.0f,1.0f,0.0f}, 0.1f);
-        DrawCommandSphere(renderer, smath::vector3{1.0f,2.0f,0.0f}, 0.1f);
-        DrawCommandVector(renderer, smath::vector3{1.0f,2.0f,0.0f}, smath::vector3{0.0f,5.0f,0.0f}, 2.0f, 1.0f, smath::vector4{1.0f,1.0f,1.0f,1.0f});
+        DrawCommandVector(renderer, smath::vector3{1.0f,2.0f,0.0f}, smath::vector3{1.0f,1.0f,0.0f}, 0.75f, 0.05f, smath::vector4{1.0f,0.0f,1.0f,1.0f});
 
         for (int i = 0; i < physicsWorld.bodies.size(); i++) {
           physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
