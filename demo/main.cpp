@@ -37,13 +37,13 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     std::cout << xoffset << ", " << yoffset << "\n";
 }
 
-GLWindow createWindow(int width, int height, const char* name) {
+GLWindow* createWindow(int width, int height, const char* name) {
 
-    GLWindow window;
+    GLWindow* window = new GLWindow();
 
-    window.width = width;
-    window.height = height;
-    window.name = name;
+    window->width = width;
+    window->height = height;
+    window->name = name;
 
     const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -54,15 +54,15 @@ GLWindow createWindow(int width, int height, const char* name) {
         exit( EXIT_FAILURE );
     }
 
-    window.glfwWindow = glfwCreateWindow(width, height, name, NULL, NULL);
+    window->glfwWindow = glfwCreateWindow(width, height, name, NULL, NULL);
 
-    if (!window.glfwWindow) {
+    if (!window->glfwWindow) {
         fprintf(stderr , "Failed to open GLFW window \n");
         glfwTerminate();
         exit( EXIT_FAILURE);
     }
 
-    glfwMakeContextCurrent(window.glfwWindow);
+    glfwMakeContextCurrent(window->glfwWindow);
     glfwSwapInterval(1); // Enable vsync
 
     // glfwSetScrollCallback(glfwWindow, onScrollCallback);
@@ -72,8 +72,8 @@ GLWindow createWindow(int width, int height, const char* name) {
     std::cout << glGetString(GL_VERSION) << std::endl;
     std::cout << glGetString(GL_RENDERER) << std::endl;
 
-    glfwSetWindowUserPointer(window.glfwWindow, &window);
-    glfwSetScrollCallback(window.glfwWindow, [](GLFWwindow* window,double xoffset, double yoffset) { 
+    glfwSetWindowUserPointer(window->glfwWindow, &window);
+    glfwSetScrollCallback(window->glfwWindow, [](GLFWwindow* window,double xoffset, double yoffset) { 
         GLWindow* windowA = (GLWindow*)glfwGetWindowUserPointer(window);
         windowA->scrollInput = yoffset; 
     });
@@ -82,29 +82,30 @@ GLWindow createWindow(int width, int height, const char* name) {
 }
 
 
-void updateWindow(GLWindow &window) {
-    window.scrollInput = 0.0f;
+void updateWindow(GLWindow* window) {
+    window->scrollInput = 0.0f;
 
-    glfwSwapBuffers(window.glfwWindow);
+    glfwSwapBuffers(window->glfwWindow);
     glfwPollEvents();
 
     double x, y;
-    glfwGetCursorPos(window.glfwWindow, &x, &y);
+    glfwGetCursorPos(window->glfwWindow, &x, &y);
     smath::vector2 currentPos = smath::vector2{(float)x,(float)y};
-    window.deltaMousePos = currentPos - window.mousePos;
-    window.mousePos = currentPos;
+    window->deltaMousePos = currentPos - window->mousePos;
+    window->mousePos = currentPos;
 
     float currentTime = glfwGetTime();
-    window.deltaTime = currentTime - window.time;
-    window.time = currentTime;
+    window->deltaTime = currentTime - window->time;
+    window->time = currentTime;
 }
 
-void destroyWindow(const GLWindow &window) {
+void destroyWindow(GLWindow* window) {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    glfwDestroyWindow(window.glfwWindow);
+    glfwDestroyWindow(window->glfwWindow);
+    delete window;
     glfwTerminate(); 
 }
 
@@ -211,8 +212,8 @@ void openGLInit() {
 
 }
 
-void openGLIntializeRender(GLWindow window) {
-    glViewport(0, 0, window.width, window.height);
+void openGLIntializeRender(const GLWindow* window) {
+    glViewport(0, 0, window->width, window->height);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -233,9 +234,9 @@ void unbindFramebuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void bindFramebuffer(const FrameBuffer &buffer) {
-    glBindFramebuffer(GL_FRAMEBUFFER, buffer.fBO);
-    glViewport(0,0, buffer.width, buffer.height);
+void bindFramebuffer(const FrameBuffer* buffer) {
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer->fBO);
+    glViewport(0,0, buffer->width, buffer->height);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -367,7 +368,7 @@ Mesh generateMeshPlane(const float size) {
 /* -------------------------------------------------------------------------- */
 
 struct VertexBuffer {
-    Mesh mesh;
+    Mesh* mesh;
     uint32_t vao, vbo, ebo;
 };
 
@@ -380,7 +381,7 @@ void unbindVertexBuffer() {
     glBindVertexArray(0);
 }
 
-VertexBuffer createVertexBuffer(Mesh mesh) {
+VertexBuffer createVertexBuffer(Mesh* mesh) {
 
     VertexBuffer buffer;
 
@@ -393,10 +394,10 @@ VertexBuffer createVertexBuffer(Mesh mesh) {
     glBindVertexArray(buffer.vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
-    glBufferData(GL_ARRAY_BUFFER, mesh.vertices.size() * sizeof(Vertex), mesh.vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mesh->vertices.size() * sizeof(Vertex), mesh->vertices.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indices.size() * sizeof(uint32_t), mesh.indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->indices.size() * sizeof(uint32_t), mesh->indices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
     glEnableVertexAttribArray(0);
@@ -413,7 +414,7 @@ VertexBuffer createVertexBuffer(Mesh mesh) {
 
 void drawVertexBuffer(const VertexBuffer &buffer) {
     bindVertexBuffer(buffer);
-    glDrawElements(GL_TRIANGLES, buffer.mesh.indices.size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, buffer.mesh->indices.size(), GL_UNSIGNED_INT, nullptr);
     unbindVertexBuffer();
 }
 
@@ -602,6 +603,7 @@ void setShaderUniformFloat4(const Shader &shader, const smath::vector4 &v, const
 }
 
 void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
+    useShader(shader);
     setShaderUniformMatrix4(shader, calculateCameraView(camera), "view");
     setShaderUniformMatrix4(shader, calculateCameraProjection(camera), "projection");
 }
@@ -623,70 +625,17 @@ ImVec2 uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
     return viewportPanelSize;
 }
 
-void uiProperties(const GLWindow &window) {
+void uiProperties(const GLWindow* window) {
     ImGuiIO& io = ImGui::GetIO();
     
     ImGui::Begin("Properties");
-    ImGui::Text("Render time: %fms", window.perviousRenderTime*1000.0);
+    ImGui::Text("Render time: %fms", window->perviousRenderTime*1000.0);
     if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Hello World");
 
     }
 
     ImGui::End();
-}
-
-/* -------------------------------------------------------------------------- */
-/*                               Render Commands                              */
-/* -------------------------------------------------------------------------- */
-
-enum RenderCommandType {
-    Sphere,
-    Vector
-};
-
-struct RenderCommand {
-    RenderCommandType type;
-
-    smath::vector3 positon;
-    smath::vector3 direction;
-    float radius;
-    float length;
-
-    smath::vector3 color;
-};
-
-struct RenderCommandBuffer {
-    RenderCommand renderCommands[256];
-    uint count = 0;
-
-    void add(RenderCommand renderCommand) {
-        renderCommands[count] = renderCommand;
-        count++;
-    }
-};
-
-void DrawSphere(RenderCommandBuffer &commandBuffer, const smath::vector3 &position, const float radius) {
-    RenderCommand command = {
-        .type = RenderCommandType::Sphere,
-        .positon = position,
-        .radius = radius
-    };
-
-    commandBuffer.add(command);
-}
-
-void DrawVector(RenderCommandBuffer &commandBuffer, const smath::vector3 &positon, const smath::vector3 &direction, const float length, const float radius, const smath::vector3 &color) {
-    RenderCommand command = {
-        .type = RenderCommandType::Vector,
-        .positon = positon,
-        .direction = direction,
-        .radius = radius,
-        .length = length,
-        .color = color
-    };
-
-    commandBuffer.add(command);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -807,7 +756,53 @@ void drawObject(const Object &object, const Shader &shader) {
     drawVertexBuffer(object.buffer);
 }
 
-void drawRenderCommand(const RenderCommand &command, Object &spherePrimitiveObject, const Shader &shader) {
+struct PhysicsObject {
+    Object* object;
+    bEngine::RigidBody* rigidBody;
+};
+
+/* -------------------------------------------------------------------------- */
+/*                                  Renderer                                  */
+/* -------------------------------------------------------------------------- */
+
+struct Scene {
+    Camera* camera;
+    std::vector<Object>* objects;
+};
+
+enum RenderCommandType {
+    Sphere,
+    Vector
+};
+
+struct RenderCommand {
+    RenderCommandType type;
+
+    smath::vector3 positon;
+    smath::vector3 direction;
+    float radius;
+    float length;
+
+    smath::vector4 color;
+};
+
+struct RenderCommandBuffer {
+    RenderCommand renderCommands[256];
+    uint count = 0;
+
+    void add(RenderCommand renderCommand) {
+        renderCommands[count] = renderCommand;
+        count++;
+    }
+};
+
+struct PrimtiveObjects {
+    Object spherePrimitive;
+    Object cylinderPrimitive;
+    Object conePrimitive;
+};
+
+void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitves, const Shader &shader) {
     switch (command.type) {
         case RenderCommandType::Sphere:
             {
@@ -816,8 +811,8 @@ void drawRenderCommand(const RenderCommand &command, Object &spherePrimitiveObje
                     .rotation = smath::quaternion{0.0f, 0.0f, 0.0f, 1.0f},
                     .scale = smath::vector3{command.radius,command.radius,command.radius}
                 };
-                spherePrimitiveObject.transform = smath::matrix4x4_from_transform(transform);
-                drawObject(spherePrimitiveObject, shader);
+                primitves->spherePrimitive.transform = smath::matrix4x4_from_transform(transform);
+                drawObject(primitves->spherePrimitive, shader);
                 break;           
             }
         case RenderCommandType::Vector:
@@ -827,96 +822,146 @@ void drawRenderCommand(const RenderCommand &command, Object &spherePrimitiveObje
     }
 }
 
-struct PhysicsObject {
-    Object* object;
-    bEngine::RigidBody* rigidBody;
-};
-
-/* -------------------------------------------------------------------------- */
-/*                                 Application                                */
-/* -------------------------------------------------------------------------- */
-
-struct Scene {
+struct Renderer {
+    const GLWindow* window;
     FrameBuffer* frameBuffer;
-    VertexBuffer* vertexBuffer;
+    RenderCommandBuffer commandBuffer;
+
+    Shader objectShader;
+    Shader gridShader;
+
+    Object gridObject;
+
+    PrimtiveObjects primtives;
 };
 
+void intializeRenderer(Renderer* renderer, GLWindow* window, int resolution_x, int resolution_y) {
+    imGuiInit(window->glfwWindow);
+    openGLInit();
 
-void render(
-    const GLWindow &window, 
-    const FrameBuffer &frameBuffer, 
-    const std::vector<Object> &objects, 
-    const Shader &objectShader, 
-    const Shader &gridShader, 
-    Object &gridObject, 
-    Camera &camera, 
-    RenderCommandBuffer &commandBuffer,
-    Object &primtiveSphere
-) {
-    openGLIntializeRender(window);
+    renderer->window = window;
+    renderer->frameBuffer = new FrameBuffer();
+    *(renderer->frameBuffer) = createFrameBuffer(1920, 1080); 
+
+    renderer->objectShader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
+    renderer->gridShader = createShader("../demo/shaders/shader.vert", "../demo/shaders/grid.frag");
+
+    // Create the grid plane
+    Mesh* gridMesh = new Mesh();
+    *gridMesh = generateMeshPlane(250.0f);
+    VertexBuffer gridVertexBuffer = createVertexBuffer(gridMesh);
+    renderer->gridObject = createObject(gridVertexBuffer);
+
+    // Import and intialize primtive objects
+
+    Mesh* spherePrimitiveMesh = new Mesh();
+    *spherePrimitiveMesh = importObj("../demo/OBJs/Primitive-Sphere.obj");
+    VertexBuffer spherePrimitiveBuffer = createVertexBuffer(spherePrimitiveMesh);
+    renderer->primtives.spherePrimitive = createObject(spherePrimitiveBuffer);
+
+    Mesh* cylinderPrimitiveMesh = new Mesh();
+    *cylinderPrimitiveMesh = importObj("../demo/OBJs/Primitive-Cylinder.obj");
+    VertexBuffer cylinderPrimitiveBuffer = createVertexBuffer(cylinderPrimitiveMesh);
+    renderer->primtives.cylinderPrimitive = createObject(cylinderPrimitiveBuffer);
+
+    Mesh* conePrimitiveMesh = new Mesh();
+    *conePrimitiveMesh = importObj("../demo/OBJs/Primitive-Cone.obj");
+    VertexBuffer conePrimitiveBuffer = createVertexBuffer(conePrimitiveMesh);
+    renderer->primtives.conePrimitive = createObject(conePrimitiveBuffer);
+}
+
+void render(Renderer* renderer, Scene* scene) {
+    openGLIntializeRender(renderer->window);
     imGuiIntializeRender();
 
-    
-    
-    bindFramebuffer(frameBuffer);
+    bindFramebuffer(renderer->frameBuffer);
 
         glDisable(GL_BLEND);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
 
-        useShader(objectShader);
-        setShaderUniformsFromCamera(objectShader, camera);
+        setShaderUniformsFromCamera(renderer->objectShader, *scene->camera);
 
-        for (int i = 0; i < objects.size(); i++) {
-            drawObject(objects[i], objectShader);
+        for (int i = 0; i < scene->objects->size(); i++) {
+            drawObject((*scene->objects)[i], renderer->objectShader);
         }
 
-        for (int i = commandBuffer.count; i > 0;  i--) {
-            drawRenderCommand(commandBuffer.renderCommands[i-1], primtiveSphere, objectShader);
+        for (int i = renderer->commandBuffer.count; i > 0; i--) {
+            drawRenderCommand(renderer->commandBuffer.renderCommands[i-1], &renderer->primtives, renderer->objectShader);
         }
-        commandBuffer.count = 0;
-
+        renderer->commandBuffer.count = 0;
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         glDisable(GL_CULL_FACE);
 
-        useShader(gridShader);
-        setShaderUniformsFromCamera(gridShader, camera);
-        drawObject(gridObject, gridShader);
-
-        smath::vector3 cameraPosition = calculateCameraPosition(camera);
-        gridObject.transform[0][3] = -cameraPosition.x;
-        gridObject.transform[2][3] = -cameraPosition.z;
-
+        setShaderUniformsFromCamera(renderer->gridShader, *scene->camera);
+        drawObject(renderer->gridObject, renderer->gridShader);
 
     unbindFramebuffer();
 
-    ImVec2 frameSize = uiFrameBufferWindow(frameBuffer);
-    camera.aspect = frameSize.x / frameSize.y;
+    smath::vector3 cameraPosition = calculateCameraPosition(*scene->camera);
+    renderer->gridObject.transform[0][3] = -cameraPosition.x;
+    renderer->gridObject.transform[2][3] = -cameraPosition.z;
 
-    uiProperties(window);
+    ImVec2 frameSize = uiFrameBufferWindow(*renderer->frameBuffer);
+    scene->camera->aspect = frameSize.x / frameSize.y;
+
+    uiProperties(renderer->window);
 
     imGuiRender();
 }
 
+void DrawCommandSphere(Renderer* renderer, const smath::vector3 &position, const float radius) {
+    RenderCommand command = {
+        .type = RenderCommandType::Sphere,
+        .positon = position,
+        .radius = radius
+    };
+
+    renderer->commandBuffer.add(command);
+}
+
+void DrawSphere(Renderer* renderer, const smath::vector3 &position, const float radius, const smath::vector4 &color) {
+    RenderCommand command = {
+        .type = RenderCommandType::Sphere,
+        .positon = position,
+        .radius = radius
+    };
+
+    renderer->commandBuffer.add(command);
+}
+
+void DrawVector(RenderCommandBuffer &commandBuffer, const smath::vector3 &positon, const smath::vector3 &direction, const float length, const float radius, const smath::vector4 &color) {
+    RenderCommand command = {
+        .type = RenderCommandType::Vector,
+        .positon = positon,
+        .direction = direction,
+        .radius = radius,
+        .length = length,
+        .color = color
+    };
+
+    commandBuffer.add(command);
+}
+
 int main() {
-    GLWindow window = createWindow(1920, 1080, "window"); 
-    RenderCommandBuffer renderCommandBuffer;
-    imGuiInit(window.glfwWindow);
-    openGLInit();
+    GLWindow* window = createWindow(1920, 1080, "window"); 
+    Renderer* renderer = new Renderer();
+    intializeRenderer(renderer, window, 1920, 1080);
+    Scene* scene = new Scene();
+    std::vector<Object> objects;
+    scene->objects = &objects;
+    Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 5.0f, 45.0f, 0.1f, 100.0f, -M_PI/4.0f, M_PI/4.0f);
+    scene->camera = &camera;
+
     
     bEngine::World physicsWorld;
 
-    Shader objectShader = createShader("../demo/shaders/shader.vert", "../demo/shaders/shader.frag");
-    Shader gridShader = createShader("../demo/shaders/shader.vert", "../demo/shaders/grid.frag");
-    FrameBuffer frameBuffer = createFrameBuffer(1920, 1080);    
-    std::vector<Object> objects;
-
     //// Create objects
 
-    Mesh suzanneMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
+    Mesh* suzanneMesh = new Mesh();
+    *suzanneMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
     VertexBuffer suzanneVertexBuffer = createVertexBuffer(suzanneMesh);
 
     Object suzanneObject = createObject(suzanneVertexBuffer);
@@ -932,7 +977,8 @@ int main() {
 
     objects.push_back(suzanneObject);
 
-    Mesh teapotMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
+    Mesh* teapotMesh = new Mesh();
+    *teapotMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
     VertexBuffer teapotVertexBuffer = createVertexBuffer(teapotMesh);
 
     Object teapotObject = createObject(teapotVertexBuffer);
@@ -948,15 +994,15 @@ int main() {
 
     objects.push_back(teapotObject);
 
-    Mesh planeMesh = generateMeshPlane(250.0f);
+    Mesh* planeMesh = new Mesh();
+    *planeMesh = generateMeshPlane(250.0f);
     VertexBuffer planeVertexBuffer = createVertexBuffer(planeMesh);
     Object planeObject = createObject(planeVertexBuffer);
 
-    Mesh spherePrimitiveMesh = importObj("../demo/OBJs/Primitive-Sphere.obj");
+    Mesh* spherePrimitiveMesh = new Mesh();
+    *spherePrimitiveMesh = importObj("../demo/OBJs/Primitive-Sphere.obj");
     VertexBuffer spherePrimitiveBuffer = createVertexBuffer(spherePrimitiveMesh);
     Object spherePrimitiveObject = createObject(spherePrimitiveBuffer);
-
-    // objects.push_back(planeObject);
 
     //// Create objects
 
@@ -998,18 +1044,17 @@ int main() {
     physicsWorld.colliders.push_back(collider2);
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 5.0f, 45.0f, 0.1f, 100.0f, -M_PI/4.0f, M_PI/4.0f);
 
-    while(!glfwWindowShouldClose(window.glfwWindow)) { 
+    while(!glfwWindowShouldClose(window->glfwWindow)) { 
         updateWindow(window);
 
-        if (glfwGetMouseButton(window.glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE) && !glfwGetKey(window.glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
-            camera.yaw -= window.deltaMousePos.x*0.0075f;
-            camera.pitch -= window.deltaMousePos.y*0.0075f;
+        if (glfwGetMouseButton(window->glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE) && !glfwGetKey(window->glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
+            camera.yaw -= window->deltaMousePos.x*0.0075f;
+            camera.pitch -= window->deltaMousePos.y*0.0075f;
         }   
         
-        if (glfwGetMouseButton(window.glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE) && glfwGetKey(window.glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
-            smath::vector3 movement = smath::vector3{-window.deltaMousePos.x,window.deltaMousePos.y,0.0f};
+        if (glfwGetMouseButton(window->glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE) && glfwGetKey(window->glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
+            smath::vector3 movement = smath::vector3{-window->deltaMousePos.x,window->deltaMousePos.y,0.0f};
             smath::quaternion cameraOrientation = calculateCameraOrientation(camera);
 
             movement = smath::quaternion_transform_vector(cameraOrientation, movement);
@@ -1018,7 +1063,7 @@ int main() {
             camera.focus -= movement*camera.distance;
         }   
 
-        camera.distance -= window.scrollInput*camera.distance*0.075f;
+        camera.distance -= window->scrollInput*camera.distance*0.075f;
 
         bMath::matrix4 btransform0 = physicsWorld.bodies[0]->getTransform();
         bMath::matrix4 btransform1 = physicsWorld.bodies[1]->getTransform();
@@ -1032,20 +1077,21 @@ int main() {
         objects[0].transform = transform0;
         objects[1].transform = transform1;
 
-        DrawSphere(renderCommandBuffer, smath::vector3{1.0f,1.0f,0.0f}, 0.1f);
-        DrawSphere(renderCommandBuffer, smath::vector3{1.0f,2.0f,0.0f}, 0.1f);
+        DrawCommandSphere(renderer, smath::vector3{1.0f,1.0f,0.0f}, 0.1f);
+        DrawCommandSphere(renderer, smath::vector3{1.0f,2.0f,0.0f}, 0.1f);
 
         for (int i = 0; i < physicsWorld.bodies.size(); i++) {
           physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
         }
 
-        physicsWorld.step(window.deltaTime*0.5f);
+        physicsWorld.step(window->deltaTime*0.5f);
 
         double beforeTime = glfwGetTime();
-        render(window, frameBuffer, objects, objectShader, gridShader, planeObject, camera, renderCommandBuffer, spherePrimitiveObject);
+        // render(window, frameBuffer, objects, objectShader, gridShader, planeObject, camera, renderCommandBuffer, spherePrimitiveObject);
+        render(renderer, scene);
         double afterTime = glfwGetTime();
         
-        window.perviousRenderTime = afterTime - beforeTime;
+        window->perviousRenderTime = afterTime - beforeTime;
     }
 
     destroyWindow(window);
