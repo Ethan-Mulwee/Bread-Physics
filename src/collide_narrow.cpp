@@ -114,25 +114,27 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
         }
         else {
             // edge-edge contact
-            smallestIndex -= 6;
-            unsigned oneAxisIndex = smallestIndex / 3;
-            unsigned twoAxisIndex = smallestIndex % 3;
+            int index = smallestIndex;
+            index -= 6;
+
+            unsigned oneAxisIndex = index / 3;
+            unsigned twoAxisIndex = index % 3;
             float3 oneAxis = one.getAxis(oneAxisIndex);
             float3 twoAxis = two.getAxis(twoAxisIndex);
             float3 axis = cross(oneAxis, twoAxis);
             axis.normalize();
 
-            if (dot(axis,toCenter) < 0) axis = axis * -1;
+            if (dot(axis,toCenter) < 0) axis *= -1.0f;
 
             float3 pointOne = one.dimensions;
             float3 pointTwo = two.dimensions;
 
             for (int i = 0; i < 3; i++) {
                 if (i == oneAxisIndex) pointOne[i] = 0;
-                else if (dot(one.getAxis(i), axis) > 0) pointOne[i] = -pointOne[i];
+                else if (dot(one.getAxis(i), axis) > 0) pointOne[i] *= -1.0f;
 
                 if (i == twoAxisIndex) pointTwo[i] = 0;
-                else if (dot(two.getAxis(i), axis) > 0) pointTwo[i] = -pointTwo[i];
+                else if (dot(two.getAxis(i), axis) < 0) pointTwo[i] *= -1.0f;
             }
 
             pointOne = pointOne * one.getTransform();
@@ -140,7 +142,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
 
             float3 vertex;
 
-            // Edge edge contact vertex bullshit
+            // // Edge edge contact vertex bullshit
             const float3 pOne = pointOne;
             const float3 dOne = oneAxis;
             float oneSize = one.dimensions[oneAxisIndex];
@@ -191,7 +193,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
 
                 vertex = cOne * 0.5 + cTwo * 0.5;
             }
-            //
+            
 
             Contact contact;
             contact.contactNormal = axis;

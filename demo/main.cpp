@@ -636,6 +636,58 @@ void uiProperties(const GLWindow &window) {
     ImGui::End();
 }
 
+/* -------------------------------------------------------------------------- */
+/*                               Render Commands                              */
+/* -------------------------------------------------------------------------- */
+
+enum RenderCommandType {
+    Sphere,
+    Vector
+};
+
+struct RenderCommand {
+    RenderCommandType type;
+
+    smath::vector3 positon;
+    smath::vector3 direction;
+    float radius;
+    float length;
+
+    smath::vector3 color;
+};
+
+struct RenderCommandBuffer {
+    RenderCommand renderCommands[256];
+    uint count = 0;
+
+    void add(RenderCommand renderCommand) {
+        renderCommands[count] = renderCommand;
+        count++;
+    }
+};
+
+void DrawSphere(RenderCommandBuffer &commandBuffer, const smath::vector3 &position, const float radius) {
+    RenderCommand command = {
+        .type = RenderCommandType::Sphere,
+        .positon = position,
+        .radius = radius
+    };
+
+    commandBuffer.add(command);
+}
+
+void DrawVector(RenderCommandBuffer &commandBuffer, const smath::vector3 &positon, const smath::vector3 &direction, const float length, const float radius, const smath::vector3 &color) {
+    RenderCommand command = {
+        .type = RenderCommandType::Vector,
+        .positon = positon,
+        .direction = direction,
+        .radius = radius,
+        .length = length,
+        .color = color
+    };
+
+    commandBuffer.add(command);
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                OBJ Importer                                */
@@ -755,6 +807,26 @@ void drawObject(const Object &object, const Shader &shader) {
     drawVertexBuffer(object.buffer);
 }
 
+void drawRenderCommand(const RenderCommand &command, Object &spherePrimitiveObject, const Shader &shader) {
+    switch (command.type) {
+        case RenderCommandType::Sphere:
+            {
+                smath::transform transform{
+                    .translation = command.positon,
+                    .rotation = smath::quaternion{0.0f, 0.0f, 0.0f, 1.0f},
+                    .scale = smath::vector3{command.radius,command.radius,command.radius}
+                };
+                spherePrimitiveObject.transform = smath::matrix4x4_from_transform(transform);
+                drawObject(spherePrimitiveObject, shader);
+                break;           
+            }
+        case RenderCommandType::Vector:
+            {
+                break;
+            }
+    }
+}
+
 struct PhysicsObject {
     Object* object;
     bEngine::RigidBody* rigidBody;
@@ -770,7 +842,17 @@ struct Scene {
 };
 
 
-void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::vector<Object> &objects, const Shader &objectShader, const Shader &gridShader, Object &gridObject, Camera &camera) {
+void render(
+    const GLWindow &window, 
+    const FrameBuffer &frameBuffer, 
+    const std::vector<Object> &objects, 
+    const Shader &objectShader, 
+    const Shader &gridShader, 
+    Object &gridObject, 
+    Camera &camera, 
+    RenderCommandBuffer &commandBuffer,
+    Object &primtiveSphere
+) {
     openGLIntializeRender(window);
     imGuiIntializeRender();
 
@@ -788,6 +870,11 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::v
         for (int i = 0; i < objects.size(); i++) {
             drawObject(objects[i], objectShader);
         }
+
+        for (int i = commandBuffer.count; i > 0;  i--) {
+            drawRenderCommand(commandBuffer.renderCommands[i-1], primtiveSphere, objectShader);
+        }
+        commandBuffer.count = 0;
 
 
         glEnable(GL_BLEND);
@@ -816,6 +903,7 @@ void render(const GLWindow &window, const FrameBuffer &frameBuffer, const std::v
 
 int main() {
     GLWindow window = createWindow(1920, 1080, "window"); 
+    RenderCommandBuffer renderCommandBuffer;
     imGuiInit(window.glfwWindow);
     openGLInit();
     
@@ -864,6 +952,10 @@ int main() {
     VertexBuffer planeVertexBuffer = createVertexBuffer(planeMesh);
     Object planeObject = createObject(planeVertexBuffer);
 
+    Mesh spherePrimitiveMesh = importObj("../demo/OBJs/Primitive-Sphere.obj");
+    VertexBuffer spherePrimitiveBuffer = createVertexBuffer(spherePrimitiveMesh);
+    Object spherePrimitiveObject = createObject(spherePrimitiveBuffer);
+
     // objects.push_back(planeObject);
 
     //// Create objects
@@ -872,8 +964,9 @@ int main() {
     bEngine::RigidBody* body = new bEngine::RigidBody();
     body->inverseMass = 0.5f;
     body->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
-    body->position = bMath::float3(0,2,0);
-    body->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
+    body->position = bMath::float3(0,1,0);
+    // body->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
+    body->orientation = bMath::quaternion::identity();
     body->orientation.normalize();
 
     bEngine::Primitive collider;
@@ -891,7 +984,7 @@ int main() {
     bEngine::RigidBody* body2 = new bEngine::RigidBody();
     body2->inverseMass = 0.5f;
     body2->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
-    body2->position = bMath::float3(2,2,0);
+    body2->position = bMath::float3(0,3.2,0);
     body2->orientation = bMath::quaternion(1,0,0,0);
     body2->angularVelocity = bMath::float3(0,0,0);
 
@@ -939,6 +1032,9 @@ int main() {
         objects[0].transform = transform0;
         objects[1].transform = transform1;
 
+        DrawSphere(renderCommandBuffer, smath::vector3{1.0f,1.0f,0.0f}, 0.1f);
+        DrawSphere(renderCommandBuffer, smath::vector3{1.0f,2.0f,0.0f}, 0.1f);
+
         for (int i = 0; i < physicsWorld.bodies.size(); i++) {
           physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
         }
@@ -946,7 +1042,7 @@ int main() {
         physicsWorld.step(window.deltaTime*0.5f);
 
         double beforeTime = glfwGetTime();
-        render(window, frameBuffer, objects, objectShader, gridShader, planeObject, camera);
+        render(window, frameBuffer, objects, objectShader, gridShader, planeObject, camera, renderCommandBuffer, spherePrimitiveObject);
         double afterTime = glfwGetTime();
         
         window.perviousRenderTime = afterTime - beforeTime;
