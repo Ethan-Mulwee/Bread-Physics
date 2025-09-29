@@ -72,7 +72,7 @@ GLWindow* createWindow(int width, int height, const char* name) {
     std::cout << glGetString(GL_VERSION) << std::endl;
     std::cout << glGetString(GL_RENDERER) << std::endl;
 
-    glfwSetWindowUserPointer(window->glfwWindow, &window);
+    glfwSetWindowUserPointer(window->glfwWindow, window);
     glfwSetScrollCallback(window->glfwWindow, [](GLFWwindow* window,double xoffset, double yoffset) { 
         GLWindow* windowA = (GLWindow*)glfwGetWindowUserPointer(window);
         windowA->scrollInput = yoffset; 
@@ -802,7 +802,7 @@ struct PrimtiveObjects {
     Object conePrimitive;
 };
 
-void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitves, const Shader &shader) {
+void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitives, const Shader &shader) {
     switch (command.type) {
         case RenderCommandType::Sphere:
             {
@@ -811,12 +811,19 @@ void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitves,
                     .rotation = smath::quaternion{0.0f, 0.0f, 0.0f, 1.0f},
                     .scale = smath::vector3{command.radius,command.radius,command.radius}
                 };
-                primitves->spherePrimitive.transform = smath::matrix4x4_from_transform(transform);
-                drawObject(primitves->spherePrimitive, shader);
+                primitives->spherePrimitive.transform = smath::matrix4x4_from_transform(transform);
+                drawObject(primitives->spherePrimitive, shader);
                 break;           
             }
         case RenderCommandType::Vector:
             {
+                smath::transform transform{
+                    .translation = command.positon,
+                    .rotation = smath::quaternion_from_vector3(command.direction),
+                    .scale = smath::vector3{1.0f,1.0f,1.0f}
+                };
+                primitives->cylinderPrimitive.transform = smath::matrix4x4_from_transform(transform);
+                drawObject(primitives->cylinderPrimitive, shader);
                 break;
             }
     }
@@ -922,7 +929,7 @@ void DrawCommandSphere(Renderer* renderer, const smath::vector3 &position, const
     renderer->commandBuffer.add(command);
 }
 
-void DrawSphere(Renderer* renderer, const smath::vector3 &position, const float radius, const smath::vector4 &color) {
+void DrawCommandSphere(Renderer* renderer, const smath::vector3 &position, const float radius, const smath::vector4 &color) {
     RenderCommand command = {
         .type = RenderCommandType::Sphere,
         .positon = position,
@@ -932,7 +939,7 @@ void DrawSphere(Renderer* renderer, const smath::vector3 &position, const float 
     renderer->commandBuffer.add(command);
 }
 
-void DrawVector(RenderCommandBuffer &commandBuffer, const smath::vector3 &positon, const smath::vector3 &direction, const float length, const float radius, const smath::vector4 &color) {
+void DrawCommandVector(Renderer* renderer, const smath::vector3 &positon, const smath::vector3 &direction, const float length, const float radius, const smath::vector4 &color) {
     RenderCommand command = {
         .type = RenderCommandType::Vector,
         .positon = positon,
@@ -942,7 +949,7 @@ void DrawVector(RenderCommandBuffer &commandBuffer, const smath::vector3 &posito
         .color = color
     };
 
-    commandBuffer.add(command);
+    renderer->commandBuffer.add(command);
 }
 
 int main() {
@@ -1079,6 +1086,7 @@ int main() {
 
         DrawCommandSphere(renderer, smath::vector3{1.0f,1.0f,0.0f}, 0.1f);
         DrawCommandSphere(renderer, smath::vector3{1.0f,2.0f,0.0f}, 0.1f);
+        DrawCommandVector(renderer, smath::vector3{1.0f,2.0f,0.0f}, smath::vector3{1.0f,0.0f,0.0f}, 2.0f, 1.0f, smath::vector4{1.0f,1.0f,1.0f,1.0f});
 
         for (int i = 0; i < physicsWorld.bodies.size(); i++) {
           physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
