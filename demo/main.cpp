@@ -1109,13 +1109,20 @@ int main() {
         objects[0].transform = transform0;
         objects[1].transform = transform1;
 
-        DrawCommandVector(renderer, smath::vector3{1.0f,2.0f,0.0f}, smath::vector3{1.0f,1.0f,0.0f}, 0.75f, 0.05f, smath::vector4{1.0f,0.0f,1.0f,1.0f});
 
         for (int i = 0; i < physicsWorld.bodies.size(); i++) {
           physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
         }
 
-        physicsWorld.step(window->deltaTime*0.5f);
+        physicsWorld.contactStep();
+        bEngine::ContactPool contacts = physicsWorld.getContactPool();
+        for (int i = 0; i < contacts.count(); i++) {
+            bMath::float3 position = contacts[i].contactPoint;
+            bMath::float3 normal = contacts[i].contactNormal;
+            DrawCommandSphere(renderer, smath::vector3{position.x,position.y,position.z}, 0.1f);
+            DrawCommandVector(renderer, smath::vector3{position.x,position.y,position.z}, smath::vector3{normal.x,normal.y,normal.z}, 0.3f, 0.05f);
+        }
+        physicsWorld.resolutionStep(window->deltaTime*0.5f);
 
         double beforeTime = glfwGetTime();
         render(renderer, scene);

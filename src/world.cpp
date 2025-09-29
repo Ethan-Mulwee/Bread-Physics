@@ -14,10 +14,23 @@ void World::step(float time){
     }
 }
 
+void bEngine::World::contactStep() {
+    generateContacts();
+}
 
+void bEngine::World::resolutionStep(float time) {
+    resolveContacts(time);
+    for (int i = 0; i < bodies.size(); i++) {
+        bodies[i]->integrate(time);
+    }
+}
 
+ContactPool bEngine::World::getContactPool() {
+    return contacts;
+}
 
-void World::generateContacts() {
+void World::generateContacts()
+{
     for (int i = 0; i < colliders.size(); i++) {
         CollisionDetector::cubeFloor(colliders[i], 0.0f, contacts);
         for (int j = 0; j < colliders.size(); j++) {

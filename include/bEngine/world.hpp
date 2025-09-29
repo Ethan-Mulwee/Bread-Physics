@@ -17,10 +17,13 @@ namespace bEngine {
         public:
             World();
             void step(float time);
-        private:
+            void contactStep();
+            void resolutionStep(float time);
+            ContactPool getContactPool();
+            private:
             void generateContacts();
-
             void resolveContacts(float time);
+            
             void adjustPositions(float time, unsigned iterations);
             void adjustVelocities(float time, unsigned iterations);
     };
