@@ -1,7 +1,7 @@
 #ifndef BENGINE_CONTACTS
 #define BENGINE_CONTACTS
 
-#include "bMath.hpp"
+#include "smath.hpp"
 
 #include "rigidbody.hpp"
 
@@ -18,44 +18,44 @@ namespace bEngine {
     struct Primitive {
         RigidBody* body;
         PrimitiveType type;
-        bMath::matrix4 offset;
-        bMath::float3 dimensions;
+        smath::matrix4x4 offset;
+        smath::vector3 dimensions = {1.0f,1.0f,1.0f};
 
-        inline bMath::float4x4 getTransform() const {
+        inline smath::matrix4x4 getTransform() const {
             return body->getTransform();
         }
 
-        inline bMath::float3 getAxis(const unsigned i) const {
-            bMath::float4x4 transform = getTransform();
+        inline smath::vector3 getAxis(const unsigned i) const {
+            smath::matrix4x4 transform = getTransform();
             // if (std::isnan(transform(0,i)) || std::isnan(transform(1,i)) || std::isnan(transform(2,i))) {
             //     std::cout << "Nan detected \n";
             // }
-            return bMath::float3(transform(0,i), transform(1,i), transform(2,i));
+            return smath::vector3{transform[0][i], transform[1][i], transform[2][i]};
         }
     };
 
     struct PenetrationResolutionResult {
-        bMath::float3 linearChange[2];
-        bMath::float3 angularChange[2];
+        smath::vector3 linearChange[2] = {{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f}};
+        smath::vector3 angularChange[2] = {{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f}};
     };
 
     struct Contact {
         RigidBody* body[2] = { nullptr, nullptr };
         float friction;
         float restitution;
-        bMath::float3 contactPoint;
-        bMath::float3 contactNormal;
+        smath::vector3 contactPoint = {0.0f,0.0f,0.0f};
+        smath::vector3 contactNormal = {0.0f,0.0f,0.0f};
         float penetration;
 
         const char* debugLabel = "";
 
-        bMath::matrix3 getContactBasis() const;
+        smath::matrix3x3 getContactBasis() const;
 
         float getClosingVelocity() const; 
 
-        bMath::float3 getRelativeVelocity() const;
+        smath::vector3 getRelativeVelocity() const;
 
-        inline bMath::float3 getContactPointRelativeToBody(unsigned bodyIndex) const {
+        inline smath::vector3 getContactPointRelativeToBody(unsigned bodyIndex) const {
             return contactPoint - body[bodyIndex]->position;
         }
 

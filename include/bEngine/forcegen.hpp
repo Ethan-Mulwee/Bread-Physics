@@ -10,7 +10,7 @@ namespace bEngine {
   };
 
   class Gravity : public ForceGenerator {
-    bMath::float3 gravity;
+    smath::vector3 gravity;
 
     
   };

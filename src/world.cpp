@@ -43,7 +43,7 @@ void World::generateContacts()
 // TODO: check for NaNs in this phase
 
 void World::adjustPositions(float time, unsigned iterations) {
-    using namespace bMath;
+    using namespace smath;
 
     for (int i = 0; i < iterations; i++) {
 
@@ -62,7 +62,7 @@ void World::adjustPositions(float time, unsigned iterations) {
 
         PenetrationResolutionResult result = contacts[maxIndex].resolvePenetration();
 
-        float3 deltaPosition;
+        vector3 deltaPosition = {0.0f, 0.0f, 0.0f};
 
         // Update penetrations contacts related to the moved bodies
         for (unsigned j = 0; j < contacts.count(); j++) {
@@ -79,7 +79,7 @@ void World::adjustPositions(float time, unsigned iterations) {
 }
 
 void World::adjustVelocities(float time, unsigned iterations) {
-    using namespace bMath;
+    using namespace smath;
 
     for (int i = 0; i < iterations; i++) {
 

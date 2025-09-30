@@ -15,6 +15,7 @@
 #include "smath_iostream.hpp"
 
 #include "bEngine/world.hpp"
+#include "bEngine/interia_tensor.hpp"
 
 /* -------------------------------------------------------------------------- */
 /*                                 GLFW Window                                */
@@ -1043,17 +1044,17 @@ int main() {
     // Cube1 ///////////////////////////////////////////////////////////////////////////////
     bEngine::RigidBody* body = new bEngine::RigidBody();
     body->inverseMass = 0.5f;
-    body->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
-    body->position = bMath::float3(0,1,0);
+    body->inverseInertiaTensor = smath::inverse(bEngine::InertiaTensorCuboid(2,1,1,1));
+    body->position = smath::vector3{0,1,0};
     // body->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
-    body->orientation = bMath::quaternion::identity();
+    body->orientation = smath::quaternion{0.0f, 0.0f, 0.0f, 1.0f};
     body->orientation.normalize();
 
     bEngine::Primitive collider;
     collider.type = bEngine::PrimitiveType::Cube;
-    collider.dimensions = bMath::float3(0.5,0.5,0.5);
+    collider.dimensions = smath::vector3{0.5,0.5,0.5};
 
-    collider.offset = bMath::matrix4::identity();
+    collider.offset = smath::matrix4x4_from_identity();
     collider.body = body;
 
     physicsWorld.bodies.push_back(body);
@@ -1063,15 +1064,15 @@ int main() {
     // Cube2 ///////////////////////////////////////////////////////////////////////////////
     bEngine::RigidBody* body2 = new bEngine::RigidBody();
     body2->inverseMass = 0.5f;
-    body2->inverseInertiaTensor = bMath::inverse(bMath::InertiaTensorCuboid(2,1,1,1));
-    body2->position = bMath::float3(0,3.2,0);
-    body2->orientation = bMath::quaternion(1,0,0,0);
-    body2->angularVelocity = bMath::float3(0,0,0);
+    body2->inverseInertiaTensor = smath::inverse(bEngine::InertiaTensorCuboid(2,1,1,1));
+    body2->position = smath::vector3{0,3.2,0};
+    body2->orientation = smath::quaternion{0,0,0,1};
+    body2->angularVelocity = smath::vector3{0,0,0};
 
     bEngine::Primitive collider2;
     collider2.type = bEngine::PrimitiveType::Cube;
-    collider2.dimensions = bMath::float3(0.5,0.5,0.5);
-    collider2.offset = bMath::matrix4::identity();
+    collider2.dimensions = smath::vector3{0.5,0.5,0.5};
+    collider2.offset = smath::matrix4x4_from_identity();
     collider2.body = body2;
 
     physicsWorld.bodies.push_back(body2);
@@ -1099,10 +1100,8 @@ int main() {
 
         camera.distance -= window->scrollInput*camera.distance*0.075f;
 
-        bMath::matrix4 btransform0 = physicsWorld.bodies[0]->getTransform();
-        bMath::matrix4 btransform1 = physicsWorld.bodies[1]->getTransform();
-        smath::matrix4x4 transform0 = *(smath::matrix4x4*)&(btransform0);
-        smath::matrix4x4 transform1 = *(smath::matrix4x4*)&(btransform1);
+        smath::matrix4x4 transform0 = physicsWorld.bodies[0]->getTransform();
+        smath::matrix4x4 transform1 = physicsWorld.bodies[1]->getTransform();
         smath::matrix4x4 scaling = smath::matrix4x4_from_diagonal(0.5f);
         scaling[3][3] = 1.0f;
         transform0 = transform0 * scaling;
@@ -1113,14 +1112,14 @@ int main() {
 
 
         for (int i = 0; i < physicsWorld.bodies.size(); i++) {
-          physicsWorld.bodies[i]->addForce(bMath::float3(0,-9.8,0)*(1.0f/physicsWorld.bodies[i]->inverseMass));
+          physicsWorld.bodies[i]->addForce(smath::vector3{0,-9.8f,0}*(1.0f/physicsWorld.bodies[i]->inverseMass));
         }
 
         physicsWorld.contactStep();
         bEngine::ContactPool contacts = physicsWorld.getContactPool();
         for (int i = 0; i < contacts.count(); i++) {
-            bMath::float3 position = contacts[i].contactPoint;
-            bMath::float3 normal = contacts[i].contactNormal;
+            smath::vector3 position = contacts[i].contactPoint;
+            smath::vector3 normal = contacts[i].contactNormal;
             smath::vector4 color = {1.0f,1.0f,1.0f,1.0f};
 
             if (!strcmp(contacts[i].debugLabel, "Face of one and vertex of two")) {

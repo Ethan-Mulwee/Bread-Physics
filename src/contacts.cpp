@@ -2,70 +2,70 @@
 
 using namespace bEngine;
 
-bMath::matrix3 Contact::getContactBasis() const {
-    using namespace bMath;
+smath::matrix3x3 Contact::getContactBasis() const {
+    using namespace smath;
 
-    float3 tagentY;
-    float3 tagentZ;
+    vector3 tagentY;
+    vector3 tagentZ;
 
     if (abs(contactNormal.y) < abs(contactNormal.z)) {
-        tagentZ = float3(-contactNormal.z, 0, contactNormal.x);
+        tagentZ = vector3{-contactNormal.z, 0, contactNormal.x};
         tagentY = cross(contactNormal, tagentZ);
     }
     else {
-        tagentY = float3(-contactNormal.y, contactNormal.x, 0);
+        tagentY = vector3{-contactNormal.y, contactNormal.x, 0};
         tagentZ = cross(contactNormal, tagentY);
     }
 
-    return bMath::matrix3(
+    return smath::matrix3x3{
         contactNormal.x, tagentY.x, tagentZ.x,
         contactNormal.y, tagentY.y, tagentZ.y,
         contactNormal.z, tagentY.z, tagentZ.z
-    );
+    };
 }
 
 float Contact::getClosingVelocity() const {
-    using namespace bMath;
+    using namespace smath;
 
-    float3 bodyPoint1 = contactPoint - body[0]->position;
-    float3 velocity = cross(body[0]->angularVelocity, bodyPoint1);
+    vector3 bodyPoint1 = contactPoint - body[0]->position;
+    vector3 velocity = cross(body[0]->angularVelocity, bodyPoint1);
     velocity += body[0]->linearVelocity;
 
     if (body[1]) {
-        float3 bodyPoint2 = contactPoint - body[1]->position;
+        vector3 bodyPoint2 = contactPoint - body[1]->position;
         velocity -= cross(body[1]->angularVelocity, bodyPoint2);
         velocity -= body[1]->linearVelocity;
     }
 
-    velocity = velocity * getContactBasis();
+    velocity = matrix3x3_transform_vector3(getContactBasis(), velocity);
     
     return velocity.x;
 }
 
 // Returns velocity between the bodies relative to contact space
-bMath::float3 Contact::getRelativeVelocity() const {
-    using namespace bMath;
+smath::vector3 Contact::getRelativeVelocity() const {
+    using namespace smath;
     
-    float3 bodyPoint1 = contactPoint - body[0]->position;
-    float3 velocity = cross(body[0]->angularVelocity, bodyPoint1);
+    vector3 bodyPoint1 = contactPoint - body[0]->position;
+    vector3 velocity = cross(body[0]->angularVelocity, bodyPoint1);
     velocity += body[0]->linearVelocity;
 
     if (body[1]) {
-        float3 bodyPoint2 = contactPoint - body[1]->position;
+        vector3 bodyPoint2 = contactPoint - body[1]->position;
         velocity -= cross(body[1]->angularVelocity, bodyPoint2);
         velocity -= body[1]->linearVelocity;
     }
 
-    velocity = velocity * getContactBasis();
+    velocity = matrix3x3_transform_vector3(getContactBasis(), velocity);
     
     return velocity;
 }
 
 
 PenetrationResolutionResult Contact::resolvePenetration() {
-    using namespace bMath;
+    using namespace smath;
 
-    float3 bodyPoint[2]; 
+    vector3 bodyPoint[2]; 
     bodyPoint[0] = contactPoint - body[0]->position;
     if (body[1]) bodyPoint[1] = contactPoint - body[1]->position;
 
@@ -79,8 +79,8 @@ PenetrationResolutionResult Contact::resolvePenetration() {
     PenetrationResolutionResult result;
 
     for (unsigned i = 0; i < 2; i++) if (body[i]) {
-        float3 angularInverseInertiaWorld = cross(bodyPoint[i], contactNormal);
-        angularInverseInertiaWorld = angularInverseInertiaWorld*body[i]->getInverseInteriaTensorWorld();
+        vector3 angularInverseInertiaWorld = cross(bodyPoint[i], contactNormal);
+        angularInverseInertiaWorld = matrix3x3_transform_vector3(body[i]->getInverseInteriaTensorWorld(), angularInverseInertiaWorld);
         angularInverseInertiaWorld = cross(angularInverseInertiaWorld, bodyPoint[i]);
 
         angularInverseInertia[i] = dot(angularInverseInertiaWorld,contactNormal);
@@ -107,8 +107,8 @@ PenetrationResolutionResult Contact::resolvePenetration() {
             linearMove[i] = totalMove - angularMove[i];
         } 
 
-        result.angularChange[i] = cross(bodyPoint[i],contactNormal)*body[i]->getInverseInteriaTensorWorld()*(angularMove[i]/angularInverseInertia[i]);
-        body[i]->orientation += result.angularChange[i];
+        result.angularChange[i] = matrix3x3_transform_vector3(body[i]->getInverseInteriaTensorWorld(), cross(bodyPoint[i],contactNormal)) * (angularMove[i]/angularInverseInertia[i]);
+        body[i]->orientation = quaternion_add_vector(body[i]->orientation, result.angularChange[i]);
 
         result.linearChange[i] = contactNormal * linearMove[i];
         body[i]->position += result.linearChange[i];
@@ -118,27 +118,27 @@ PenetrationResolutionResult Contact::resolvePenetration() {
 }
 
 void bEngine::Contact::resolveVelocity() {
-    using namespace bMath;
+    using namespace smath;
 
-    float3 bodyPoint[2]; 
+    vector3 bodyPoint[2]; 
     bodyPoint[0] = contactPoint - body[0]->position;
     if (body[1]) bodyPoint[1] = contactPoint - body[1]->position;
-    matrix3 contactToWorld = transpose(getContactBasis());
+    matrix3x3 contactToWorld = transpose(getContactBasis());
     // TODO: temporarily hard-coded
     // TODO: add static friction
     float restitution = 0.5f;
     float static_friction = 0.5f;
     float kinetic_friction = 0.4f;
 
-    float3 relativeVelocity = getRelativeVelocity();
+    vector3 relativeVelocity = getRelativeVelocity();
     float closingVelocity = relativeVelocity.x;
 
-    const float3 contactBasis[3] = {contactNormal, contactToWorld.col(1), contactToWorld.col(2)};
-    float3 angularInverseInertiaWorld[3];
+    const vector3 contactBasis[3] = {contactNormal, vector3_from_matrix3x3(contactToWorld, 1), vector3_from_matrix3x3(contactToWorld, 2)};
+    vector3 angularInverseInertiaWorld[3];
 
     for (int i = 0; i < 3; i++) {
         angularInverseInertiaWorld[i] = cross(bodyPoint[0], contactBasis[i]);
-        angularInverseInertiaWorld[i] = angularInverseInertiaWorld[i]*body[0]->getInverseInteriaTensorWorld();
+        angularInverseInertiaWorld[i] = matrix3x3_transform_vector3(body[0]->getInverseInteriaTensorWorld(), angularInverseInertiaWorld[i]);
         angularInverseInertiaWorld[i] = cross(angularInverseInertiaWorld[i], bodyPoint[0]);
     }
 
@@ -149,11 +149,11 @@ void bEngine::Contact::resolveVelocity() {
     }
 
     if (body[1]) {
-        float3 angularInverseInertiaWorld[3];
+        vector3 angularInverseInertiaWorld[3];
 
         for (int i = 0; i < 3; i++) {
             angularInverseInertiaWorld[i] = cross(bodyPoint[1], contactBasis[i]);
-            angularInverseInertiaWorld[i] = angularInverseInertiaWorld[i]*body[1]->getInverseInteriaTensorWorld();
+            angularInverseInertiaWorld[i] = matrix3x3_transform_vector3(body[1]->getInverseInteriaTensorWorld(), angularInverseInertiaWorld[i]);
             angularInverseInertiaWorld[i] = cross(angularInverseInertiaWorld[i], bodyPoint[1]);
         }
 
@@ -170,24 +170,24 @@ void bEngine::Contact::resolveVelocity() {
     float impluseNormal = -(closingVelocity)*(1+restitution) / inverseInertia[0];
     float impluseFriction = -impluseNormal * kinetic_friction;
 
-    float3 planarImpluse(0,-relativeVelocity.y/inverseInertia[1], -relativeVelocity.z/inverseInertia[2]);
+    vector3 planarImpluse{0,-relativeVelocity.y/inverseInertia[1], -relativeVelocity.z/inverseInertia[2]};
     if (planarImpluse.length() > impluseFriction)
         planarImpluse = normalized(planarImpluse)*impluseFriction;
         
-    float3 impluse(impluseNormal, 0.0f, 0.0f);
+    vector3 impluse{impluseNormal, 0.0f, 0.0f};
     impluse += planarImpluse;
 
-    impluse = impluse*contactToWorld;
+    impluse = matrix3x3_transform_vector3(contactToWorld, impluse);
 
-    float3 implusiveTorque[2]; 
+    vector3 implusiveTorque[2]; 
     implusiveTorque[0] = cross(bodyPoint[0], impluse);
     if (body[1]) implusiveTorque[1] = cross(bodyPoint[1], -1.0f*impluse);
 
     body[0]->linearVelocity += impluse*body[0]->inverseMass;
-    body[0]->angularVelocity += implusiveTorque[0]*body[0]->getInverseInteriaTensorWorld();
+    body[0]->angularVelocity += matrix3x3_transform_vector3(body[0]->getInverseInteriaTensorWorld(), implusiveTorque[0]);
     
     if (body[1]) {
         body[1]->linearVelocity += impluse*-body[1]->inverseMass;
-        body[1]->angularVelocity += implusiveTorque[1]*body[1]->getInverseInteriaTensorWorld();
+        body[1]->angularVelocity += matrix3x3_transform_vector3(body[1]->getInverseInteriaTensorWorld(), implusiveTorque[1]);
     }
 }

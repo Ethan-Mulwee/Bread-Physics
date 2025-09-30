@@ -1,39 +1,39 @@
 #ifndef BENGINE_BODY
 #define BENGINE_BODY
 
-#include "bMath.hpp"
+#include "smath.hpp"
 
 namespace bEngine {
 	class RigidBody {
 		public:
 			float inverseMass;
-			bMath::float3x3 inverseInertiaTensor;
+			smath::matrix3x3 inverseInertiaTensor;
 
-			bMath::float3 position;
-			bMath::quaternion orientation = bMath::quaternion(1,0,0,0);
+			smath::vector3 position = {0.0f, 0.0f, 0.0f};
+			smath::quaternion orientation = smath::quaternion{0.0f,0.0f,0.0f,1.0f};
 
-			bMath::float3 linearVelocity;
-			bMath::float3 angularVelocity;
+			smath::vector3 linearVelocity = {0.0f, 0.0f, 0.0f};
+			smath::vector3 angularVelocity = {0.0f, 0.0f, 0.0f};
 
-			bMath::float3 forceAccum;
-			bMath::float3 torqueAccum;
+			smath::vector3 forceAccum = {0.0f, 0.0f, 0.0f};
+			smath::vector3 torqueAccum = {0.0f, 0.0f, 0.0f};
 		public:
 			RigidBody() {};
 
-			bMath::float4x4 getTransform() const {
-				bMath::float3x3 o = quaternionToMatrix(orientation);
-				return bMath::matrix4(
-					o(0,0), o(0,1), o(0,2), position.x,
-					o(1,0), o(1,1), o(1,2), position.y,
-					o(2,0), o(2,1), o(2,2), position.z,
-					0,      0,      0,      1
-				);
+			smath::matrix4x4 getTransform() const {
+				smath::matrix3x3 orientationMatrix = smath::matrix3x3_from_quaternion(orientation);
+				smath::matrix4x4 transform = smath::matrix4x4_from_matrix3x3(orientationMatrix);
+				transform[0][3] = position.x;
+				transform[1][3] = position.y;
+				transform[2][3] = position.z;
+
+				return transform;
 			}
 
-            bMath::matrix3 getInverseInteriaTensorWorld() const {
-                using namespace bMath;
+            smath::matrix3x3 getInverseInteriaTensorWorld() const {
+                using namespace smath;
 
-                matrix3 orientationMatrix = quaternionToMatrix(orientation);
+                matrix3x3 orientationMatrix = matrix3x3_from_quaternion(orientation);
                 return transpose(orientationMatrix)*inverseInertiaTensor*orientationMatrix;
             }
 
@@ -41,19 +41,19 @@ namespace bEngine {
 				return 1.0f/inverseMass;
 			}
 
-			bMath::float3 positionToBodySpace(bMath::float3 worldPosition) {
+			smath::vector3 positionToBodySpace(smath::vector3 worldPosition) {
 				worldPosition -= position;
-				bMath::float3x3 inverseOrientation = transpose(quaternionToMatrix(orientation));
-				return worldPosition*inverseOrientation;
+				smath::matrix3x3 inverseOrientation = transpose(smath::matrix3x3_from_quaternion(orientation));
+				return smath::matrix3x3_transform_vector3(inverseOrientation, worldPosition);
 			}
 
-			void addForce(const bMath::float3 &force);
+			void addForce(const smath::vector3 &force);
 
-			void addTorque(const bMath::float3 &torque);
+			void addTorque(const smath::vector3 &torque);
 
-			void addForceAtPoint(const bMath::float3 &force, const bMath::float3 &point);
+			void addForceAtPoint(const smath::vector3 &force, const smath::vector3 &point);
 
-			void addForceAtBodyPoint(const bMath::float3 &force, const bMath::float3 &point);
+			void addForceAtBodyPoint(const smath::vector3 &force, const smath::vector3 &point);
 
 			void integrate(float time);
             

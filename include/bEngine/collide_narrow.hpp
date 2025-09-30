@@ -3,7 +3,7 @@
 
 #include "contacts.hpp"
 #include "rigidbody.hpp"
-#include "bMath.hpp"
+#include "smath.hpp"
 #include <float.h>
 #include <vector>
 
@@ -15,7 +15,7 @@ namespace bEngine {
     };
 
 
-    static inline float transformToAxis(const Primitive &box, const bMath::float3 &axis) {
+    static inline float transformToAxis(const Primitive &box, const smath::vector3 &axis) {
          return 
             box.dimensions.x * abs(dot(axis,box.getAxis(0))) +
             box.dimensions.y * abs(dot(axis,box.getAxis(1))) +
@@ -23,7 +23,7 @@ namespace bEngine {
     }
 
 
-    static inline float penetrationOnAxis(const Primitive &one, const Primitive &two, const bMath::float3 &axis, const bMath::float3 &toCenter) {
+    static inline float penetrationOnAxis(const Primitive &one, const Primitive &two, const smath::vector3 &axis, const smath::vector3 &toCenter) {
         float oneProjection = transformToAxis(one, axis);
         float twoProjection = transformToAxis(two, axis);
 

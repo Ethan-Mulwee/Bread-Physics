@@ -34,14 +34,14 @@ using namespace bEngine;
 
 void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, ContactPool &contacts) {
     
-    using namespace bMath;
+    using namespace smath;
     
     float smallestPeneration = DBL_MAX;
     int smallestIndex = -1;
 
-    bMath::float3 toCenter = two.getAxis(3) - one.getAxis(3);
+    vector3 toCenter = two.getAxis(3) - one.getAxis(3);
 
-    float3 axes[15] = {
+    vector3 axes[15] = {
         one.getAxis(0), one.getAxis(1), one.getAxis(2),
         two.getAxis(0), two.getAxis(1), two.getAxis(2), 
         cross(one.getAxis(0), two.getAxis(0)), cross(one.getAxis(0), two.getAxis(1)), cross(one.getAxis(0), two.getAxis(2)),
@@ -52,7 +52,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
     unsigned bestSingleAxis;
 
     for (int i = 0; i < 15; i++) {
-        if (axes[i].squareLength() < 0.0001f) continue;
+        if (axes[i].square_length() < 0.0001f) continue;
         axes[i].normalize();
         float peneration = penetrationOnAxis(one, two, axes[i], toCenter);
         if (peneration < smallestPeneration) {
@@ -71,13 +71,13 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
     if (smallestPeneration > 0) {
         if (smallestIndex < 3) {
             // Vertex from box two on face of box one
-            float3 normal = one.getAxis(smallestIndex);
+            vector3 normal = one.getAxis(smallestIndex);
             if (dot(normal, toCenter) > 0) {
                 normal = normal * -1;
             }
 
 
-            float3 vertex = two.dimensions;
+            vector3 vertex = two.dimensions;
             if (dot(two.getAxis(0), normal) < 0) vertex.x = -vertex.x;
             if (dot(two.getAxis(1), normal) < 0) vertex.y = -vertex.y;
             if (dot(two.getAxis(2), normal) < 0) vertex.z = -vertex.z;
@@ -85,7 +85,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             Contact contact;
             contact.contactNormal = normal;
             contact.penetration = smallestPeneration;
-            contact.contactPoint = vertex * two.getTransform();
+            contact.contactPoint = matrix4x4_transform_vector3(two.getTransform(), vertex);
             contact.body[0] = one.body;
             contact.body[1] = two.body;
 
@@ -95,12 +95,12 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
         }
         else if (smallestIndex < 6) {
             // Vertex from box one on face of box two
-            float3 normal = two.getAxis(smallestIndex-3);
+            vector3 normal = two.getAxis(smallestIndex-3);
             if (dot(normal, toCenter*-1.0f) > 0) {
                 normal = normal * -1;
             }
 
-            float3 vertex = one.dimensions;
+            vector3 vertex = one.dimensions;
             if (dot(one.getAxis(0), normal) < 0) vertex.x = -vertex.x;
             if (dot(one.getAxis(1), normal) < 0) vertex.y = -vertex.y;
             if (dot(one.getAxis(2), normal) < 0) vertex.z = -vertex.z;
@@ -108,7 +108,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             Contact contact;
             contact.contactNormal = normal;
             contact.penetration = smallestPeneration;
-            contact.contactPoint = vertex * one.getTransform();
+            contact.contactPoint = matrix4x4_transform_vector3(one.getTransform(), vertex);
             contact.body[0] = two.body;
             contact.body[1] = one.body;
 
@@ -123,46 +123,46 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
 
             unsigned oneAxisIndex = index / 3;
             unsigned twoAxisIndex = index % 3;
-            float3 oneAxis = one.getAxis(oneAxisIndex);
-            float3 twoAxis = two.getAxis(twoAxisIndex);
-            float3 axis = cross(oneAxis, twoAxis);
+            vector3 oneAxis = one.getAxis(oneAxisIndex);
+            vector3 twoAxis = two.getAxis(twoAxisIndex);
+            vector3 axis = cross(oneAxis, twoAxis);
             axis.normalize();
 
             if (dot(axis,toCenter) < 0) axis *= -1.0f;
 
-            float3 pointOne = one.dimensions;
-            float3 pointTwo = two.dimensions;
+            vector3 pointOne = one.dimensions;
+            vector3 pointTwo = two.dimensions;
 
             for (int i = 0; i < 3; i++) {
-                if (i == oneAxisIndex) pointOne[i] = 0;
-                else if (dot(one.getAxis(i), axis) > 0) pointOne[i] *= -1.0f;
+                if (i == oneAxisIndex) pointOne.data[i] = 0;
+                else if (dot(one.getAxis(i), axis) > 0) pointOne.data[i] *= -1.0f;
 
-                if (i == twoAxisIndex) pointTwo[i] = 0;
-                else if (dot(two.getAxis(i), axis) < 0) pointTwo[i] *= -1.0f;
+                if (i == twoAxisIndex) pointTwo.data[i] = 0;
+                else if (dot(two.getAxis(i), axis) < 0) pointTwo.data[i] *= -1.0f;
             }
 
-            pointOne = pointOne * one.getTransform();
-            pointTwo = pointTwo * two.getTransform();
+            pointOne = matrix4x4_transform_vector3(one.getTransform(), pointOne);
+            pointTwo = matrix4x4_transform_vector3(two.getTransform(), pointTwo);
 
-            float3 vertex;
+            vector3 vertex;
 
             // // Edge edge contact vertex bullshit
-            const float3 pOne = pointOne;
-            const float3 dOne = oneAxis;
-            float oneSize = one.dimensions[oneAxisIndex];
+            const vector3 pOne = pointOne;
+            const vector3 dOne = oneAxis;
+            float oneSize = one.dimensions.data[oneAxisIndex];
 
-            const float3 pTwo = pointTwo;
-            const float3 dTwo = twoAxis;
-            float twoSize = two.dimensions[twoAxisIndex];
+            const vector3 pTwo = pointTwo;
+            const vector3 dTwo = twoAxis;
+            float twoSize = two.dimensions.data[twoAxisIndex];
 
             bool useOne = (bestSingleAxis > 2);
 
-            float3 toSt, cOne, cTwo;
+            vector3 toSt, cOne, cTwo;
             float dpStaOne, dpStaTwo, dpOneTwo, smOne, smTwo;
             float denom, mua, mub;
 
-            smOne = dOne.squareLength();
-            smTwo = dTwo.squareLength();
+            smOne = dOne.square_length();
+            smTwo = dTwo.square_length();
             dpOneTwo = dot(dTwo, dOne);
 
             toSt = pOne - pTwo;
@@ -215,27 +215,27 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
 
 void CollisionDetector::cubeFloor(const Primitive &cube, const float floorHeight, ContactPool &contacts)
 {
-    using namespace bMath;
+    using namespace smath;
     if (contacts.room() <= 0) return;
 
     float l = cube.dimensions.x;
 
-    float3 vertices[8] = {
-        float3( l, l, l),
-        float3( l, l,-l),
-        float3( l,-l, l),
-        float3( l,-l,-l),
-        float3(-l, l, l),
-        float3(-l, l,-l),
-        float3(-l,-l, l),
-        float3(-l,-l,-l)
+    vector3 vertices[8] = {
+        vector3{ l, l, l},
+        vector3{ l, l,-l},
+        vector3{ l,-l, l},
+        vector3{ l,-l,-l},
+        vector3{-l, l, l},
+        vector3{-l, l,-l},
+        vector3{-l,-l, l},
+        vector3{-l,-l,-l}
     };
 
     for (int i = 0; i < 8; i++) {
-        float3 position = vertices[i]*cube.getTransform();
+        vector3 position = matrix4x4_transform_vector3(cube.getTransform(), vertices[i]);
         if (position.y < floorHeight) {
             Contact contact;
-            contact.contactNormal = float3(0,1,0);
+            contact.contactNormal = vector3{0,1,0};
             contact.contactPoint = position;
             contact.penetration = -(position.y-floorHeight);
             
