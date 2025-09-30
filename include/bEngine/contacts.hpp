@@ -47,6 +47,8 @@ namespace bEngine {
         bMath::float3 contactNormal;
         float penetration;
 
+        const char* debugLabel = "";
+
         bMath::matrix3 getContactBasis() const;
 
         float getClosingVelocity() const; 

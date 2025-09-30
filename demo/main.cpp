@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <cstring>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -767,6 +768,7 @@ struct PhysicsObject {
 struct Scene {
     Camera* camera;
     std::vector<Object>* objects;
+    bEngine::ContactPool* contacts;
 };
 
 enum RenderCommandType {
@@ -1119,10 +1121,23 @@ int main() {
         for (int i = 0; i < contacts.count(); i++) {
             bMath::float3 position = contacts[i].contactPoint;
             bMath::float3 normal = contacts[i].contactNormal;
+            smath::vector4 color = {1.0f,1.0f,1.0f,1.0f};
+
+            if (!strcmp(contacts[i].debugLabel, "Face of one and vertex of two")) {
+                color = smath::vector4{1.0f,0.0f,0.0f,1.0f};
+            } 
+            if (!strcmp(contacts[i].debugLabel, "Face of two and vertex of one")) {
+                color = smath::vector4{0.0f,1.0f,0.0f,1.0f};
+            } 
+            if (!strcmp(contacts[i].debugLabel, "Edge edge")) {
+                color = smath::vector4{0.0f,0.0f,1.0f,1.0f};
+            }
             DrawCommandSphere(renderer, smath::vector3{position.x,position.y,position.z}, 0.1f);
-            DrawCommandVector(renderer, smath::vector3{position.x,position.y,position.z}, smath::vector3{normal.x,normal.y,normal.z}, 0.3f, 0.05f);
+            DrawCommandVector(renderer, smath::vector3{position.x,position.y,position.z}, smath::vector3{normal.x,normal.y,normal.z}, 0.3f, 0.05f, color);
         }
-        physicsWorld.resolutionStep(window->deltaTime*0.5f);
+        physicsWorld.resolutionStep(/* window->deltaTime*0.5f */ 1.0f/60.0f);
+
+        scene->contacts = &contacts;
 
         double beforeTime = glfwGetTime();
         render(renderer, scene);

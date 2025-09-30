@@ -89,6 +89,8 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             contact.body[0] = one.body;
             contact.body[1] = two.body;
 
+            contact.debugLabel = "Face of one and vertex of two";
+
             contacts.push(contact);
         }
         else if (smallestIndex < 6) {
@@ -109,6 +111,8 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             contact.contactPoint = vertex * one.getTransform();
             contact.body[0] = two.body;
             contact.body[1] = one.body;
+
+            contact.debugLabel = "Face of two and vertex of one";
 
             contacts.push(contact);
         }
@@ -201,6 +205,8 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             contact.contactPoint = vertex;
             contact.body[0] = two.body;
             contact.body[1] = one.body;
+
+            contact.debugLabel = "Edge edge";
 
             contacts.push(contact);
         }
