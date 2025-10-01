@@ -17,9 +17,9 @@ namespace bEngine {
 
     static inline float transformToAxis(const Primitive &box, const smath::vector3 &axis) {
          return 
-            box.dimensions.x * abs(dot(axis,box.getAxis(0))) +
-            box.dimensions.y * abs(dot(axis,box.getAxis(1))) +
-            box.dimensions.z * abs(dot(axis,box.getAxis(2)));
+            box.dimensions.x * std::abs(dot(axis,box.getAxis(0))) +
+            box.dimensions.y * std::abs(dot(axis,box.getAxis(1))) +
+            box.dimensions.z * std::abs(dot(axis,box.getAxis(2)));
     }
 
 
@@ -27,7 +27,7 @@ namespace bEngine {
         float oneProjection = transformToAxis(one, axis);
         float twoProjection = transformToAxis(two, axis);
 
-        float distance = abs(dot(toCenter, axis));
+        float distance = std::abs(dot(toCenter, axis));
 
         return oneProjection + twoProjection - distance;
     }
