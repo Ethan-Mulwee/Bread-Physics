@@ -36,6 +36,8 @@ add_subdirectory(ext/glfw)
 
 add_executable(App ${DEMO_SRC_FILES} ${IMGUI_SOURCES} ${ENGINE_SRC_FILES})
 
+# target_compile_options(App PRIVATE -Wall)
+
 target_include_directories(App 
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include 
   ${CMAKE_CURRENT_SOURCE_DIR}/demo 

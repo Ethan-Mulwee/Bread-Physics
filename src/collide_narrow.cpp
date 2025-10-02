@@ -39,7 +39,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
     float smallestPeneration = DBL_MAX;
     int smallestIndex = -1;
 
-    vector3 toCenter = two.getAxis(3) - one.getAxis(3);
+    const vector3 toCenter = two.getAxis(3) - one.getAxis(3);
 
     vector3 axes[15] = {
         one.getAxis(0), one.getAxis(1), one.getAxis(2),
@@ -49,11 +49,13 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
         cross(one.getAxis(2), two.getAxis(0)), cross(one.getAxis(2), two.getAxis(1)), cross(one.getAxis(2), two.getAxis(2)),
     };
 
+
     unsigned bestSingleAxis;
 
     for (int i = 0; i < 15; i++) {
         if (axes[i].square_length() < 0.0001f) continue;
         axes[i].normalize();
+        
         float peneration = penetrationOnAxis(one, two, axes[i], toCenter);
         if (peneration < smallestPeneration) {
             smallestPeneration = peneration;
@@ -73,9 +75,8 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             // Vertex from box two on face of box one
             vector3 normal = one.getAxis(smallestIndex);
             if (dot(normal, toCenter) > 0) {
-                normal = normal * -1;
+                normal *= -1.0f;
             }
-
 
             vector3 vertex = two.dimensions;
             if (dot(two.getAxis(0), normal) < 0) vertex.x = -vertex.x;
@@ -128,7 +129,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             vector3 axis = cross(oneAxis, twoAxis);
             axis.normalize();
 
-            if (dot(axis,toCenter) < 0) axis *= -1.0f;
+            if (dot(axis,toCenter) > 0) axis *= -1.0f;
 
             vector3 pointOne = one.dimensions;
             vector3 pointTwo = two.dimensions;
@@ -172,7 +173,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             denom = smOne * smTwo - dpOneTwo * dpOneTwo;
 
             // Zero denominator indicates parrallel lines
-            if (abs(denom) < 0.0001f) {
+            if (std::abs(denom) < 0.0001f) {
                 vertex = useOne?pOne:pTwo;
             }
 
@@ -200,7 +201,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             
 
             Contact contact;
-            contact.contactNormal = axis;
+            contact.contactNormal = axis * -1.0f;
             contact.penetration = smallestPeneration;
             contact.contactPoint = vertex;
             contact.body[0] = two.body;

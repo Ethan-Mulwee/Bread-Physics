@@ -15,6 +15,8 @@ void World::step(float time){
 }
 
 void bEngine::World::contactStep() {
+    // TEMP
+    contacts.reset();
     generateContacts();
 }
 
@@ -105,5 +107,6 @@ void World::resolveContacts(float time) {
 
     adjustPositions(time, 100);
     adjustVelocities(time, 100);
-    contacts.reset();
+    // TEMP
+    // contacts.reset();
 }

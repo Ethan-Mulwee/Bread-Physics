@@ -8,7 +8,7 @@ smath::matrix3x3 Contact::getContactBasis() const {
     vector3 tagentY;
     vector3 tagentZ;
 
-    if (abs(contactNormal.y) < abs(contactNormal.z)) {
+    if (std::abs(contactNormal.y) < std::abs(contactNormal.z)) {
         tagentZ = vector3{-contactNormal.z, 0, contactNormal.x};
         tagentY = cross(contactNormal, tagentZ);
     }

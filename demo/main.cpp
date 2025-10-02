@@ -74,7 +74,7 @@ GLWindow* createWindow(int width, int height, const char* name) {
     std::cout << glGetString(GL_RENDERER) << std::endl;
 
     glfwSetWindowUserPointer(window->glfwWindow, window);
-    glfwSetScrollCallback(window->glfwWindow, [](GLFWwindow* window,double xoffset, double yoffset) { 
+    glfwSetScrollCallback(window->glfwWindow, [](GLFWwindow* window, double xoffset, double yoffset) { 
         GLWindow* windowA = (GLWindow*)glfwGetWindowUserPointer(window);
         windowA->scrollInput = yoffset; 
     });
@@ -980,6 +980,14 @@ void DrawCommandVector(Renderer* renderer, const smath::vector3 &positon, const 
     renderer->commandBuffer.add(command);
 }
 
+bool paused = false;
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        paused = !paused;
+    }
+}
+
 int main() {
     GLWindow* window = createWindow(1920, 1080, "window"); 
     Renderer* renderer = new Renderer();
@@ -990,7 +998,10 @@ int main() {
     Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 5.0f, 45.0f, 0.1f, 100.0f, -M_PI/4.0f, M_PI/4.0f);
     scene->camera = &camera;
 
-    
+
+    glfwSetKeyCallback(window->glfwWindow, keyCallback);
+
+
     bEngine::World physicsWorld;
 
     //// Create objects
@@ -1029,16 +1040,6 @@ int main() {
 
     objects.push_back(teapotObject);
 
-    Mesh* planeMesh = new Mesh();
-    *planeMesh = generateMeshPlane(250.0f);
-    VertexBuffer planeVertexBuffer = createVertexBuffer(planeMesh);
-    Object planeObject = createObject(planeVertexBuffer);
-
-    Mesh* spherePrimitiveMesh = new Mesh();
-    *spherePrimitiveMesh = importObj("../demo/OBJs/Primitive-Sphere.obj");
-    VertexBuffer spherePrimitiveBuffer = createVertexBuffer(spherePrimitiveMesh);
-    Object spherePrimitiveObject = createObject(spherePrimitiveBuffer);
-
     //// Create objects
 
     // Cube1 ///////////////////////////////////////////////////////////////////////////////
@@ -1047,7 +1048,7 @@ int main() {
     body->inverseInertiaTensor = smath::inverse(bEngine::InertiaTensorCuboid(2,1,1,1));
     body->position = smath::vector3{0,1,0};
     // body->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
-    body->orientation = smath::quaternion{0.0f, 0.0f, 0.0f, 1.0f};
+    body->orientation = smath::normalized(smath::quaternion{0.1f, 0.3f, 0.6f, 1.0f});
     body->orientation.normalize();
 
     bEngine::Primitive collider;
@@ -1066,7 +1067,7 @@ int main() {
     body2->inverseMass = 0.5f;
     body2->inverseInertiaTensor = smath::inverse(bEngine::InertiaTensorCuboid(2,1,1,1));
     body2->position = smath::vector3{0,3.2,0};
-    body2->orientation = smath::quaternion{0,0,0,1};
+    body2->orientation = smath::normalized(smath::quaternion{0.2f, 0.1f, 0.6f, 0.2f});
     body2->angularVelocity = smath::vector3{0,0,0};
 
     bEngine::Primitive collider2;
@@ -1115,7 +1116,9 @@ int main() {
           physicsWorld.bodies[i]->addForce(smath::vector3{0,-9.8f,0}*(1.0f/physicsWorld.bodies[i]->inverseMass));
         }
 
-        physicsWorld.contactStep();
+        if (!(paused)) {
+            physicsWorld.contactStep();
+        }
         bEngine::ContactPool contacts = physicsWorld.getContactPool();
         for (int i = 0; i < contacts.count(); i++) {
             smath::vector3 position = contacts[i].contactPoint;
@@ -1134,7 +1137,26 @@ int main() {
             DrawCommandSphere(renderer, smath::vector3{position.x,position.y,position.z}, 0.1f);
             DrawCommandVector(renderer, smath::vector3{position.x,position.y,position.z}, smath::vector3{normal.x,normal.y,normal.z}, 0.3f, 0.05f, color);
         }
-        physicsWorld.resolutionStep(/* window->deltaTime*0.5f */ 1.0f/60.0f);
+        if (glfwGetKey(window->glfwWindow, GLFW_KEY_R)) {
+            for (int i = 0; i < contacts.count(); i++) {
+                if (!strcmp(contacts[i].debugLabel, "Edge edge")) {
+                    std::cout << "\n------------------------------------------------------------\n\n";
+                    std::cout << "Body[0]: \n";
+                    std::cout << "Position: " << contacts[i].body[0]->position << "\n";
+                    std::cout << "Orientation: " << contacts[i].body[0]->orientation << "\n";
+                    std::cout << "Body[1]: \n";
+                    std::cout << "Position: " << contacts[i].body[1]->position << "\n";
+                    std::cout << "Orientation: " << contacts[i].body[1]->orientation << "\n";
+
+                    std::cout << "\nContactPoint: " << contacts[i].contactPoint << "\n"; 
+                    std::cout << "ContactNormal: " << contacts[i].contactNormal << "\n\n"; 
+                    std::cout << "------------------------------------------------------------\n";
+                }
+            }
+        }
+        if (!(paused)) {
+            physicsWorld.resolutionStep(/* window->deltaTime*0.5f */ 1.0f/1000.0f);
+        }
 
         scene->contacts = &contacts;
 
