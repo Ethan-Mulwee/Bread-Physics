@@ -1006,39 +1006,41 @@ int main() {
 
     //// Create objects
 
-    Mesh* suzanneMesh = new Mesh();
-    *suzanneMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
-    VertexBuffer suzanneVertexBuffer = createVertexBuffer(suzanneMesh);
+    Mesh* roundedCubeMesh = new Mesh();
+    *roundedCubeMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
+    VertexBuffer roundedCubeBuffer = createVertexBuffer(roundedCubeMesh);
 
-    Object suzanneObject = createObject(suzanneVertexBuffer);
+    Object redCubeObject = createObject(roundedCubeBuffer);
 
-    smath::transform suzanneTransform = {
+    smath::transform redCubeTransform = {
         .translation = smath::vector3{-1.0f,0.5f,0.0f},
         .rotation = smath::quaternion_from_euler_angles_XYZ(-0.6f,0.0f,0.0f),
         .scale = smath::vector3{1.0f,1.0f,1.0f}
     };
 
-    suzanneObject.transform = smath::matrix4x4_from_transform(suzanneTransform);
-    suzanneObject.color = smath::vector4{1.000f,0.200f,0.322f,1.0f};
+    redCubeObject.transform = smath::matrix4x4_from_transform(redCubeTransform);
+    redCubeObject.color = smath::vector4{1.000f,0.200f,0.322f,1.0f};
 
-    objects.push_back(suzanneObject);
+    objects.push_back(redCubeObject);
 
-    Mesh* teapotMesh = new Mesh();
-    *teapotMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
-    VertexBuffer teapotVertexBuffer = createVertexBuffer(teapotMesh);
+    Object blueCubeObject = createObject(roundedCubeBuffer);
 
-    Object teapotObject = createObject(teapotVertexBuffer);
-
-    smath::transform teapotTransform = {
+    smath::transform blueCubeTransform = {
         .translation = smath::vector3{1.0f,0.0f,0.6f},
         .rotation = smath::quaternion_from_euler_angles_XYZ(0.0f,1.0f,0.0f),
         .scale = smath::vector3{0.4f,0.4f,0.4f}
     };
     
-    teapotObject.transform = smath::matrix4x4_from_transform(teapotTransform);
-    teapotObject.color = smath::vector4{0.157f,0.565f,1.0f,1.0f};
+    blueCubeObject.transform = smath::matrix4x4_from_transform(blueCubeTransform);
+    blueCubeObject.color = smath::vector4{0.157f,0.565f,1.0f,1.0f};
 
-    objects.push_back(teapotObject);
+    objects.push_back(blueCubeObject);
+
+    Object orangeCubeObject = createObject(roundedCubeBuffer);
+    orangeCubeObject.transform = smath::matrix4x4_from_identity();
+    orangeCubeObject.color = smath::vector4{0.00474f,0.285f,0.066f,1.0f};
+    objects.push_back(redCubeObject);
+
 
     //// Create objects
 
@@ -1080,6 +1082,24 @@ int main() {
     physicsWorld.colliders.push_back(collider2);
     ///////////////////////////////////////////////////////////////////////////////////////
 
+    // Cube3 ///////////////////////////////////////////////////////////////////////////////
+    bEngine::RigidBody* body3 = new bEngine::RigidBody();
+    body3->inverseMass = 0.5f;
+    body3->inverseInertiaTensor = smath::inverse(bEngine::InertiaTensorCuboid(2,1,1,1));
+    body3->position = smath::vector3{0.5f,4.3,0};
+    body3->orientation = smath::normalized(smath::quaternion{0.6f, 0.3f, 0.2f, 0.2f});
+    body3->angularVelocity = smath::vector3{0,0,0};
+
+    bEngine::Primitive collider3;
+    collider3.type = bEngine::PrimitiveType::Cube;
+    collider3.dimensions = smath::vector3{0.5,0.5,0.5};
+    collider3.offset = smath::matrix4x4_from_identity();
+    collider3.body = body3;
+
+    physicsWorld.bodies.push_back(body3);
+    physicsWorld.colliders.push_back(collider3);
+    ///////////////////////////////////////////////////////////////////////////////////////
+
 
     while(!glfwWindowShouldClose(window->glfwWindow)) { 
         updateWindow(window);
@@ -1103,21 +1123,28 @@ int main() {
 
         smath::matrix4x4 transform0 = physicsWorld.bodies[0]->getTransform();
         smath::matrix4x4 transform1 = physicsWorld.bodies[1]->getTransform();
+        smath::matrix4x4 transform2 = physicsWorld.bodies[2]->getTransform();
         smath::matrix4x4 scaling = smath::matrix4x4_from_diagonal(0.5f);
         scaling[3][3] = 1.0f;
         transform0 = transform0 * scaling;
         transform1 = transform1 * scaling;
+        transform2 = transform2 * scaling;
 
         objects[0].transform = transform0;
         objects[1].transform = transform1;
+        objects[2].transform = transform2;
 
 
         for (int i = 0; i < physicsWorld.bodies.size(); i++) {
           physicsWorld.bodies[i]->addForce(smath::vector3{0,-9.8f,0}*(1.0f/physicsWorld.bodies[i]->inverseMass));
         }
 
+        const int steps = 3;
         if (!(paused)) {
-            physicsWorld.contactStep();
+            for (int i = 0; i < steps; i++) {
+                physicsWorld.contactStep();
+                physicsWorld.resolutionStep(window->deltaTime*0.5f*(1.0f/steps));
+            }
         }
         bEngine::ContactPool contacts = physicsWorld.getContactPool();
         for (int i = 0; i < contacts.count(); i++) {
@@ -1136,26 +1163,6 @@ int main() {
             }
             DrawCommandSphere(renderer, smath::vector3{position.x,position.y,position.z}, 0.1f);
             DrawCommandVector(renderer, smath::vector3{position.x,position.y,position.z}, smath::vector3{normal.x,normal.y,normal.z}, 0.3f, 0.05f, color);
-        }
-        if (glfwGetKey(window->glfwWindow, GLFW_KEY_R)) {
-            for (int i = 0; i < contacts.count(); i++) {
-                if (!strcmp(contacts[i].debugLabel, "Edge edge")) {
-                    std::cout << "\n------------------------------------------------------------\n\n";
-                    std::cout << "Body[0]: \n";
-                    std::cout << "Position: " << contacts[i].body[0]->position << "\n";
-                    std::cout << "Orientation: " << contacts[i].body[0]->orientation << "\n";
-                    std::cout << "Body[1]: \n";
-                    std::cout << "Position: " << contacts[i].body[1]->position << "\n";
-                    std::cout << "Orientation: " << contacts[i].body[1]->orientation << "\n";
-
-                    std::cout << "\nContactPoint: " << contacts[i].contactPoint << "\n"; 
-                    std::cout << "ContactNormal: " << contacts[i].contactNormal << "\n\n"; 
-                    std::cout << "------------------------------------------------------------\n";
-                }
-            }
-        }
-        if (!(paused)) {
-            physicsWorld.resolutionStep(/* window->deltaTime*0.5f */ 1.0f/1000.0f);
         }
 
         scene->contacts = &contacts;

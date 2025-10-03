@@ -41,8 +41,8 @@ namespace bEngine {
 
     struct Contact {
         RigidBody* body[2] = { nullptr, nullptr };
-        float friction;
-        float restitution;
+        float friction = 0.0f;
+        float restitution = 0.0f;
         smath::vector3 contactPoint = {0.0f,0.0f,0.0f};
         smath::vector3 contactNormal = {0.0f,0.0f,0.0f};
         float penetration;

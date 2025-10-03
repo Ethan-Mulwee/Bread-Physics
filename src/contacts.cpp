@@ -126,7 +126,7 @@ void bEngine::Contact::resolveVelocity() {
     matrix3x3 contactToWorld = transpose(getContactBasis());
     // TODO: temporarily hard-coded
     // TODO: add static friction
-    float restitution = 0.5f;
+    float restitution = 0.4f;
     float static_friction = 0.5f;
     float kinetic_friction = 0.4f;
 
