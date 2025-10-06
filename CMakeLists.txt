@@ -34,11 +34,11 @@ set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
 add_subdirectory(ext/glfw)
 
 
-add_executable(App ${DEMO_SRC_FILES} ${IMGUI_SOURCES} ${ENGINE_SRC_FILES})
+add_executable(Bread-Physics-Demo ${DEMO_SRC_FILES} ${IMGUI_SOURCES} ${ENGINE_SRC_FILES})
 
 # target_compile_options(App PRIVATE -Wall)
 
-target_include_directories(App 
+target_include_directories(Bread-Physics-Demo 
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include 
   ${CMAKE_CURRENT_SOURCE_DIR}/demo 
   PUBLIC ext/glfw/include
@@ -49,9 +49,9 @@ target_include_directories(App
   PUBLIC ext/Simple-Math/smath
 )
 
-target_link_directories(App
+target_link_directories(Bread-Physics-Demo
   PRIVATE ext/glfw/src
   PRIVATE ext/glew/lib
 )
 
-target_link_libraries(App glfw libglew_static)
+target_link_libraries(Bread-Physics-Demo glfw libglew_static)

@@ -7,7 +7,7 @@
 #include <float.h>
 #include <vector>
 
-namespace bEngine {
+namespace bphys {
     struct CollisionDetector {
         static void cubeFloor(const Primitive &cube, const float floorHeight, ContactPool &contacts);
         static void cubeCube (const Primitive &one, const Primitive &two, ContactPool &contacts);

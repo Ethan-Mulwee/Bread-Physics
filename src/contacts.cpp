@@ -1,6 +1,6 @@
-#include "bEngine/contacts.hpp"
+#include "bphysics/contacts.hpp"
 
-using namespace bEngine;
+using namespace bphys;
 
 smath::matrix3x3 Contact::getContactBasis() const {
     using namespace smath;
@@ -117,7 +117,7 @@ PenetrationResolutionResult Contact::resolvePenetration() {
     return result;
 }
 
-void bEngine::Contact::resolveVelocity() {
+void bphys::Contact::resolveVelocity() {
     using namespace smath;
 
     vector3 bodyPoint[2]; 

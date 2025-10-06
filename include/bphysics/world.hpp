@@ -6,7 +6,7 @@
 #include "contacts.hpp"
 #include "collide_narrow.hpp"
 
-namespace bEngine {
+namespace bphys {
     class World {
         public:
             std::vector<RigidBody*> bodies;
@@ -16,13 +16,13 @@ namespace bEngine {
             ContactPool contacts;
         public:
             World();
-            void step(float time);
-            void contactStep();
-            void resolutionStep(float time);
+            void step(float time, int substeps = 1);
             ContactPool getContactPool();
             private:
             void generateContacts();
             void resolveContacts(float time);
+
+            void integrate(float time);
             
             void adjustPositions(float time, unsigned iterations);
             void adjustVelocities(float time, unsigned iterations);

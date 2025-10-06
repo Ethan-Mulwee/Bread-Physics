@@ -8,7 +8,7 @@
 // #include <iostream>
 // #include <cmath>
 
-namespace bEngine {
+namespace bphys {
     enum PrimitiveType {
         Sphere,
         Cube,

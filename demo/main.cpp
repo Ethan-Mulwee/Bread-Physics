@@ -14,8 +14,9 @@
 #include "smath.hpp"
 #include "smath_iostream.hpp"
 
-#include "bEngine/world.hpp"
-#include "bEngine/interia_tensor.hpp"
+#include "bphysics/world.hpp"
+#include "bphysics/interia_tensor.hpp"
+#include "bphysics/helper.hpp"
 
 /* -------------------------------------------------------------------------- */
 /*                                 GLFW Window                                */
@@ -738,29 +739,33 @@ struct Object {
 
     smath::vector4 color;
     smath::matrix4x4 transform;
+
+    bphys::RigidBody* rigidBody = nullptr;
 };
 
-Object createObject(const VertexBuffer &buffer) {
+Object createObject(
+    const VertexBuffer &buffer, 
+    const smath::vector4 &color = smath::vector4{1.0f,1.0f,1.0f,1.0f}, 
+    const smath::matrix4x4 &transform = smath::matrix4x4_from_identity()
+) {
     Object object;
     object.buffer = buffer;
 
-    object.color = smath::vector4{1.0f,1.0f,1.0f,1.0f};
-    object.transform = smath::matrix4x4_from_identity();
+    object.color = color;
+    object.transform = transform;
 
     return object;
 }
 
 void drawObject(const Object &object, const Shader &shader) {
     useShader(shader);
-    setShaderUniformMatrix4(shader, object.transform, "model");
+    if (object.rigidBody)
+        setShaderUniformMatrix4(shader, object.rigidBody->getTransform() * object.transform, "model");
+    else
+        setShaderUniformMatrix4(shader, object.transform, "model");
     setShaderUniformFloat4(shader, object.color, "color");
     drawVertexBuffer(object.buffer);
 }
-
-struct PhysicsObject {
-    Object* object;
-    bEngine::RigidBody* rigidBody;
-};
 
 /* -------------------------------------------------------------------------- */
 /*                                  Renderer                                  */
@@ -768,9 +773,18 @@ struct PhysicsObject {
 
 struct Scene {
     Camera* camera;
-    std::vector<Object>* objects;
-    bEngine::ContactPool* contacts;
+    std::vector<Object> objects;
+    bphys::World physicsWorld;
 };
+
+void addPhysicsObject(Object &object, bphys::RigidBody* rigidBody, bphys::Primitive collider, Scene* scene) {
+    object.rigidBody = rigidBody;
+    collider.body = rigidBody;
+
+    scene->objects.push_back(object);
+    scene->physicsWorld.bodies.push_back(rigidBody);
+    scene->physicsWorld.colliders.push_back(collider);
+}
 
 enum RenderCommandType {
     Sphere,
@@ -905,8 +919,8 @@ void render(Renderer* renderer, Scene* scene) {
 
         setShaderUniformsFromCamera(renderer->objectShader, *scene->camera);
 
-        for (int i = 0; i < scene->objects->size(); i++) {
-            drawObject((*scene->objects)[i], renderer->objectShader);
+        for (int i = 0; i < scene->objects.size(); i++) {
+            drawObject(scene->objects[i], renderer->objectShader);
         }
 
         for (int i = renderer->commandBuffer.count; i > 0; i--) {
@@ -992,124 +1006,99 @@ int main() {
     GLWindow* window = createWindow(1920, 1080, "window"); 
     Renderer* renderer = new Renderer();
     intializeRenderer(renderer, window, 1920, 1080);
+
     Scene* scene = new Scene();
-    std::vector<Object> objects;
-    scene->objects = &objects;
+
     Camera camera = createCamera(smath::vector3{0.0f,0.0f,0.0f}, 5.0f, 45.0f, 0.1f, 100.0f, -M_PI/4.0f, M_PI/4.0f);
     scene->camera = &camera;
 
-
     glfwSetKeyCallback(window->glfwWindow, keyCallback);
-
-
-    bEngine::World physicsWorld;
-
-    //// Create objects
 
     Mesh* roundedCubeMesh = new Mesh();
     *roundedCubeMesh = importObj("../demo/OBJs/Rounded-Cube.obj");
     VertexBuffer roundedCubeBuffer = createVertexBuffer(roundedCubeMesh);
 
-    Object redCubeObject = createObject(roundedCubeBuffer);
-
-    smath::transform redCubeTransform = {
-        .translation = smath::vector3{-1.0f,0.5f,0.0f},
-        .rotation = smath::quaternion_from_euler_angles_XYZ(-0.6f,0.0f,0.0f),
-        .scale = smath::vector3{1.0f,1.0f,1.0f}
+    smath::transform cubeTransform = {
+        .translation = smath::vector3{0.0f,0.0f,0.0f},
+        .rotation = smath::quaternion{0,0,0,1.0f},
+        .scale = smath::vector3{0.5f,0.5f,0.5f}
     };
 
-    redCubeObject.transform = smath::matrix4x4_from_transform(redCubeTransform);
-    redCubeObject.color = smath::vector4{1.000f,0.200f,0.322f,1.0f};
+    Object redCubeObject = createObject(
+        roundedCubeBuffer, 
+        smath::vector4{1.000f,0.200f,0.322f,1.0f},
+        smath::matrix4x4_from_transform(cubeTransform)
+    );
+    bphys::RigidBody* redCubeBody = bphys::createRigidBody(
+        smath::vector3{0,1,0}, 
+        smath::normalized(smath::quaternion{0.1f, 0.3f, 0.6f, 1.0f}), 
+        0.5f, 
+        bphys::InertiaTensorCuboid(2,1,1,1)
+    );
+    bphys::Primitive redCubeCollider = bphys::createCollider(
+        bphys::PrimitiveType::Cube, 
+        smath::vector3{0.5,0.5,0.5}, 
+        smath::matrix4x4_from_identity(), 
+        redCubeBody
+    );
 
-    objects.push_back(redCubeObject);
+    addPhysicsObject(redCubeObject, redCubeBody, redCubeCollider, scene);
 
-    Object blueCubeObject = createObject(roundedCubeBuffer);
+    Object blueCubeObject = createObject(
+        roundedCubeBuffer, 
+        smath::vector4{0.157f,0.565f,1.0f,1.0f},
+        smath::matrix4x4_from_transform(cubeTransform)
+    );
+    bphys::RigidBody* blueCubeBody = bphys::createRigidBody(
+        smath::vector3{0,3.2,0}, 
+        smath::normalized(smath::quaternion{0.2f, 0.1f, 0.6f, 0.2f}), 
+        0.5f, 
+        bphys::InertiaTensorCuboid(2,1,1,1)
+    );
+    bphys::Primitive blueCubeCollider = bphys::createCollider(
+        bphys::PrimitiveType::Cube, 
+        smath::vector3{0.5f,0.5f,0.5f}, 
+        smath::matrix4x4_from_identity(),
+        blueCubeBody
+    );
 
-    smath::transform blueCubeTransform = {
-        .translation = smath::vector3{1.0f,0.0f,0.6f},
-        .rotation = smath::quaternion_from_euler_angles_XYZ(0.0f,1.0f,0.0f),
-        .scale = smath::vector3{0.4f,0.4f,0.4f}
-    };
-    
-    blueCubeObject.transform = smath::matrix4x4_from_transform(blueCubeTransform);
-    blueCubeObject.color = smath::vector4{0.157f,0.565f,1.0f,1.0f};
+    addPhysicsObject(blueCubeObject, blueCubeBody, blueCubeCollider, scene);
 
-    objects.push_back(blueCubeObject);
+    Object orangeCubeObject = createObject(
+        roundedCubeBuffer,
+        smath::vector4{1.0f,0.385f,0.136f,1.0f},
+        smath::matrix4x4_from_transform(cubeTransform)
+    );
+    bphys::RigidBody* orangeCubeBody = bphys::createRigidBody(
+        smath::vector3{0.5f,4.3f,0.0f}, 
+        smath::normalized(smath::quaternion{0.6f, 0.3f, 0.2f, 0.2f}), 
+        0.5f, 
+        bphys::InertiaTensorCuboid(2,1,1,1)
+    );
+    bphys::Primitive orangeCubeCollider = bphys::createCollider(
+        bphys::PrimitiveType::Cube,
+        smath::vector3{0.5f,0.5f,0.5f},
+        smath::matrix4x4_from_identity(),
+        orangeCubeBody
+    );
 
-    Object orangeCubeObject = createObject(roundedCubeBuffer);
-    orangeCubeObject.transform = smath::matrix4x4_from_identity();
-    orangeCubeObject.color = smath::vector4{0.00474f,0.285f,0.066f,1.0f};
-    objects.push_back(redCubeObject);
-
-
-    //// Create objects
-
-    // Cube1 ///////////////////////////////////////////////////////////////////////////////
-    bEngine::RigidBody* body = new bEngine::RigidBody();
-    body->inverseMass = 0.5f;
-    body->inverseInertiaTensor = smath::inverse(bEngine::InertiaTensorCuboid(2,1,1,1));
-    body->position = smath::vector3{0,1,0};
-    // body->orientation = bMath::quaternion(0.951,0.189,0.198,-0.146);
-    body->orientation = smath::normalized(smath::quaternion{0.1f, 0.3f, 0.6f, 1.0f});
-    body->orientation.normalize();
-
-    bEngine::Primitive collider;
-    collider.type = bEngine::PrimitiveType::Cube;
-    collider.dimensions = smath::vector3{0.5,0.5,0.5};
-
-    collider.offset = smath::matrix4x4_from_identity();
-    collider.body = body;
-
-    physicsWorld.bodies.push_back(body);
-    physicsWorld.colliders.push_back(collider);
-    ///////////////////////////////////////////////////////////////////////////////////////
-
-    // Cube2 ///////////////////////////////////////////////////////////////////////////////
-    bEngine::RigidBody* body2 = new bEngine::RigidBody();
-    body2->inverseMass = 0.5f;
-    body2->inverseInertiaTensor = smath::inverse(bEngine::InertiaTensorCuboid(2,1,1,1));
-    body2->position = smath::vector3{0,3.2,0};
-    body2->orientation = smath::normalized(smath::quaternion{0.2f, 0.1f, 0.6f, 0.2f});
-    body2->angularVelocity = smath::vector3{0,0,0};
-
-    bEngine::Primitive collider2;
-    collider2.type = bEngine::PrimitiveType::Cube;
-    collider2.dimensions = smath::vector3{0.5,0.5,0.5};
-    collider2.offset = smath::matrix4x4_from_identity();
-    collider2.body = body2;
-
-    physicsWorld.bodies.push_back(body2);
-    physicsWorld.colliders.push_back(collider2);
-    ///////////////////////////////////////////////////////////////////////////////////////
-
-    // Cube3 ///////////////////////////////////////////////////////////////////////////////
-    bEngine::RigidBody* body3 = new bEngine::RigidBody();
-    body3->inverseMass = 0.5f;
-    body3->inverseInertiaTensor = smath::inverse(bEngine::InertiaTensorCuboid(2,1,1,1));
-    body3->position = smath::vector3{0.5f,4.3,0};
-    body3->orientation = smath::normalized(smath::quaternion{0.6f, 0.3f, 0.2f, 0.2f});
-    body3->angularVelocity = smath::vector3{0,0,0};
-
-    bEngine::Primitive collider3;
-    collider3.type = bEngine::PrimitiveType::Cube;
-    collider3.dimensions = smath::vector3{0.5,0.5,0.5};
-    collider3.offset = smath::matrix4x4_from_identity();
-    collider3.body = body3;
-
-    physicsWorld.bodies.push_back(body3);
-    physicsWorld.colliders.push_back(collider3);
-    ///////////////////////////////////////////////////////////////////////////////////////
+    addPhysicsObject(orangeCubeObject, orangeCubeBody, orangeCubeCollider, scene);
 
 
     while(!glfwWindowShouldClose(window->glfwWindow)) { 
         updateWindow(window);
 
-        if (glfwGetMouseButton(window->glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE) && !glfwGetKey(window->glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
+        // support for middle mouse emulation by holding alt and left click
+        bool middleMouse = 
+        glfwGetMouseButton(window->glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE) || 
+        (glfwGetMouseButton(window->glfwWindow, GLFW_MOUSE_BUTTON_LEFT) && glfwGetKey(window->glfwWindow, GLFW_KEY_LEFT_ALT));
+
+        if (middleMouse && !glfwGetKey(window->glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
             camera.yaw -= window->deltaMousePos.x*0.0075f;
             camera.pitch -= window->deltaMousePos.y*0.0075f;
         }   
         
-        if (glfwGetMouseButton(window->glfwWindow, GLFW_MOUSE_BUTTON_MIDDLE) && glfwGetKey(window->glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
+        if (middleMouse && glfwGetKey(window->glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
             smath::vector3 movement = smath::vector3{-window->deltaMousePos.x,window->deltaMousePos.y,0.0f};
             smath::quaternion cameraOrientation = calculateCameraOrientation(camera);
 
@@ -1121,32 +1110,15 @@ int main() {
 
         camera.distance -= window->scrollInput*camera.distance*0.075f;
 
-        smath::matrix4x4 transform0 = physicsWorld.bodies[0]->getTransform();
-        smath::matrix4x4 transform1 = physicsWorld.bodies[1]->getTransform();
-        smath::matrix4x4 transform2 = physicsWorld.bodies[2]->getTransform();
-        smath::matrix4x4 scaling = smath::matrix4x4_from_diagonal(0.5f);
-        scaling[3][3] = 1.0f;
-        transform0 = transform0 * scaling;
-        transform1 = transform1 * scaling;
-        transform2 = transform2 * scaling;
 
-        objects[0].transform = transform0;
-        objects[1].transform = transform1;
-        objects[2].transform = transform2;
-
-
-        for (int i = 0; i < physicsWorld.bodies.size(); i++) {
-          physicsWorld.bodies[i]->addForce(smath::vector3{0,-9.8f,0}*(1.0f/physicsWorld.bodies[i]->inverseMass));
+        for (int i = 0; i < scene->physicsWorld.bodies.size(); i++) {
+          scene->physicsWorld.bodies[i]->addForce(smath::vector3{0,-9.8f,0}*(1.0f/scene->physicsWorld.bodies[i]->inverseMass));
         }
 
-        const int steps = 3;
         if (!(paused)) {
-            for (int i = 0; i < steps; i++) {
-                physicsWorld.contactStep();
-                physicsWorld.resolutionStep(window->deltaTime*0.5f*(1.0f/steps));
-            }
+            scene->physicsWorld.step(window->deltaTime*0.5f, 5);
         }
-        bEngine::ContactPool contacts = physicsWorld.getContactPool();
+        bphys::ContactPool contacts = scene->physicsWorld.getContactPool();
         for (int i = 0; i < contacts.count(); i++) {
             smath::vector3 position = contacts[i].contactPoint;
             smath::vector3 normal = contacts[i].contactNormal;
@@ -1165,7 +1137,6 @@ int main() {
             DrawCommandVector(renderer, smath::vector3{position.x,position.y,position.z}, smath::vector3{normal.x,normal.y,normal.z}, 0.3f, 0.05f, color);
         }
 
-        scene->contacts = &contacts;
 
         double beforeTime = glfwGetTime();
         render(renderer, scene);

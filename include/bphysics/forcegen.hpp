@@ -3,7 +3,7 @@
 
 #include "rigidbody.hpp"
 
-namespace bEngine {
+namespace bphys {
   class ForceGenerator {
     public:
       virtual void updateForce(RigidBody* body, float time) = 0;

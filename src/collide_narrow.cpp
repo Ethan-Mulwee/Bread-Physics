@@ -1,6 +1,6 @@
-#include "bEngine/collide_narrow.hpp"
+#include "bphysics/collide_narrow.hpp"
 
-using namespace bEngine;
+using namespace bphys;
 
 // unsigned sphereSphere(const Primitive &one, const Primitive &two, CollisionData* data); {
 //   using namespace bMath;

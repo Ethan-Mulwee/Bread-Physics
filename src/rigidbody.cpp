@@ -1,8 +1,8 @@
-#include "bEngine/rigidbody.hpp"
+#include "bphysics/rigidbody.hpp"
 
 #include <iostream>
 
-using namespace bEngine; 
+using namespace bphys; 
 
 void RigidBody::integrate(float time) {
 

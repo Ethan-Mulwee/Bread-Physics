@@ -1,38 +1,28 @@
-#include "bEngine/world.hpp"
+#include "bphysics/world.hpp"
 
-using namespace bEngine;
+using namespace bphys;
 
 World::World() {
 
 }
 
-void World::step(float time){
-    generateContacts();
-    resolveContacts(time);
-    for (int i = 0; i < bodies.size(); i++) {
-        bodies[i]->integrate(time);
+void World::step(float time, int substeps){
+    for (int i = 0; i < substeps; i++) {
+        float subtime = time * (1.0f/substeps);
+        generateContacts();
+        resolveContacts(subtime);
+        integrate(subtime);
     }
 }
 
-void bEngine::World::contactStep() {
-    // TEMP
-    contacts.reset();
-    generateContacts();
-}
-
-void bEngine::World::resolutionStep(float time) {
-    resolveContacts(time);
-    for (int i = 0; i < bodies.size(); i++) {
-        bodies[i]->integrate(time);
-    }
-}
-
-ContactPool bEngine::World::getContactPool() {
+ContactPool bphys::World::getContactPool() {
     return contacts;
 }
 
 void World::generateContacts()
 {
+    contacts.reset();
+
     for (int i = 0; i < colliders.size(); i++) {
         CollisionDetector::cubeFloor(colliders[i], 0.0f, contacts);
         for (int j = 0; j < colliders.size(); j++) {
@@ -109,4 +99,10 @@ void World::resolveContacts(float time) {
     adjustVelocities(time, 100);
     // TEMP
     // contacts.reset();
+}
+
+void World::integrate(float time) {
+    for (int i = 0; i < bodies.size(); i++) {
+        bodies[i]->integrate(time);
+    }
 }
