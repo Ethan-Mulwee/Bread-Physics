@@ -34,6 +34,7 @@ struct GLWindow {
     float time = 0.0f;
     float deltaTime = 0.0f;
     double perviousRenderTime = 0.0;
+    double perviousPhysicsTime = 0.0;
 };
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -633,6 +634,7 @@ void uiProperties(const GLWindow* window) {
     
     ImGui::Begin("Properties");
     ImGui::Text("Render time: %fms", window->perviousRenderTime*1000.0);
+    ImGui::Text("Physics Step time: %fms", window->perviousPhysicsTime*1000.0);
     if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Hello World");
 
@@ -1116,9 +1118,11 @@ int main() {
           scene->physicsWorld.bodies[i]->addForce(smath::vector3{0,-9.8f,0}*(1.0f/scene->physicsWorld.bodies[i]->inverseMass));
         }
 
+        double beforePhysicsTime = glfwGetTime();
         if (!(paused)) {
-            scene->physicsWorld.step(window->deltaTime*0.5f, 5);
+            scene->physicsWorld.step(window->deltaTime, 5);
         }
+        double afterPhysicsTime = glfwGetTime();
         bphys::ContactPool contacts = scene->physicsWorld.getContactPool();
         for (int i = 0; i < contacts.count(); i++) {
             smath::vector3 position = contacts[i].contactPoint;
@@ -1141,6 +1145,7 @@ int main() {
         double afterTime = glfwGetTime();
         
         window->perviousRenderTime = afterTime - beforeTime;
+        window->perviousPhysicsTime = afterPhysicsTime - beforePhysicsTime;
     }
 
     destroyWindow(window);

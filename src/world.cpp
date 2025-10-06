@@ -7,8 +7,8 @@ World::World() {
 }
 
 void World::step(float time, int substeps){
+    float subtime = time * (1.0f/(float)substeps);
     for (int i = 0; i < substeps; i++) {
-        float subtime = time * (1.0f/substeps);
         generateContacts();
         resolveContacts(subtime);
         integrate(subtime);
