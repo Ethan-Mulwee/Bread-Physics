@@ -24,4 +24,5 @@ Clone project: `git clone --recursive https://github.com/Ethan-Mulwee/Bread-Phys
  ```
 
 
- Binary is generated at build/App to run: `./build/App`
+ Binary is generated at build/App to run: `cd /build && ./Bread-Physics-Demo`
+ Note: its important that the working directory is that of build for the moment
