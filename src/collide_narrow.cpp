@@ -1,4 +1,5 @@
 #include "bphysics/collide_narrow.hpp"
+#include "bphysics/contacts.hpp"
 
 using namespace bphys;
 
@@ -90,7 +91,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             contact.body[0] = one.body;
             contact.body[1] = two.body;
 
-            contact.debugLabel = "Face of one and vertex of two";
+            contact.type = ContactType::SAT_VERT_FACE;
 
             contacts.push(contact);
         }
@@ -113,7 +114,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             contact.body[0] = two.body;
             contact.body[1] = one.body;
 
-            contact.debugLabel = "Face of two and vertex of one";
+            contact.type = ContactType::SAT_VERT_FACE;
 
             contacts.push(contact);
         }
@@ -207,7 +208,7 @@ void CollisionDetector::cubeCube(const Primitive &one, const Primitive &two, Con
             contact.body[0] = two.body;
             contact.body[1] = one.body;
 
-            contact.debugLabel = "Edge edge";
+            contact.type = SAT_EDGE_EDGE;
 
             contacts.push(contact);
         }

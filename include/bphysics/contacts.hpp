@@ -39,6 +39,10 @@ namespace bphys {
         smath::vector3 angularChange[2] = {{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f}};
     };
 
+    enum ContactType {
+        DEFAULT, SAT_VERT_FACE, SAT_EDGE_EDGE
+    };
+
     struct Contact {
         RigidBody* body[2] = { nullptr, nullptr };
         float friction = 0.0f;
@@ -47,7 +51,7 @@ namespace bphys {
         smath::vector3 contactNormal = {0.0f,0.0f,0.0f};
         float penetration;
 
-        const char* debugLabel = "";
+        ContactType type = DEFAULT;
 
         smath::matrix3x3 getContactBasis() const;
 

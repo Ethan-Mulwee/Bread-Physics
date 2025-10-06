@@ -7,6 +7,7 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
+#include "bphysics/contacts.hpp"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -1124,13 +1125,10 @@ int main() {
             smath::vector3 normal = contacts[i].contactNormal;
             smath::vector4 color = {1.0f,1.0f,1.0f,1.0f};
 
-            if (!strcmp(contacts[i].debugLabel, "Face of one and vertex of two")) {
+            if (contacts[i].type == bphys::ContactType::SAT_VERT_FACE) {
                 color = smath::vector4{1.0f,0.0f,0.0f,1.0f};
             } 
-            if (!strcmp(contacts[i].debugLabel, "Face of two and vertex of one")) {
-                color = smath::vector4{0.0f,1.0f,0.0f,1.0f};
-            } 
-            if (!strcmp(contacts[i].debugLabel, "Edge edge")) {
+            if (contacts[i].type == bphys::ContactType::SAT_EDGE_EDGE) {
                 color = smath::vector4{0.0f,0.0f,1.0f,1.0f};
             }
             DrawCommandSphere(renderer, smath::vector3{position.x,position.y,position.z}, 0.1f);
