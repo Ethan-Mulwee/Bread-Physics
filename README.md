@@ -19,7 +19,7 @@ Clone project: `git clone --recursive https://github.com/Ethan-Mulwee/Bread-Phys
  Build with CMake
  ```
  cd Bread-Physics/
- cmake -S . -B build/
+ cmake -S . -B build/ # or cmake -DCMAKE_BUILD_TYPE:STRING=Release -S . -B build/ for release builds
  cmake --build build/
  ```
 

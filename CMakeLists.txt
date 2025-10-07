@@ -5,6 +5,7 @@ project(Bread-Physics)
 file(GLOB_RECURSE ENGINE_SRC_FILES src/*.cpp)
 file(GLOB_RECURSE DEMO_SRC_FILES demo/*.cpp)
 
+
 set(IMGUI_SOURCES
   ext/imgui/imgui.cpp
   ext/imgui/imgui_demo.cpp
@@ -15,7 +16,10 @@ set(IMGUI_SOURCES
   ext/imgui/backends/imgui_impl_opengl3.cpp
 )
 
-set(CMAKE_BUILD_TYPE Debug)
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+message(${CMAKE_BUILD_TYPE})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # add_compile_options(-fsanitize=address)

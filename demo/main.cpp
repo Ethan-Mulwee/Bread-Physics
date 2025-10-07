@@ -417,6 +417,16 @@ VertexBuffer createVertexBuffer(Mesh* mesh) {
 }
 
 void drawVertexBuffer(const VertexBuffer &buffer) {
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    glEnable(GL_CULL_FACE);
+    bindVertexBuffer(buffer);
+    glDrawElements(GL_TRIANGLES, buffer.mesh->indices.size(), GL_UNSIGNED_INT, nullptr);
+    unbindVertexBuffer();
+}
+
+void drawVertexBufferWireframe(const VertexBuffer &buffer) {
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glDisable(GL_CULL_FACE);
     bindVertexBuffer(buffer);
     glDrawElements(GL_TRIANGLES, buffer.mesh->indices.size(), GL_UNSIGNED_INT, nullptr);
     unbindVertexBuffer();
@@ -633,6 +643,7 @@ void uiProperties(const GLWindow* window) {
     ImGuiIO& io = ImGui::GetIO();
     
     ImGui::Begin("Properties");
+    ImGui::Text("Delta time: %fms", window->deltaTime*1000.0);
     ImGui::Text("Render time: %fms", window->perviousRenderTime*1000.0);
     ImGui::Text("Physics Step time: %fms", window->perviousPhysicsTime*1000.0);
     if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -790,8 +801,10 @@ void addPhysicsObject(Object &object, bphys::RigidBody* rigidBody, bphys::Primit
 }
 
 enum RenderCommandType {
-    Sphere,
-    Vector
+    SPHERE,
+    CUBE,
+    CUBE_WIREFRAME,
+    VECTOR
 };
 
 struct RenderCommand {
@@ -823,7 +836,7 @@ struct PrimtiveObjects {
 
 void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitives, const Shader &shader) {
     switch (command.type) {
-        case RenderCommandType::Sphere:
+        case RenderCommandType::SPHERE:
             {
                 smath::transform transform{
                     .translation = command.positon,
@@ -835,7 +848,7 @@ void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitives
                 drawObject(primitives->spherePrimitive, shader);
                 break;           
             }
-        case RenderCommandType::Vector:
+        case RenderCommandType::VECTOR:
             {
                 smath::vector3 direction = smath::normalized(command.direction);
                 smath::quaternion orientation = smath::quaternion_from_matrix3x3(smath::matrix3x3_from_jhat(direction));
@@ -954,7 +967,7 @@ void render(Renderer* renderer, Scene* scene) {
 
 void DrawCommandSphere(Renderer* renderer, const smath::vector3 &position, const float radius) {
     RenderCommand command = {
-        .type = RenderCommandType::Sphere,
+        .type = RenderCommandType::SPHERE,
         .positon = position,
         .radius = radius
     };
@@ -964,7 +977,7 @@ void DrawCommandSphere(Renderer* renderer, const smath::vector3 &position, const
 
 void DrawCommandSphere(Renderer* renderer, const smath::vector3 &position, const float radius, const smath::vector4 &color) {
     RenderCommand command = {
-        .type = RenderCommandType::Sphere,
+        .type = RenderCommandType::SPHERE,
         .positon = position,
         .radius = radius
     };
@@ -974,7 +987,7 @@ void DrawCommandSphere(Renderer* renderer, const smath::vector3 &position, const
 
 void DrawCommandVector(Renderer* renderer, const smath::vector3 &positon, const smath::vector3 &direction, const float length, const float radius) {
     RenderCommand command = {
-        .type = RenderCommandType::Vector,
+        .type = RenderCommandType::VECTOR,
         .positon = positon,
         .direction = direction,
         .radius = radius,
@@ -986,7 +999,7 @@ void DrawCommandVector(Renderer* renderer, const smath::vector3 &positon, const 
 
 void DrawCommandVector(Renderer* renderer, const smath::vector3 &positon, const smath::vector3 &direction, const float length, const float radius, const smath::vector4 &color) {
     RenderCommand command = {
-        .type = RenderCommandType::Vector,
+        .type = RenderCommandType::VECTOR,
         .positon = positon,
         .direction = direction,
         .radius = radius,
