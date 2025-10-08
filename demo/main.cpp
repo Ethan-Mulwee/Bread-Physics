@@ -12,6 +12,9 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "matrix_function.hpp"
+#include "matrix_type.hpp"
+#include "quaternion_type.hpp"
 #include "smath.hpp"
 #include "smath_iostream.hpp"
 
@@ -729,18 +732,7 @@ Mesh importObj(const char* path) {
         mesh.vertices.push_back(vertex);
         mesh.indices.push_back(i);
     }
-    // for (int i = 0; i < vertexIndices.size(); i++) {
-    //     vertexIndices[i] = vertexIndices[i]-1;
-    // }
-    // std::cout << temp_vertices.size() << "\n";
-    // for (int i = 0; i < temp_vertices.size(); i++) {
-    //     Vertex vertex;
-    //     vertex.position = temp_vertices[i];
-    //     vertex.normal = temp_vertices[i];
-    //     mesh.vertices.push_back(vertex);
-    //     unsigned int vertexIndex = vertexIndices[i]-1;
-    //     mesh.indices = vertexIndices;
-    // }
+
     return mesh;
 }
 
@@ -781,6 +773,16 @@ void drawObject(const Object &object, const Shader &shader) {
     drawVertexBuffer(object.buffer);
 }
 
+void drawObjectWireframe(const Object &object , const Shader &shader) {
+    useShader(shader);
+    if (object.rigidBody)
+        setShaderUniformMatrix4(shader, object.rigidBody->getTransform() * object.transform, "model");
+    else
+        setShaderUniformMatrix4(shader, object.transform, "model");
+    setShaderUniformFloat4(shader, object.color, "color");
+    drawVertexBufferWireframe(object.buffer);
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                  Renderer                                  */
 /* -------------------------------------------------------------------------- */
@@ -815,6 +817,9 @@ struct RenderCommand {
     float radius;
     float length;
 
+    smath::vector3 dimensions;
+    smath::matrix4x4 transform;
+
     smath::vector4 color = smath::vector4{1.0f,1.0f,1.0f,1.0f};
 };
 
@@ -832,6 +837,7 @@ struct PrimtiveObjects {
     Object spherePrimitive;
     Object cylinderPrimitive;
     Object conePrimitive;
+    Object cubePrimitive;
 };
 
 void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitives, const Shader &shader) {
@@ -870,6 +876,26 @@ void drawRenderCommand(const RenderCommand &command, PrimtiveObjects* primitives
                 primitives->conePrimitive.color = command.color;
                 primitives->conePrimitive.transform = smath::matrix4x4_from_transform(coneTransform)*translateUp;
                 drawObject(primitives->conePrimitive, shader);
+                break;
+            }
+        case CUBE:
+            {
+                smath::matrix4x4 transform = command.transform;
+                transform[0][0] *= command.dimensions.x; transform[0][1] *= command.dimensions.y; transform[0][2] *= command.dimensions.z;
+                transform[1][0] *= command.dimensions.x; transform[1][1] *= command.dimensions.y; transform[1][2] *= command.dimensions.z;
+                transform[2][0] *= command.dimensions.x; transform[2][1] *= command.dimensions.y; transform[2][2] *= command.dimensions.z;
+                primitives->cubePrimitive.transform = transform;
+                drawObject(primitives->cubePrimitive, shader);
+                break;
+            }
+        case CUBE_WIREFRAME:
+            {
+                smath::matrix4x4 transform = command.transform;
+                transform[0][0] *= command.dimensions.x; transform[0][1] *= command.dimensions.y; transform[0][2] *= command.dimensions.z;
+                transform[1][0] *= command.dimensions.x; transform[1][1] *= command.dimensions.y; transform[1][2] *= command.dimensions.z;
+                transform[2][0] *= command.dimensions.x; transform[2][1] *= command.dimensions.y; transform[2][2] *= command.dimensions.z;
+                primitives->cubePrimitive.transform = transform;
+                drawObjectWireframe(primitives->cubePrimitive, shader);
                 break;
             }
     }
@@ -921,6 +947,12 @@ void intializeRenderer(Renderer* renderer, GLWindow* window, int resolution_x, i
     *conePrimitiveMesh = importObj("../demo/OBJs/Primitive-Cone.obj");
     VertexBuffer conePrimitiveBuffer = createVertexBuffer(conePrimitiveMesh);
     renderer->primtives.conePrimitive = createObject(conePrimitiveBuffer);
+
+    Mesh* cubePrimitiveMesh = new Mesh();
+    *cubePrimitiveMesh = importObj("../demo/OBJs/Primitive-Cube.obj");
+    VertexBuffer cubePrimitiveBuffer = createVertexBuffer(cubePrimitiveMesh);
+    renderer->primtives.cubePrimitive = createObject(cubePrimitiveBuffer);
+
 }
 
 void render(Renderer* renderer, Scene* scene) {
@@ -1005,6 +1037,26 @@ void DrawCommandVector(Renderer* renderer, const smath::vector3 &positon, const 
         .radius = radius,
         .length = length,
         .color = color
+    };
+
+    renderer->commandBuffer.add(command);
+}
+
+void DrawCommandCube(Renderer* renderer, const smath::vector3 &dimensions, const smath::matrix4x4 &transform) {
+    RenderCommand command = {
+        .type = CUBE,
+        .dimensions = dimensions,
+        .transform = transform
+    };
+
+    renderer->commandBuffer.add(command);
+}
+
+void DrawCommandCubeWireframe(Renderer* renderer, const smath::vector3 &dimensions, const smath::matrix4x4 &transform) {
+    RenderCommand command = {
+        .type = CUBE_WIREFRAME,
+        .dimensions = dimensions,
+        .transform = transform
     };
 
     renderer->commandBuffer.add(command);
@@ -1151,6 +1203,18 @@ int main() {
             DrawCommandSphere(renderer, smath::vector3{position.x,position.y,position.z}, 0.1f);
             DrawCommandVector(renderer, smath::vector3{position.x,position.y,position.z}, smath::vector3{normal.x,normal.y,normal.z}, 0.3f, 0.05f, color);
         }
+
+        for (int i = 0; i < scene->physicsWorld.colliders.size(); i++) {
+            switch(scene->physicsWorld.colliders[i].type) {
+                case bphys::PrimitiveType::Cube:
+                    DrawCommandCubeWireframe(renderer, scene->physicsWorld.colliders[i].dimensions, scene->physicsWorld.colliders[i].getTransform());
+                    break;
+                default:
+                    break;
+
+            }
+        }
+
 
 
         double beforeTime = glfwGetTime();
