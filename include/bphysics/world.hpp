@@ -6,6 +6,10 @@
 #include "contacts.hpp"
 #include "collide_narrow.hpp"
 
+#ifdef BPHYSICS_DEBUG
+#include <chrono>
+#endif
+
 namespace bphys {
     class World {
         public:
@@ -26,6 +30,13 @@ namespace bphys {
             
             void adjustPositions(float time, unsigned iterations);
             void adjustVelocities(float time, unsigned iterations);
+        
+            #ifdef BPHYSICS_DEBUG
+            public:
+            std::chrono::duration<double, std::milli> contactGenerationTime;
+            std::chrono::duration<double, std::milli> contactResolutionTime;
+            std::chrono::duration<double, std::milli> integrationTime;
+            #endif
     };
 }
 

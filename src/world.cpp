@@ -21,6 +21,10 @@ ContactPool bphys::World::getContactPool() {
 
 void World::generateContacts()
 {
+    #ifdef BPHYSICS_DEBUG
+    auto start_time = std::chrono::high_resolution_clock::now();
+    #endif
+
     contacts.reset();
 
     for (int i = 0; i < colliders.size(); i++) {
@@ -30,6 +34,11 @@ void World::generateContacts()
             CollisionDetector::cubeCube(colliders[i], colliders[j], contacts);
         }
     }
+
+    #ifdef BPHYSICS_DEBUG
+    auto end_time = std::chrono::high_resolution_clock::now();
+    contactGenerationTime = end_time - start_time;
+    #endif
 }
 
 // TODO: check for NaNs in this phase
@@ -94,15 +103,30 @@ void World::adjustVelocities(float time, unsigned iterations) {
 
 
 void World::resolveContacts(float time) {
-
+    #ifdef BPHYSICS_DEBUG
+    auto start_time = std::chrono::high_resolution_clock::now();
+    #endif
+    
     adjustPositions(time, 100);
     adjustVelocities(time, 100);
-    // TEMP
-    // contacts.reset();
+    
+    #ifdef BPHYSICS_DEBUG
+    auto end_time = std::chrono::high_resolution_clock::now();
+    contactResolutionTime = end_time - start_time;
+    #endif
 }
 
 void World::integrate(float time) {
+    #ifdef BPHYSICS_DEBUG
+    auto start_time = std::chrono::high_resolution_clock::now();
+    #endif
+
     for (int i = 0; i < bodies.size(); i++) {
         bodies[i]->integrate(time);
     }
+
+    #ifdef BPHYSICS_DEBUG
+    auto end_time = std::chrono::high_resolution_clock::now();
+    integrationTime = end_time - start_time;
+    #endif
 }

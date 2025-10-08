@@ -524,38 +524,6 @@ void setShaderUniformsFromCamera(const Shader &shader, const Camera &camera) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                                     UI                                     */
-/* -------------------------------------------------------------------------- */
-
-ImVec2 uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
-    ImGui::Begin("Scene");
-    
-    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    
-    // add rendered texture to ImGUI scene window
-    uint64_t textureID = frameBuffer.texId;
-    ImGui::Image((ImTextureID)(textureID), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-    
-    ImGui::End();
-    return viewportPanelSize;
-}
-
-void uiProperties(const GLWindow* window) {
-    ImGuiIO& io = ImGui::GetIO();
-    
-    ImGui::Begin("Properties");
-    ImGui::Text("Delta time: %fms", window->deltaTime*1000.0);
-    ImGui::Text("Render time: %fms", window->perviousRenderTime*1000.0);
-    ImGui::Text("Physics Step time: %fms", window->perviousPhysicsTime*1000.0);
-    if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Text("Hello World");
-
-    }
-
-    ImGui::End();
-}
-
-/* -------------------------------------------------------------------------- */
 /*                                OBJ Importer                                */
 /* -------------------------------------------------------------------------- */
 
@@ -690,6 +658,44 @@ struct Scene {
     std::vector<Object> objects;
     bphys::World physicsWorld;
 };
+
+/* -------------------------------------------------------------------------- */
+/*                                     UI                                     */
+/* -------------------------------------------------------------------------- */
+
+ImVec2 uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
+    ImGui::Begin("Scene");
+    
+    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    
+    // add rendered texture to ImGUI scene window
+    uint64_t textureID = frameBuffer.texId;
+    ImGui::Image((ImTextureID)(textureID), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+    
+    ImGui::End();
+    return viewportPanelSize;
+}
+
+void uiProperties(const GLWindow* window, Scene* scene) {
+    ImGuiIO& io = ImGui::GetIO();
+    
+    ImGui::Begin("Properties");
+    ImGui::Text("Delta time: %fms", window->deltaTime*1000.0);
+    ImGui::Text("Render time: %fms", window->perviousRenderTime*1000.0);
+    #ifdef BPHYSICS_DEBUG
+    ImGui::Text("Contact Generation time: %fms", scene->physicsWorld.contactGenerationTime.count());
+    ImGui::Text("Contact Resolution time: %fms", scene->physicsWorld.contactResolutionTime.count());
+    ImGui::Text("Inegration time: %fms", scene->physicsWorld.integrationTime.count());
+    #endif
+    ImGui::Text("Physics Step time: %fms", window->perviousPhysicsTime*1000.0);
+    if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Text("Hello World");
+
+    }
+
+    ImGui::End();
+}
+
 
 void addPhysicsObject(Object &object, bphys::RigidBody* rigidBody, bphys::Primitive collider, Scene* scene) {
     object.rigidBody = rigidBody;
@@ -890,7 +896,7 @@ void render(Renderer* renderer, Scene* scene) {
     ImVec2 frameSize = uiFrameBufferWindow(*renderer->frameBuffer);
     scene->camera->aspect = frameSize.x / frameSize.y;
 
-    uiProperties(renderer->window);
+    uiProperties(renderer->window, scene);
 
     imGuiRender();
 }
