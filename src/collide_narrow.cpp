@@ -220,17 +220,19 @@ void CollisionDetector::cubeFloor(const Primitive &cube, const float floorHeight
     using namespace smath;
     if (contacts.room() <= 0) return;
 
-    float l = cube.dimensions.x;
+    float x = cube.dimensions.x;
+    float y = cube.dimensions.y;
+    float z = cube.dimensions.z;
 
     vector3 vertices[8] = {
-        vector3{ l, l, l},
-        vector3{ l, l,-l},
-        vector3{ l,-l, l},
-        vector3{ l,-l,-l},
-        vector3{-l, l, l},
-        vector3{-l, l,-l},
-        vector3{-l,-l, l},
-        vector3{-l,-l,-l}
+        vector3{ x, y, z},
+        vector3{ x, y,-z},
+        vector3{ x,-y, z},
+        vector3{ x,-y,-z},
+        vector3{-x, y, z},
+        vector3{-x, y,-z},
+        vector3{-x,-y, z},
+        vector3{-x,-y,-z}
     };
 
     for (int i = 0; i < 8; i++) {

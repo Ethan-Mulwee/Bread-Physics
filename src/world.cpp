@@ -107,8 +107,8 @@ void World::resolveContacts(float time) {
     auto start_time = std::chrono::high_resolution_clock::now();
     #endif
     
-    adjustPositions(time, 100);
-    adjustVelocities(time, 100);
+    adjustPositions(time, 3);
+    adjustVelocities(time, 3);
     
     #ifdef BPHYSICS_DEBUG
     auto end_time = std::chrono::high_resolution_clock::now();

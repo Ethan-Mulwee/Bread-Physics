@@ -999,7 +999,7 @@ int main() {
     Object redCubeObject = createObject(
         roundedCubeBuffer, 
         smath::vector4{1.000f,0.200f,0.322f,1.0f},
-        smath::matrix4x4_from_transform(cubeTransform)
+        smath::matrix4x4_from_transform(cubeTransform) * smath::matrix4x4_from_scale(smath::vector3{2.0f,1.0f,2.0f})
     );
     bphys::RigidBody* redCubeBody = bphys::createRigidBody(
         smath::vector3{0,1,0}, 
@@ -1009,7 +1009,7 @@ int main() {
     );
     bphys::Primitive redCubeCollider = bphys::createCollider(
         bphys::PrimitiveType::Cube, 
-        smath::vector3{0.5,0.5,0.5}, 
+        smath::vector3{1.0f,0.5f,1.0f}, 
         smath::matrix4x4_from_identity(), 
         redCubeBody
     );
