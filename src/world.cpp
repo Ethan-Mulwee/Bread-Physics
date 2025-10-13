@@ -1,4 +1,6 @@
 #include "bphysics/world.hpp"
+#include "bphysics/contacts.hpp"
+#include "matrix_function.hpp"
 
 using namespace bphys;
 
@@ -129,4 +131,27 @@ void World::integrate(float time) {
     auto end_time = std::chrono::high_resolution_clock::now();
     integrationTime = end_time - start_time;
     #endif
+}
+
+RaycastResult World::raycast(smath::vector3 ray_origin, smath::vector3 ray_direction) {
+    RaycastResult result;
+    for (int i = 0; i < colliders.size(); i++) {
+        switch(colliders[i].type) {
+            case PrimitiveType::Cube:
+
+            smath::vector3 aabb_min = colliders[i].dimensions * -1.0f;
+            smath::vector3 aabb_max = colliders[i].dimensions;
+            float distance;
+
+            bool hit = smath::ray_intersection_obb(ray_origin, ray_direction, aabb_min, aabb_max, colliders[i].getTransform(), distance);
+            if (hit && distance < result.distance) {
+                result.hit = hit;
+                result.distance = distance;
+                result.position = ray_origin + ray_direction * distance;
+            }
+
+            break;
+        }
+    }
+    return result;
 }

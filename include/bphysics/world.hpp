@@ -1,6 +1,7 @@
 #ifndef BENGINE_WORLD
 #define BENGINE_WORLD
 
+#include <cfloat>
 #include <vector>
 #include "rigidbody.hpp"
 #include "contacts.hpp"
@@ -11,6 +12,11 @@
 #endif
 
 namespace bphys {
+    struct RaycastResult{
+        bool hit = false;
+        float distance = DBL_MAX;
+        smath::vector3 position;
+    };
     class World {
         public:
             std::vector<RigidBody*> bodies;
@@ -30,6 +36,9 @@ namespace bphys {
             
             void adjustPositions(float time, unsigned iterations);
             void adjustVelocities(float time, unsigned iterations);
+
+        public:
+            RaycastResult raycast(smath::vector3 position, smath::vector3 direction);
         
             #ifdef BPHYSICS_DEBUG
             public:

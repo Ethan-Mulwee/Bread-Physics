@@ -657,16 +657,22 @@ struct Scene {
     Camera* camera;
     std::vector<Object> objects;
     bphys::World physicsWorld;
+    smath::vector2 frameSize;
+    smath::vector3 framePosition;
 };
 
 /* -------------------------------------------------------------------------- */
 /*                                     UI                                     */
 /* -------------------------------------------------------------------------- */
 
-ImVec2 uiFrameBufferWindow(const FrameBuffer &frameBuffer) {
+ImVec2 uiFrameBufferWindow(const FrameBuffer &frameBuffer, float* positionX, float* positionY) {
     ImGui::Begin("Scene");
     
     ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    ImVec2 cursorPosition = ImGui::GetCursorScreenPos();
+    *positionX = cursorPosition.x;
+    *positionY = cursorPosition.y;
+    
     
     // add rendered texture to ImGUI scene window
     uint64_t textureID = frameBuffer.texId;
@@ -893,8 +899,12 @@ void render(Renderer* renderer, Scene* scene) {
     renderer->gridObject.transform[0][3] = -cameraPosition.x;
     renderer->gridObject.transform[2][3] = -cameraPosition.z;
 
-    ImVec2 frameSize = uiFrameBufferWindow(*renderer->frameBuffer);
+
+    float framePositionX, framePositionY;
+    ImVec2 frameSize = uiFrameBufferWindow(*renderer->frameBuffer, &framePositionX, &framePositionY);
     scene->camera->aspect = frameSize.x / frameSize.y;
+    scene->frameSize = {frameSize.x, frameSize.y};
+    scene->framePosition = {framePositionX, framePositionY};
 
     uiProperties(renderer->window, scene);
 
@@ -999,7 +1009,7 @@ int main() {
     Object redCubeObject = createObject(
         roundedCubeBuffer, 
         smath::vector4{1.000f,0.200f,0.322f,1.0f},
-        smath::matrix4x4_from_transform(cubeTransform) * smath::matrix4x4_from_scale(smath::vector3{2.0f,1.0f,2.0f})
+        smath::matrix4x4_from_transform(cubeTransform) /* * smath::matrix4x4_from_scale(smath::vector3{2.0f,1.0f,2.0f}) */
     );
     bphys::RigidBody* redCubeBody = bphys::createRigidBody(
         smath::vector3{0,1,0}, 
@@ -1009,7 +1019,7 @@ int main() {
     );
     bphys::Primitive redCubeCollider = bphys::createCollider(
         bphys::PrimitiveType::Cube, 
-        smath::vector3{1.0f,0.5f,1.0f}, 
+        smath::vector3{0.5f,0.5f,0.5f}, 
         smath::matrix4x4_from_identity(), 
         redCubeBody
     );
@@ -1092,6 +1102,7 @@ int main() {
             scene->physicsWorld.step(window->deltaTime, 5);
         }
         double afterPhysicsTime = glfwGetTime();
+
         bphys::ContactPool contacts = scene->physicsWorld.getContactPool();
         for (int i = 0; i < contacts.count(); i++) {
             smath::vector3 position = contacts[i].contactPoint;
@@ -1116,6 +1127,53 @@ int main() {
                 default:
                     break;
 
+            }
+        }
+
+        {
+            // adapted from https://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-a-physics-library/
+            double mouseX, mouseY; 
+            int screenWidth, screenHeight;
+            glfwGetCursorPos(window->glfwWindow, &mouseX, &mouseY);
+            glfwGetWindowSize(window->glfwWindow, &screenWidth, &screenHeight);
+            screenWidth = scene->frameSize.x;
+            screenHeight = scene->frameSize.y;
+            mouseX -= scene->framePosition.x;
+            mouseY -= scene->framePosition.y;
+            mouseY = screenHeight - mouseY;
+
+
+            smath::vector4 lRayStart_NDC{
+                ((float)mouseX/(float)screenWidth  - 0.5f) * 2.0f, // [0,1024] -> [-1,1]
+                ((float)mouseY/(float)screenHeight - 0.5f) * 2.0f, // [0, 768] -> [-1,1]
+                -1.0, // The near plane maps to Z=-1 in Normalized Device Coordinates
+                1.0f
+            };
+
+            smath::vector4 lRayEnd_NDC{
+                ((float)mouseX/(float)screenWidth  - 0.5f) * 2.0f,
+                ((float)mouseY/(float)screenHeight - 0.5f) * 2.0f,
+                0.0,
+                1.0f
+            };
+
+            smath::matrix4x4 projectionMatrix = calculateCameraProjection(camera);
+            smath::matrix4x4 inverseProjectionMatrix = smath::inverse(projectionMatrix);
+
+            smath::matrix4x4 viewMatrix = calculateCameraView(camera);
+            smath::matrix4x4 inverseViewMatrix = smath::inverse(viewMatrix);
+
+            smath::vector4 lRayStart_camera = smath::matrix4x4_transform_vector4(inverseProjectionMatrix , lRayStart_NDC);    lRayStart_camera *= 1.0f/lRayStart_camera.w;
+            smath::vector4 lRayStart_world  = smath::matrix4x4_transform_vector4(inverseViewMatrix       , lRayStart_camera); lRayStart_world  *= 1.0f/lRayStart_world .w;
+            smath::vector4 lRayEnd_camera   = smath::matrix4x4_transform_vector4(inverseProjectionMatrix , lRayEnd_NDC);      lRayEnd_camera   *= 1.0f/lRayEnd_camera  .w;
+            smath::vector4 lRayEnd_world    = smath::matrix4x4_transform_vector4(inverseViewMatrix       , lRayEnd_camera);   lRayEnd_world    *= 1.0f/lRayEnd_world   .w;
+
+            smath::vector3 lRayDir_world = smath::vector3_from_vector4(lRayEnd_world - lRayStart_world);
+            lRayDir_world = smath::normalized(lRayDir_world);
+
+            bphys::RaycastResult raycastResult = scene->physicsWorld.raycast(smath::vector3_from_vector4(lRayStart_world), lRayDir_world);
+            if (raycastResult.hit) {
+                DrawCommandSphere(renderer, raycastResult.position, 0.3f);
             }
         }
 
