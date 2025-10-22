@@ -48,7 +48,7 @@
 int main() {
     brl::Window* window = brl::createWindow(1920, 1080, "test");
     brl::RenderContext renderContext = brl::createRenderContext(window);
-    brl::ViewportContext viewport = brl::createViewportContext(&renderContext, 1920, 1080, "viewport");
+    brl::ViewportContext viewport = brl::createViewportContext(&renderContext, "viewport");
     brl::Camera camera = brl::createCamera({0.0f,0.0f,0.0f}, 5.0f, 45.0f, 0.1f, 100.0f, -M_PI/4.0f, M_PI/4.0f);
 
     bphys::World physicsWorld;
@@ -61,7 +61,7 @@ int main() {
 
     bphys::RigidBody* redCubeBody = bphys::createRigidBody(
         smath::vector3{0,1,0}, 
-        smath::normalized(smath::quaternion{0.1f, 0.3f, 0.6f, 1.0f}), 
+        smath::normalize(smath::quaternion{0.1f, 0.3f, 0.6f, 1.0f}), 
         0.5f, 
         bphys::InertiaTensorCuboid(2,1,1,1)
     );
@@ -73,8 +73,25 @@ int main() {
     );
 
     physicsWorld.bodies.push_back(redCubeBody);
-    physicsWorld.colliders.push_back(redCubeCollider);    
+    physicsWorld.colliders.push_back(redCubeCollider);  
 
+    bphys::RigidBody* blueCubeBody = bphys::createRigidBody(
+        smath::vector3{0,2.3f,0}, 
+        smath::normalize(smath::quaternion{0.1f, 0.9f, 1.6f, 1.0f}), 
+        0.5f, 
+        bphys::InertiaTensorCuboid(2,1,1,1)
+    );
+    bphys::Primitive blueCubeCollider = bphys::createCollider(
+        bphys::PrimitiveType::Cube, 
+        smath::vector3{0.5f,0.5f,0.5f}, 
+        smath::matrix4x4_from_identity(), 
+        blueCubeBody
+    );
+
+  
+    physicsWorld.bodies.push_back(blueCubeBody);
+    physicsWorld.colliders.push_back(blueCubeCollider);  
+    
     while (!brl::windowShouldClose(window)) {
         brl::updateWindow(window);
         if (viewport.hovered) brl::updateCamera(&camera, window);
@@ -92,9 +109,11 @@ int main() {
                 ImGui::Text("This is text dispalyed ontop of the viewport!");
 
                 brl::drawCube(renderContext, redCubeBody->getTransform()*cubeTransform);
+                brl::drawCube(renderContext, blueCubeBody->getTransform()*cubeTransform);
             brl::endViewport(viewport, camera);
         brl::endRender();
 
+        blueCubeBody->addForce({0.0f, -9.81f * blueCubeBody->getMass(), 0.0f});
         redCubeBody->addForce({0.0f, -9.81f * redCubeBody->getMass(), 0.0f});
         physicsWorld.step(window->deltaTime*1.0f, 3);
     }

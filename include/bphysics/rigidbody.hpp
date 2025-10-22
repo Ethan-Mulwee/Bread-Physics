@@ -23,9 +23,7 @@ namespace bphys {
 			smath::matrix4x4 getTransform() const {
 				smath::matrix3x3 orientationMatrix = smath::matrix3x3_from_quaternion(orientation);
 				smath::matrix4x4 transform = smath::matrix4x4_from_matrix3x3(orientationMatrix);
-				transform[0][3] = position.x;
-				transform[1][3] = position.y;
-				transform[2][3] = position.z;
+				transform.l = {position.x, position.y, position.z, 1.0f};
 
 				return transform;
 			}

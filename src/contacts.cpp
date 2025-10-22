@@ -17,11 +17,7 @@ smath::matrix3x3 Contact::getContactBasis() const {
         tagentZ = cross(contactNormal, tagentY);
     }
 
-    return smath::matrix3x3{
-        contactNormal.x, tagentY.x, tagentZ.x,
-        contactNormal.y, tagentY.y, tagentZ.y,
-        contactNormal.z, tagentY.z, tagentZ.z
-    };
+    return smath::matrix3x3{contactNormal, tagentY, tagentZ};
 }
 
 float Contact::getClosingVelocity() const {
@@ -133,7 +129,7 @@ void bphys::Contact::resolveVelocity() {
     vector3 relativeVelocity = getRelativeVelocity();
     float closingVelocity = relativeVelocity.x;
 
-    const vector3 contactBasis[3] = {contactNormal, vector3_from_matrix3x3(contactToWorld, 1), vector3_from_matrix3x3(contactToWorld, 2)};
+    const vector3 contactBasis[3] = {contactNormal, contactToWorld.j , contactToWorld.k};
     vector3 angularInverseInertiaWorld[3];
 
     for (int i = 0; i < 3; i++) {
@@ -172,7 +168,7 @@ void bphys::Contact::resolveVelocity() {
 
     vector3 planarImpluse{0,-relativeVelocity.y/inverseInertia[1], -relativeVelocity.z/inverseInertia[2]};
     if (planarImpluse.length() > impluseFriction)
-        planarImpluse = normalized(planarImpluse)*impluseFriction;
+        planarImpluse = normalize(planarImpluse)*impluseFriction;
         
     vector3 impluse{impluseNormal, 0.0f, 0.0f};
     impluse += planarImpluse;

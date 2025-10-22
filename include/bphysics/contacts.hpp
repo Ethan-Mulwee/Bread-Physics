@@ -30,7 +30,7 @@ namespace bphys {
             // if (std::isnan(transform(0,i)) || std::isnan(transform(1,i)) || std::isnan(transform(2,i))) {
             //     std::cout << "Nan detected \n";
             // }
-            return smath::vector3{transform[0][i], transform[1][i], transform[2][i]};
+            return smath::vector3{transform[i].x, transform[i].y, transform[i].z};
         }
     };
 
