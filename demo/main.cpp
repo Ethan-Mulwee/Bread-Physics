@@ -77,7 +77,8 @@ int main() {
 
     bphys::RigidBody* blueCubeBody = bphys::createRigidBody(
         smath::vector3{0,2.3f,0}, 
-        smath::normalize(smath::quaternion{0.1f, 0.9f, 1.6f, 1.0f}), 
+        smath::normalize(smath::quaternion{2.1f, 0.9f, 1.6f, 1.0f}), 
+        // smath::normalize(smath::quaternion{0.1f, 0.9f, 1.6f, 1.0f}), 
         0.5f, 
         bphys::InertiaTensorCuboid(2,1,1,1)
     );
@@ -88,7 +89,6 @@ int main() {
         blueCubeBody
     );
 
-  
     physicsWorld.bodies.push_back(blueCubeBody);
     physicsWorld.colliders.push_back(blueCubeCollider);  
     
@@ -108,8 +108,8 @@ int main() {
 
                 ImGui::Text("This is text dispalyed ontop of the viewport!");
 
-                brl::drawCube(renderContext, redCubeBody->getTransform()*cubeTransform);
-                brl::drawCube(renderContext, blueCubeBody->getTransform()*cubeTransform);
+                brl::drawCube(renderContext, redCubeBody->getTransform()*cubeTransform, smath::vector4{1.0f, 0.2f, 0.05f, 1.0f});
+                brl::drawCube(renderContext, blueCubeBody->getTransform()*cubeTransform, smath::vector4{0.2f, 0.7f, 1.0f, 1.0f});
             brl::endViewport(viewport, camera);
         brl::endRender();
 
