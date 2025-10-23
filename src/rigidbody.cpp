@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-using namespace bphys; 
+using namespace bpe; 
 
 void RigidBody::integrate(float time) {
 

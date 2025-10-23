@@ -2,7 +2,7 @@
 #include "bphysics/contacts.hpp"
 #include "matrix_function.hpp"
 
-using namespace bphys;
+using namespace bpe;
 
 World::World() {
 
@@ -17,7 +17,7 @@ void World::step(float time, int substeps){
     }
 }
 
-ContactPool bphys::World::getContactPool() {
+ContactPool bpe::World::getContactPool() {
     return contacts;
 }
 
@@ -109,8 +109,8 @@ void World::resolveContacts(float time) {
     auto start_time = std::chrono::high_resolution_clock::now();
     #endif
     
-    adjustPositions(time, 3);
-    adjustVelocities(time, 3);
+    adjustPositions(time, 100);
+    adjustVelocities(time, 100);
     
     #ifdef BPHYSICS_DEBUG
     auto end_time = std::chrono::high_resolution_clock::now();

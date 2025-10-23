@@ -1,7 +1,7 @@
 #include "bphysics/collide_narrow.hpp"
 #include "bphysics/contacts.hpp"
 
-using namespace bphys;
+using namespace bpe;
 
 // unsigned sphereSphere(const Primitive &one, const Primitive &two, CollisionData* data); {
 //   using namespace bMath;

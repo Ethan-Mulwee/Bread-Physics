@@ -1,6 +1,6 @@
 #include "bphysics/contacts.hpp"
 
-using namespace bphys;
+using namespace bpe;
 
 smath::matrix3x3 Contact::getContactBasis() const {
     using namespace smath;
@@ -113,7 +113,7 @@ PenetrationResolutionResult Contact::resolvePenetration() {
     return result;
 }
 
-void bphys::Contact::resolveVelocity() {
+void bpe::Contact::resolveVelocity() {
     using namespace smath;
 
     vector3 bodyPoint[2]; 
@@ -122,7 +122,7 @@ void bphys::Contact::resolveVelocity() {
     matrix3x3 contactToWorld = transpose(getContactBasis());
     // TODO: temporarily hard-coded
     // TODO: add static friction
-    float restitution = 0.4f;
+    float restitution = 0.5f;
     float static_friction = 0.5f;
     float kinetic_friction = 0.4f;
 

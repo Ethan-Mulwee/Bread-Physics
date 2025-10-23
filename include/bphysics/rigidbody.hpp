@@ -3,7 +3,7 @@
 
 #include "smath.hpp"
 
-namespace bphys {
+namespace bpe {
 	class RigidBody {
 		public:
 			float inverseMass;

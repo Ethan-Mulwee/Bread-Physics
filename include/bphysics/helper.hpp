@@ -3,7 +3,7 @@
 
 #include "contacts.hpp"
 
-namespace bphys {
+namespace bpe {
     RigidBody* createRigidBody(
         const smath::vector3 &position,
         const smath::quaternion &orientation,

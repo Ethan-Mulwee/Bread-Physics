@@ -15,43 +15,14 @@
 #include "brl.hpp"
 
 
-// void uiProperties(const GLWindow* window, Scene* scene) {
-//     ImGuiIO& io = ImGui::GetIO();
-    
-//     ImGui::Begin("Properties");
-//     ImGui::Text("Delta time: %fms", window->deltaTime*1000.0);
-//     ImGui::Text("Render time: %fms", window->perviousRenderTime*1000.0);
-//     #ifdef BPHYSICS_DEBUG
-//     ImGui::Text("Contact Generation time: %fms", scene->physicsWorld.contactGenerationTime.count());
-//     ImGui::Text("Contact Resolution time: %fms", scene->physicsWorld.contactResolutionTime.count());
-//     ImGui::Text("Inegration time: %fms", scene->physicsWorld.integrationTime.count());
-//     #endif
-//     ImGui::Text("Physics Step time: %fms", window->perviousPhysicsTime*1000.0);
-//     if (ImGui::CollapsingHeader("Object", ImGuiTreeNodeFlags_DefaultOpen)) {
-//         ImGui::Text("Hello World");
-
-//     }
-
-//     ImGui::End();
-// }
-
-
-// void addPhysicsObject(Object &object, bphys::RigidBody* rigidBody, bphys::Primitive collider, Scene* scene) {
-//     object.rigidBody = rigidBody;
-//     collider.body = rigidBody;
-
-//     scene->objects.push_back(object);
-//     scene->physicsWorld.bodies.push_back(rigidBody);
-//     scene->physicsWorld.colliders.push_back(collider);
-// }
-
 int main() {
     brl::Window* window = brl::createWindow(1920, 1080, "test");
     brl::RenderContext renderContext = brl::createRenderContext(window);
     brl::ViewportContext viewport = brl::createViewportContext(&renderContext, "viewport");
     brl::Camera camera = brl::createCamera({0.0f,0.0f,0.0f}, 5.0f, 45.0f, 0.1f, 100.0f, -M_PI/4.0f, M_PI/4.0f);
+    brl::Mesh roundedCubeMesh = brl::importObj("../demo/OBJs/Rounded-Cube.obj");
 
-    bphys::World physicsWorld;
+    bpe::World physicsWorld;
 
     smath::matrix4x4 cubeTransform = smath::matrix4x4_from_transform({
         .translation = smath::vector3{0.0f,0.0f,0.0f},
@@ -59,14 +30,14 @@ int main() {
         .scale = smath::vector3{0.5f,0.5f,0.5f}
     });
 
-    bphys::RigidBody* redCubeBody = bphys::createRigidBody(
+    bpe::RigidBody* redCubeBody = bpe::createRigidBody(
         smath::vector3{0,1,0}, 
         smath::normalize(smath::quaternion{0.1f, 0.3f, 0.6f, 1.0f}), 
         0.5f, 
-        bphys::InertiaTensorCuboid(2,1,1,1)
+        bpe::InertiaTensorCuboid(2,1,1,1)
     );
-    bphys::Primitive redCubeCollider = bphys::createCollider(
-        bphys::PrimitiveType::Cube, 
+    bpe::Primitive redCubeCollider = bpe::createCollider(
+        bpe::PrimitiveType::Cube, 
         smath::vector3{0.5f,0.5f,0.5f}, 
         smath::matrix4x4_from_identity(), 
         redCubeBody
@@ -75,15 +46,15 @@ int main() {
     physicsWorld.bodies.push_back(redCubeBody);
     physicsWorld.colliders.push_back(redCubeCollider);  
 
-    bphys::RigidBody* blueCubeBody = bphys::createRigidBody(
+    bpe::RigidBody* blueCubeBody = bpe::createRigidBody(
         smath::vector3{0,2.3f,0}, 
         smath::normalize(smath::quaternion{2.1f, 0.9f, 1.6f, 1.0f}), 
         // smath::normalize(smath::quaternion{0.1f, 0.9f, 1.6f, 1.0f}), 
         0.5f, 
-        bphys::InertiaTensorCuboid(2,1,1,1)
+        bpe::InertiaTensorCuboid(2,1,1,1)
     );
-    bphys::Primitive blueCubeCollider = bphys::createCollider(
-        bphys::PrimitiveType::Cube, 
+    bpe::Primitive blueCubeCollider = bpe::createCollider(
+        bpe::PrimitiveType::Cube, 
         smath::vector3{0.5f,0.5f,0.5f}, 
         smath::matrix4x4_from_identity(), 
         blueCubeBody
@@ -91,6 +62,25 @@ int main() {
 
     physicsWorld.bodies.push_back(blueCubeBody);
     physicsWorld.colliders.push_back(blueCubeCollider);  
+
+    bpe::RigidBody* orangeCubeBody = bpe::createRigidBody(
+        smath::vector3{0,3.7f,0}, 
+        smath::normalize(smath::quaternion{0.0f, 0.9f, 0.1f, 3.0f}), 
+        // smath::normalize(smath::quaternion{0.1f, 0.9f, 1.6f, 1.0f}), 
+        0.5f, 
+        bpe::InertiaTensorCuboid(2,1,1,1)
+    );
+    bpe::Primitive orangeCubeCollider = bpe::createCollider(
+        bpe::PrimitiveType::Cube, 
+        smath::vector3{0.5f,0.5f,0.5f}, 
+        smath::matrix4x4_from_identity(), 
+        orangeCubeBody
+    );
+
+    physicsWorld.bodies.push_back(orangeCubeBody);
+    physicsWorld.colliders.push_back(orangeCubeCollider);  
+
+    double physicsStepTime = 0.0;
     
     while (!brl::windowShouldClose(window)) {
         brl::updateWindow(window);
@@ -102,20 +92,36 @@ int main() {
             // ImGui functions can be called here
             ImGui::Begin("Stats");
             ImGui::Text("Delta time: %fms", window->deltaTime*1000.0);
+            ImGui::Text("Physics Step time: %fms", physicsStepTime*1000.0);
+            #ifdef BPHYSICS_DEBUG
+            ImGui::Text("Contact Generation time: %fms", physicsWorld.contactGenerationTime.count());
+            ImGui::Text("Contact Resolution time: %fms", physicsWorld.contactResolutionTime.count());
+            ImGui::Text("Inegration time: %fms", physicsWorld.integrationTime.count());
+            #endif
             ImGui::End();
 
             brl::beginViewport(viewport, camera);
 
-                ImGui::Text("This is text dispalyed ontop of the viewport!");
+                brl::drawMesh(renderContext, roundedCubeMesh, redCubeBody->getTransform()*cubeTransform, smath::vector4{1.000f,0.200f,0.322f,1.0f});
+                brl::drawMesh(renderContext, roundedCubeMesh, blueCubeBody->getTransform()*cubeTransform, smath::vector4{0.157f,0.565f,1.0f,1.0f});
+                brl::drawMesh(renderContext, roundedCubeMesh, orangeCubeBody->getTransform()*cubeTransform, smath::vector4{1.0f,0.385f,0.136f,1.0f});
 
-                brl::drawCube(renderContext, redCubeBody->getTransform()*cubeTransform, smath::vector4{1.0f, 0.2f, 0.05f, 1.0f});
-                brl::drawCube(renderContext, blueCubeBody->getTransform()*cubeTransform, smath::vector4{0.2f, 0.7f, 1.0f, 1.0f});
+                bpe::ContactPool contacts = physicsWorld.getContactPool();
+                for (int i = 0; i < contacts.count(); i++) {
+                    bpe::Contact& contact = contacts[i];
+                    brl::drawVector(renderContext, contact.contactPoint, contact.contactNormal*0.15f, 0.04f);
+                    brl::drawSphere(renderContext, contact.contactPoint, 0.06f);
+                }
             brl::endViewport(viewport, camera);
         brl::endRender();
 
-        blueCubeBody->addForce({0.0f, -9.81f * blueCubeBody->getMass(), 0.0f});
-        redCubeBody->addForce({0.0f, -9.81f * redCubeBody->getMass(), 0.0f});
-        physicsWorld.step(window->deltaTime*1.0f, 3);
+        for (int i = 0; i < physicsWorld.bodies.size(); i++) {
+            physicsWorld.bodies[i]->addForce({0.0f, -9.81f * redCubeBody->getMass(), 0.0f});
+        }
+        double beforePhysicsTime = glfwGetTime();
+        physicsWorld.step(window->deltaTime*0.1f, 1);
+        double afterPhysicsTime = glfwGetTime();
+        physicsStepTime = afterPhysicsTime - beforePhysicsTime;
     }
 
     // GLWindow* window = createWindow(1920, 1080, "window"); 

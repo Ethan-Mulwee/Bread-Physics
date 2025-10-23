@@ -11,7 +11,7 @@
 #include <chrono>
 #endif
 
-namespace bphys {
+namespace bpe {
     struct RaycastResult{
         bool hit = false;
         float distance = DBL_MAX;
