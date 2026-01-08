@@ -14,9 +14,105 @@
 
 #include "brl.hpp"
 
+bool paused = false;
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        paused = !paused;
+    }
+}
+
+smath::vector3 cubeDimensions = {2.71f/2.0f, 0.527/2.0f, 0.901f/2.0f};
+
+const int cubeCount = 15;
+const float margin = 0.04f;
+const float horizontalOffset = 0.901351 + margin;
+const float verticalOffset = 0.527452;
+const float groundOffset = 0.527452f / 2.0f;
+const smath::quaternion rotated = {0, 0.707106781f, 0, 0.707106781f};
+const smath::quaternion id = {0, 0, 0, 1};
+smath::transform towerCubeTransforms[cubeCount] = {
+    {
+        smath::vector3{0, groundOffset, -horizontalOffset},
+        id,
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset, 0},
+        id,
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset, horizontalOffset},
+        id,
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{horizontalOffset, groundOffset + verticalOffset + margin, 0},
+        rotated,
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset + verticalOffset + margin, 0},
+        rotated,
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{-horizontalOffset, groundOffset + verticalOffset + margin, 0},
+        rotated,
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset + verticalOffset * 2.0f + margin, -horizontalOffset},
+        smath::quaternion{0, 0, 0, 1},
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset + verticalOffset * 2.0f + margin, 0},
+        smath::quaternion{0, 0, 0, 1},
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset + verticalOffset * 2.0f + margin, horizontalOffset},
+        smath::quaternion{0, 0, 0, 1},
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{horizontalOffset, groundOffset + verticalOffset * 3.0f + margin, 0},
+        rotated,
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset+ verticalOffset * 3.0f + margin, 0},
+        rotated,
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{-horizontalOffset, groundOffset + verticalOffset * 3.0f + margin, 0},
+        rotated,
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset + verticalOffset * 4.0f + margin, -horizontalOffset},
+        smath::quaternion{0, 0, 0, 1},
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset + verticalOffset * 4.0f + margin, 0},
+        smath::quaternion{0, 0, 0, 1},
+        smath::vector3{1, 1, 1}
+    },
+    {
+        smath::vector3{0, groundOffset + verticalOffset * 4.0f + margin, horizontalOffset},
+        smath::quaternion{0, 0, 0, 1},
+        smath::vector3{1, 1, 1}
+    },
+};
+
 
 int main() {
     brl::Window* window = brl::createWindow(1920, 1080, "test");
+    glfwSetKeyCallback(window->glfwWindow, keyCallback);
     brl::RenderContext renderContext = brl::createRenderContext(window);
     brl::ViewportContext viewport = brl::createViewportContext(&renderContext, "viewport");
     brl::Camera camera = brl::createCamera({0.0f,0.0f,0.0f}, 5.0f, 45.0f, 0.1f, 100.0f, -M_PI/4.0f, M_PI/4.0f);
@@ -24,67 +120,72 @@ int main() {
 
     bpe::World physicsWorld;
 
-    smath::matrix4x4 cubeTransform = smath::matrix4x4_from_transform({
-        .translation = smath::vector3{0.0f,0.0f,0.0f},
-        .rotation = smath::quaternion{0,0,0,1.0f},
-        .scale = smath::vector3{0.5f,0.5f,0.5f}
-    });
+    for (int i = 0; i < cubeCount; i++) {
+        smath::transform& transform = towerCubeTransforms[i];
+        bpe::RigidBody* body = bpe::createRigidBody(
+            transform.translation, 
+            transform.rotation, 
+            0.5f, 
+            bpe::InertiaTensorCuboid(2,cubeDimensions.x*2.0f,cubeDimensions.y*2.0f,cubeDimensions.z*2.0f)
+        );
 
-    bpe::RigidBody* redCubeBody = bpe::createRigidBody(
-        smath::vector3{0,1,0}, 
-        smath::normalize(smath::quaternion{0.1f, 0.3f, 0.6f, 1.0f}), 
-        0.5f, 
-        bpe::InertiaTensorCuboid(2,1,1,1)
-    );
-    bpe::Primitive redCubeCollider = bpe::createCollider(
-        bpe::PrimitiveType::Cube, 
-        smath::vector3{0.5f,0.5f,0.5f}, 
-        smath::matrix4x4_from_identity(), 
-        redCubeBody
-    );
+        bpe::Primitive collider = bpe::createCollider(
+            bpe::PrimitiveType::Cube, 
+            cubeDimensions, 
+            smath::matrix4x4_from_identity(), 
+            body
+        );
 
-    physicsWorld.bodies.push_back(redCubeBody);
-    physicsWorld.colliders.push_back(redCubeCollider);  
-
-    bpe::RigidBody* blueCubeBody = bpe::createRigidBody(
-        smath::vector3{0,2.3f,0}, 
-        smath::normalize(smath::quaternion{2.1f, 0.9f, 1.6f, 1.0f}), 
-        // smath::normalize(smath::quaternion{0.1f, 0.9f, 1.6f, 1.0f}), 
-        0.5f, 
-        bpe::InertiaTensorCuboid(2,1,1,1)
-    );
-    bpe::Primitive blueCubeCollider = bpe::createCollider(
-        bpe::PrimitiveType::Cube, 
-        smath::vector3{0.5f,0.5f,0.5f}, 
-        smath::matrix4x4_from_identity(), 
-        blueCubeBody
-    );
-
-    physicsWorld.bodies.push_back(blueCubeBody);
-    physicsWorld.colliders.push_back(blueCubeCollider);  
-
-    bpe::RigidBody* orangeCubeBody = bpe::createRigidBody(
-        smath::vector3{0,3.7f,0}, 
-        smath::normalize(smath::quaternion{0.0f, 0.9f, 0.1f, 3.0f}), 
-        // smath::normalize(smath::quaternion{0.1f, 0.9f, 1.6f, 1.0f}), 
-        0.5f, 
-        bpe::InertiaTensorCuboid(2,1,1,1)
-    );
-    bpe::Primitive orangeCubeCollider = bpe::createCollider(
-        bpe::PrimitiveType::Cube, 
-        smath::vector3{0.5f,0.5f,0.5f}, 
-        smath::matrix4x4_from_identity(), 
-        orangeCubeBody
-    );
-
-    physicsWorld.bodies.push_back(orangeCubeBody);
-    physicsWorld.colliders.push_back(orangeCubeCollider);  
+        physicsWorld.bodies.push_back(body);
+        physicsWorld.colliders.push_back(collider);  
+    }
 
     double physicsStepTime = 0.0;
     
     while (!brl::windowShouldClose(window)) {
         brl::updateWindow(window);
         if (viewport.hovered) brl::updateCamera(&camera, window);
+
+        double mouseX, mouseY; 
+        int screenWidth, screenHeight;
+        glfwGetCursorPos(window->glfwWindow, &mouseX, &mouseY);
+        glfwGetWindowSize(window->glfwWindow, &screenWidth, &screenHeight);
+        screenWidth = viewport.size.x;
+        screenHeight = viewport.size.y;
+        mouseX -= viewport.screenPosition.x;
+        mouseY -= viewport.screenPosition.y;
+        mouseY = screenHeight - mouseY;
+
+
+        smath::vector4 lRayStart_NDC{
+            ((float)mouseX/(float)screenWidth  - 0.5f) * 2.0f, // [0,1024] -> [-1,1]
+            ((float)mouseY/(float)screenHeight - 0.5f) * 2.0f, // [0, 768] -> [-1,1]
+            -1.0, // The near plane maps to Z=-1 in Normalized Device Coordinates
+            1.0f
+        };
+
+        smath::vector4 lRayEnd_NDC{
+            ((float)mouseX/(float)screenWidth  - 0.5f) * 2.0f,
+            ((float)mouseY/(float)screenHeight - 0.5f) * 2.0f,
+            0.0,
+            1.0f
+        };
+
+        smath::matrix4x4 projectionMatrix = calculateCameraProjection(camera);
+        smath::matrix4x4 inverseProjectionMatrix = smath::inverse(projectionMatrix);
+
+        smath::matrix4x4 viewMatrix = calculateCameraView(camera);
+        smath::matrix4x4 inverseViewMatrix = smath::inverse(viewMatrix);
+
+        smath::vector4 lRayStart_camera = smath::matrix4x4_transform_vector4(inverseProjectionMatrix , lRayStart_NDC);    lRayStart_camera *= 1.0f/lRayStart_camera.w;
+        smath::vector4 lRayStart_world  = smath::matrix4x4_transform_vector4(inverseViewMatrix       , lRayStart_camera); lRayStart_world  *= 1.0f/lRayStart_world .w;
+        smath::vector4 lRayEnd_camera   = smath::matrix4x4_transform_vector4(inverseProjectionMatrix , lRayEnd_NDC);      lRayEnd_camera   *= 1.0f/lRayEnd_camera  .w;
+        smath::vector4 lRayEnd_world    = smath::matrix4x4_transform_vector4(inverseViewMatrix       , lRayEnd_camera);   lRayEnd_world    *= 1.0f/lRayEnd_world   .w;
+
+        smath::vector3 lRayDir_world = smath::vector3_from_vector4(lRayEnd_world - lRayStart_world);
+        lRayDir_world = smath::normalize(lRayDir_world);
+
+        bpe::RaycastResult raycastResult = physicsWorld.raycast(smath::vector3_from_vector4(lRayStart_world), lRayDir_world);
 
         brl::beginRender(window);
             brl::clearRender();
@@ -102,9 +203,25 @@ int main() {
 
             brl::beginViewport(viewport, camera);
 
-                brl::drawMesh(renderContext, roundedCubeMesh, redCubeBody->getTransform()*cubeTransform, smath::vector4{1.000f,0.200f,0.322f,1.0f});
-                brl::drawMesh(renderContext, roundedCubeMesh, blueCubeBody->getTransform()*cubeTransform, smath::vector4{0.157f,0.565f,1.0f,1.0f});
-                brl::drawMesh(renderContext, roundedCubeMesh, orangeCubeBody->getTransform()*cubeTransform, smath::vector4{1.0f,0.385f,0.136f,1.0f});
+                // brl::drawMesh(renderContext, roundedCubeMesh, redCubeBody->getTransform()*cubeTransform, smath::vector4{1.000f,0.200f,0.322f,1.0f});
+                // brl::drawMesh(renderContext, roundedCubeMesh, blueCubeBody->getTransform()*cubeTransform, smath::vector4{0.157f,0.565f,1.0f,1.0f});
+                // NOTE: It seems like the orange cube's velocity isn't being resolved properly by the contact look into this
+                // NOTE: the angular velocity also dones't seem to stay the rotation disappears as soon as the cube is not in contact which maybe is a result of resolvePosition rotating it rather than there being a true impluse
+                // brl::drawMesh(renderContext, roundedCubeMesh, orangeCubeBody->getTransform()*cubeTransform, smath::vector4{1.0f,0.4f,0.2f,1.0f});
+                if (raycastResult.hit) {
+                    brl::drawSphere(renderContext, raycastResult.position, 0.03f, smath::vector4{1.0f, 0.0f, 0.0f, 1.0f});
+                }
+
+                for (int i = 0; i < physicsWorld.colliders.size(); i++) {
+                    const bpe::Primitive& collider = physicsWorld.colliders[i];
+                    const bpe::RigidBody* body = collider.body;
+                    smath::matrix4x4 cubeTransform = smath::matrix4x4_from_transform({
+                        .translation = smath::vector3{0.0f,0.0f,0.0f},
+                        .rotation = smath::quaternion{0,0,0,1.0f},
+                        .scale = collider.dimensions
+                    });
+                    brl::drawCube(renderContext, body->getTransform()*cubeTransform);
+                }
 
                 bpe::ContactPool contacts = physicsWorld.getContactPool();
                 for (int i = 0; i < contacts.count(); i++) {
@@ -115,13 +232,16 @@ int main() {
             brl::endViewport(viewport, camera);
         brl::endRender();
 
-        for (int i = 0; i < physicsWorld.bodies.size(); i++) {
-            physicsWorld.bodies[i]->addForce({0.0f, -9.81f * redCubeBody->getMass(), 0.0f});
+        // TODO: add caching for multiple contacts
+        if (!paused) {
+            for (int i = 0; i < physicsWorld.bodies.size(); i++) {
+                physicsWorld.bodies[i]->addForce({0.0f, -9.81f * physicsWorld.bodies[i]->getMass(), 0.0f});
+            }
+            double beforePhysicsTime = glfwGetTime();
+            physicsWorld.step(window->deltaTime*0.5f, 4);
+            double afterPhysicsTime = glfwGetTime();
+            physicsStepTime = afterPhysicsTime - beforePhysicsTime;
         }
-        double beforePhysicsTime = glfwGetTime();
-        physicsWorld.step(window->deltaTime*0.1f, 1);
-        double afterPhysicsTime = glfwGetTime();
-        physicsStepTime = afterPhysicsTime - beforePhysicsTime;
     }
 
     // GLWindow* window = createWindow(1920, 1080, "window"); 

@@ -2,6 +2,8 @@
 #include "bphysics/contacts.hpp"
 #include "matrix_function.hpp"
 
+#include "smath_iostream.hpp"
+
 using namespace bpe;
 
 World::World() {
@@ -143,6 +145,7 @@ RaycastResult World::raycast(smath::vector3 ray_origin, smath::vector3 ray_direc
             smath::vector3 aabb_max = colliders[i].dimensions;
             float distance;
 
+            std::cout << colliders[i].getTransform() << "\n";
             bool hit = smath::ray_intersection_obb(ray_origin, ray_direction, aabb_min, aabb_max, colliders[i].getTransform(), distance);
             if (hit && distance < result.distance) {
                 result.hit = hit;

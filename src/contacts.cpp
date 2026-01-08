@@ -104,6 +104,7 @@ PenetrationResolutionResult Contact::resolvePenetration() {
         } 
 
         result.angularChange[i] = matrix3x3_transform_vector3(body[i]->getInverseInteriaTensorWorld(), cross(bodyPoint[i],contactNormal)) * (angularMove[i]/angularInverseInertia[i]);
+        // result.angularChange[i] = smath::vector3{0.0f};
         body[i]->orientation = quaternion_add_vector(body[i]->orientation, result.angularChange[i]);
 
         result.linearChange[i] = contactNormal * linearMove[i];
@@ -159,7 +160,7 @@ void bpe::Contact::resolveVelocity() {
         }
     }
 
-    if (closingVelocity < 0.5f) {
+    if (closingVelocity < 0.05f) {
         restitution = 0.0f;
     }
 

@@ -12,9 +12,9 @@ namespace bpe {
     inline matrix3x3 InertiaTensorCuboid(float m, float dx, float dy, float dz) {
         float c = m*((float)1/12);
         return matrix3x3{
-            c*(dy*dy+dz*dz), 0, 0,
-            0, c*(dx*dx+dz*dz), 0,
-            0, 0, c*(dx*dx+dy*dy)
+            vector3{c*(dy*dy+dz*dz), 0, 0},
+            vector3{0, c*(dx*dx+dz*dz), 0},
+            vector3{0, 0, c*(dx*dx+dy*dy)}
         };
     }
 
